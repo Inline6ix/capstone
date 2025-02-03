@@ -1,0 +1,1 @@
+This is a placeholder file. Results should go in the results directory.

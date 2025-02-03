@@ -1,0 +1,11 @@
+name: capstone
+dependencies:
+- python=3
+- jupyter
+- numpy
+- pandas
+- matplotlib
+- plotly
+- scikit-learn
+- statsmodels
+- flake8
