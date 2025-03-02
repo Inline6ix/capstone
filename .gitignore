@@ -128,3 +128,6 @@ dmypy.json
 # Pyre type checker
 .pyre/
 .Rproj.user
+negatives_composition_df.csv
+negatives.csv
+data/epitope_full_seq2.csv
