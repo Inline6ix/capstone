@@ -1,7 +1,7 @@
 ---
-title: "Proposal: [Your project name]"
+title: "Proposal: T-cell Epitope Prediction"
 subtitle: "DATA 450 Capstone"
-author: "[Your Name]"
+author: "Tariq Alagha"
 date: today
 date-format: long
 bibliography: references.bib
@@ -11,20 +11,25 @@ format:
 jupyter: python3
 ---
 
-# Introduction
+# Introductions
 
 The immune system plays a critical role in identifying and eliminating cancer cells, with T-cell epitopes serving as essential mediators in this process. T-cell epitopes are short peptide fragments derived from tumor antigens that are presented on the cell surface, where they trigger a specific immune response. As cancer immunotherapy continues to advance, accurately distinguishing immunogenic epitopes from the vast array of other peptide fragments in an antigen has become increasingly important. 
 
 # Dataset
 
-The primary dataset for this project is obtained from the Immune Epitope Database (IEDB), a publicly available resource that curates experimentally validated epitope data from the peer-reviewed literature. The IEDB team compiles this information by manually extracting and verifying epitope details, ensuring that each entry meets quality standards. For our project, we will focus on human ~~cancer~~ T-cell epitopes. The key variables from IEDB include:
+The primary dataset for this project is obtained from the Immune Epitope Database (IEDB), 
+a publicly available resource that curates experimentally validated epitope data from the peer-reviewed literature. 
+The IEDB team compiles this information by manually extracting and verifying epitope details, ensuring that each entry meets quality standards. 
+For our project, we will focus on human ~~cancer~~ T-cell epitopes. Each observation in the dataset is a unique human cancer T-cell epitope. The key variables from IEDB include:
 
 - **Epitope Sequence:** The amino acid string representing the epitope.
-- **MHC Restriction:** Whether the epitope is restricted by a specific MHC molecule. Either class I or class II.
+- **MHC Restriction:** Whether the epitope imolecule. Either clas restricted by a specific MHC ss I or class II.
 - **Source Molecule IRI** Links to the UniProt entry for the antigen that contains the epitope.
 - **Predicted Binding Affinity:** The predicted binding affinity of the epitope to the MHC molecule.
 
-In addition to the IEDB data, we will obtain full protein sequences of tumor antigens from the UniProt database. This will allow us to extract non-epitope peptides by identifying segments of the antigen that do not overlap with known epitopes. From both IEDB and UniProt, we will engineer additional features such as peptide length, amino acid composition, and average hydrophobicity.
+In addition to the IEDB data, we will obtain full protein sequences of tumor antigens from the UniProt database. 
+This will allow us to extract non-epitope peptides by identifying segments of the antigen that do not overlap with known epitopes. 
+From both IEDB and UniProt, we will engineer additional features such as peptide length, amino acid composition, and average hydrophobicity.
 
 Vita, R., Mahajan, S., Overton, J. A., Dhanda, S. K., Martini, S., Cantrell, J. R., Wheeler, D. K., Sette, A., & Peters, B. (2019). _The Immune Epitope Database (IEDB): 2018 update_ [Data set]. _Nucleic Acids Research, 47_(D1), D339–D343. [https://doi.org/10.1093/nar/gky1006](https://doi.org/10.1093/nar/gky1006). Retrieved from [http://www.iedb.org](http://www.iedb.org)
 
@@ -57,9 +62,22 @@ Key processing steps include:
 # Research Questions and Methodology
   
 
-1. What Distinguishes an epitope from any other peptide in an antigen? To answer this question I will use existing features and engineer new features of the peptide sequences. For now, the features I plan to engineer are epitope length, amino acid composition, and average hydrophobicity. Using these features I will perform exploratory data analysis to visualize and understand the characteristics of epitopes and compare with non-epitopes.
-2. Can we predict whether a given peptide is an Epitope? To answer this question I will use the features engineered in the previous question to train a model to predict whether a given peptide is an epitope. I will assess the model's performance using accuracy, ROC curve, AUC, and precision and recall.
-3. Are there meaningful clusters among epitopes based on their properties? To answer this question I will perform clustering on the epitopes. I will use the elbow method to determine the optimal number of clusters and then use the KMeans algorithm to cluster the epitopes. I will then use the PCA algorithm to reduce the dimensionality of the data and visualize the clusters.
+1. What Distinguishes an epitope from any other peptide in an antigen? To answer this question I will use existing features and engineer new features of the peptide sequences. 
+For now, the features I plan to engineer are epitope length, amino acid composition, and average hydrophobicity. 
+Using these features I will perform exploratory data analysis to visualize and understand the characteristics of epitopes and compare with non-epitopes.
+Visualizations of interest include:
+- Histograms of peptide length
+- Bar plots of amino acid composition
+- Scatter plots of hydrophobicity vs peptide length
+2. Can we predict whether a given peptide is an Epitope? 
+To answer this question I will use the features engineered in the previous question to train a model to predict whether a given peptide is an epitope. 
+I will test various binary classification models to predict whether a given peptide is an epitope.
+We already have a dataset of confirmed epitopes and we will generate a negative sample by extracting non-epitope peptides from the full antigen sequences.
+I will assess the model's performance using accuracy, ROC curve, AUC, and precision and recall.
+3. Are there meaningful clusters among epitopes based on their properties? To answer this question I will perform clustering on the epitopes. 
+I will use the elbow method to determine the optimal number of clusters and then use the KMeans algorithm to cluster the epitopes. 
+I will then use the PCA algorithm to reduce the dimensionality of the data and visualize the clusters.
+From there I will perform a cluster analysis to understand the characteristics of the clusters and the relationship between the clusters and the target variable.
 
   
 
@@ -97,18 +115,17 @@ Key processing steps include:
 
 **Week 7 (3/3 - 3/9):**
 
-- Week 7 progress report (1 hour)
-- Finalize RQ2 (4 hours)
-* Presentation prep and practice (4 hours)
-- Begin clustering (2 hours)
-- Implement clustering evaluations (2 hours)
+- Week 7 progress report (20 minutes)
+- Finish visualizations of epitopes (2 hours)
+- Analyze epitope visualizations noting key features (2 hours)
+- Visualize key features of non-epitopes(1 hour)
+- Compare epitopes and non-epitopes visualizations (1 hour)
 
 **Week 8 (3/10 - 3/16):** *Presentations given on Wed-Thu 3/12-3/13.*
 
-- Week 8 progress report (1 hour)
-- Finalize RQ3 (4 hours)
-- Write blog post intro (2 hour)
-
+- Week 8 progress report (20 minutes)
+- Train models (2 hours)
+- Evaluate models (2 hours)
 * Poster prep (4 hours)
 
 * Presentation peer review (1.5 hours)
@@ -117,8 +134,10 @@ Key processing steps include:
 
 **Week 9 (3/24 - 3/30):** *Poster Draft 1 due Monday morning 3/24 at 9am. Poster Draft 2 due Sunday night 3/30.*
 
-- Week 9 progress report (1 hour)
-  
+- Week 9 progress report (20 minutes)
+- Optimize model parameters using cross-validation to improve performance. (2 hours)
+- Review model performance (1 hour)
+- Begin clustering (2 hours)
 
 * Peer feedback (2 hours)
 
@@ -127,8 +146,10 @@ Key processing steps include:
   
 
 **Week 10 (3/31 - 4/6):** *Final Poster due Sunday 4/6.*
-- Week 10 progress report (1 hour)
-  
+- Week 10 progress report (20 Minutes)
+- Apply PCA to reduce the high-dimensional feature space dimensions for visualization.(1 hour)
+- Visualize the clusters (2 hours)
+- Perform cluster analysis (2 hours)
 
 * Peer feedback (1.5 hours)
 
@@ -140,13 +161,15 @@ Key processing steps include:
 
 **Week 11 (4/7 - 4/13):**
 
-- Week 11 progress report (1 hour)
-- Write blog post data collection (2 hour)
+- Week 11 progress report (20 minutes)
+- Review and revise RQ1 (2 hours)
+- Review and revise RQ2 (2 hours)
+- Review and revise RQ3 (2 hours)
 
 **Week 12 (4/14 - 4/20):**
 
-- Week 12 progress report (1 hour)
-  
+- Week 12 progress report (20 minutes)
+- Extra time for any unexpected issues, or modifications to the project.(8 hours)
 
 **Week 13 (4/21 - 4/27):** *Blog post draft 1 due Sunday night 4/28.*
 
