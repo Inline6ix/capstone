@@ -146,6 +146,7 @@ From there I will perform a cluster analysis to understand the characteristics o
   
 
 **Week 10 (3/31 - 4/6):** *Final Poster due Sunday 4/6.*
+
 - Week 10 progress report (20 Minutes)
 - Apply PCA to reduce the high-dimensional feature space dimensions for visualization.(1 hour)
 - Visualize the clusters (2 hours)
