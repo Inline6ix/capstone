@@ -79,7 +79,7 @@ def main():
         plt.close()
         
         # 4. IC50 vs Rank
-        plt.figure(figsize=(10, 6))
+        plt.figure(figsize=(20, 15))
         sns.scatterplot(x='ic50', y='%Rank_BA', data=df, hue='allele', s=100)
         plt.axhline(y=0.5, color='r', linestyle='--', label='Strong Binder Threshold (0.5)')
         plt.axhline(y=2.0, color='orange', linestyle='--', label='Weak Binder Threshold (2.0)')
