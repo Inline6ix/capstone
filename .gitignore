@@ -133,3 +133,4 @@ negatives.csv
 data/epitope_full_seq2.csv
 netMHCpan-4.1
 check_netmhcpan.py
+negatives_MHC.csv
