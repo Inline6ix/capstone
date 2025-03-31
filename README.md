@@ -1,4 +1,4 @@
-# MHC Binding Affinity Prediction
+# MHC Binding Affinity Prediction 
 
 This repository contains scripts for predicting MHC binding affinity using netMHCpan-4.1.
 
