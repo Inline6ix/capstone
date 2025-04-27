@@ -1,0 +1,651 @@
+{
+  "cells": [
+    {
+      "cell_type": "markdown",
+      "metadata": {},
+      "source": [
+        "---\n",
+        "title: \"Crash Course: What's Behind New Jersey's Fatal Road Puzzle?\"\n",
+        "subtitle: \"Exploring Road Safety Factors And Accident Patterns\"\n",
+        "author: \"Sai Harshitha Dalli\"\n",
+        "bibliography: references.bib\n",
+        "number-sections: false\n",
+        "format:\n",
+        "  html:\n",
+        "    theme: default\n",
+        "    rendering: embed-resources\n",
+        "    code-fold: true\n",
+        "    code-tools: true\n",
+        "    toc: true\n",
+        "  #pdf: default\n",
+        "jupyter: python3\n",
+        "---\n",
+        "\n",
+        "\n",
+        "![Photo downloaded from Unsplash: Credits - Karl Solano](https://images.unsplash.com/photo-1608694385922-2a5173401a2e?q%3D80%26w%3D1031%26auto%3Dformat%26fit%3Dcrop%26ixlib%3Drb-4.0.3%26ixid%3DM3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D){fig-alt=\"A photo of a car crash\"}\n",
+        "\n",
+        "Road accidents happen quite often, and some of these accidents can result in deaths/fatalities. This is a major public safety and public health issue that has been ongoing. Many of us travel on the road daily, and you might have encountered a car crash at least once. When it comes to New Jersey, drivers have a [bad reputation](https://nj1015.com/you-give-all-nj-drivers-a-bad-reputation-if-you-drive-like-this/).\n",
+        "\n",
+        "I have lived in New Jersey for half my life, and when I tell people that fact, they always bring up the bad driving. I've had my fair share of seeing drivers not using their signals, speeding, going below the speed limit, and have seen many do the \"Jersey slide\". For those who are not familiar with what a Jersey slide is, it is when a driver goes from the far left lane all the way over to the exit ramp in one swift move without using a blinker. This mostly happens on the highways and happens quite often. This kind of driving behavior leads to possible accidents on the road.\n",
+        "\n",
+        "My curiosity about these patterns arises from witnessing many car crashes on the road while driving, which is why I want to examine some of the factors that could potentially cause fatal accidents in New Jersey.\n",
+        "\n",
+        "# Data\n",
+        "\n",
+        "### Dataset\n",
+        "\n",
+        "The dataset utilized for this analysis is sourced from [The Fatality Analysis Reporting System (FARS)](https://www.nhtsa.gov/file-downloads?p=nhtsa/downloads/FARS/), a comprehensive nationwide database maintained by the National Highway Traffic Safety Administration (NHTSA) in the United States. FARS provides detailed information on fatal injuries sustained in motor vehicle traffic crashes, offering valuable insights for research and policymaking.\n",
+        "\n",
+        "The dataset, spanning from 1975 to 2021, includes various files related to accidents, persons involved, vehicles, weather conditions, distractions, damages, and more. While data is available for multiple years, I have chosen to focus specifically on the year 2021 due to its relevance and recency. Leveraging pandas, a python library, I will merge key datasets using the unique identifier \"ST_Case\". It is a variable which represents every road accident that took place across all the csv files.\n",
+        "\n",
+        "The selected datasets include accidents.csv, drimpair.csv, vehicle.csv, weather.csv, and person.csv, each containing essential variables pertinent to addressing research questions.\n",
+        "\n",
+        "::: {.callout-note title=\"Libraries and packages\" collapse=\"false\"}"
+      ],
+      "id": "ad289bbf"
+    },
+    {
+      "cell_type": "code",
+      "metadata": {},
+      "source": [
+        "# Importing libraries\n",
+        "import pandas as pd\n",
+        "import matplotlib.pyplot as plt\n",
+        "import plotly.graph_objects as go\n",
+        "import plotly.graph_objs as go\n",
+        "import plotly.express as px\n",
+        "import seaborn as sns\n",
+        "import geopandas as gpd\n",
+        "import numpy as np\n",
+        "import warnings\n",
+        "warnings.filterwarnings(\"ignore\")"
+      ],
+      "id": "5b033c61",
+      "execution_count": null,
+      "outputs": []
+    },
+    {
+      "cell_type": "markdown",
+      "metadata": {},
+      "source": [
+        ":::\n",
+        "\n",
+        "### Preprocessing\n"
+      ],
+      "id": "8f5c625f"
+    },
+    {
+      "cell_type": "code",
+      "metadata": {},
+      "source": [
+        "# Reading the data\n",
+        "accident_df = pd.read_csv('C:\\\\Users\\\\saiha\\\\OneDrive\\\\Desktop\\\\Data Science\\\\Capstone\\\\FARS2021NationalCSV\\\\accident.csv', encoding='latin1')\n",
+        "drimpair_df = pd.read_csv('C:\\\\Users\\\\saiha\\\\OneDrive\\\\Desktop\\\\Data Science\\\\Capstone\\\\FARS2021NationalCSV\\\\drimpair.csv', encoding='latin1')\n",
+        "vehicle_df = pd.read_csv('C:\\\\Users\\\\saiha\\\\OneDrive\\\\Desktop\\\\Data Science\\\\Capstone\\\\FARS2021NationalCSV\\\\vehicle.csv', encoding='latin1')\n",
+        "person_df = pd.read_csv('C:\\\\Users\\\\saiha\\\\OneDrive\\\\Desktop\\\\Data Science\\\\Capstone\\\\FARS2021NationalCSV\\\\person.csv', encoding='latin1')\n",
+        "weather_df = pd.read_csv('C:\\\\Users\\\\saiha\\\\OneDrive\\\\Desktop\\\\Data Science\\\\Capstone\\\\FARS2021NationalCSV\\\\weather.csv', encoding='latin1')\n",
+        "# Filtering rows with only New Jersey\n",
+        "accident_nj = accident_df[accident_df['STATE'] == 34 ]\n",
+        "drimpair_nj = drimpair_df[drimpair_df['STATE'] == 34]\n",
+        "vehicle_nj = vehicle_df[vehicle_df['STATE'] == 34]\n",
+        "person_nj = person_df[person_df['STATE'] == 34]\n",
+        "weather_nj = weather_df[weather_df['STATE'] == 34]\n",
+        "# Filtering for wanted columns\n",
+        "accident_nj_selected = accident_nj[['ST_CASE', 'COUNTYNAME', 'PEDS', 'RUR_URB', 'FUNC_SYS', 'FUNC_SYSNAME', 'MONTHNAME', 'DAY', 'DAY_WEEKNAME', 'HOUR', 'WEATHER', 'LATITUDE', 'LONGITUD', 'FATALS']]\n",
+        "drimpair_nj_selected = drimpair_nj[['ST_CASE', 'DRIMPAIR', 'DRIMPAIRNAME']]\n",
+        "person_nj_selected = person_nj[['ST_CASE', 'AGE', 'SEX', 'INJ_SEV', 'INJ_SEVNAME']]\n",
+        "vehicle_nj_selected = vehicle_nj[['ST_CASE', 'HARM_EVNAME', 'MAKENAME', 'MOD_YEAR']]\n",
+        "weather_nj_selected = weather_nj[['ST_CASE', 'WEATHER', 'WEATHERNAME']]"
+      ],
+      "id": "47418cb0",
+      "execution_count": null,
+      "outputs": []
+    },
+    {
+      "cell_type": "markdown",
+      "metadata": {},
+      "source": [
+        "I've narrowed down my dataset to focus only on fatal accident data within New Jersey. I believe it's important to analyze each state's data separately because driving laws vary significantly from one state to another. Once I've filtered the dataset to include only New Jersey's data, I further refine it by selecting the specific variables required for my analysis.\n",
+        "\n",
+        "The accidents.csv is my main data set that I will be using which includes variables like pedestrians involved, rural/urban area, county, functional system, month, day, week, hour, longitude, latitude, and number of fatals.\n"
+      ],
+      "id": "f684868c"
+    },
+    {
+      "cell_type": "code",
+      "metadata": {},
+      "source": [
+        "accident_nj_selected.head(5)"
+      ],
+      "id": "d3f06da1",
+      "execution_count": null,
+      "outputs": []
+    },
+    {
+      "cell_type": "markdown",
+      "metadata": {},
+      "source": [
+        "The drimpair.csv data set has variables consisting driver impairment when they got in an accident. This variable is a self report of the drivers after the accidents.\n"
+      ],
+      "id": "a8061e22"
+    },
+    {
+      "cell_type": "code",
+      "metadata": {},
+      "source": [
+        "drimpair_nj_selected.head(5)"
+      ],
+      "id": "c6ff1763",
+      "execution_count": null,
+      "outputs": []
+    },
+    {
+      "cell_type": "markdown",
+      "metadata": {},
+      "source": [
+        "The person.csv data set has demographic variables such as the age and sex of the drivers involved in accidents.\n"
+      ],
+      "id": "f12813f7"
+    },
+    {
+      "cell_type": "code",
+      "metadata": {},
+      "source": [
+        "person_nj_selected.head(5)"
+      ],
+      "id": "d6b9c0d0",
+      "execution_count": null,
+      "outputs": []
+    },
+    {
+      "cell_type": "markdown",
+      "metadata": {},
+      "source": [
+        "The vehicle.csv data set consists of variables such as make name and model year of the vehicles involved in accidents.\n"
+      ],
+      "id": "4fb29e16"
+    },
+    {
+      "cell_type": "code",
+      "metadata": {},
+      "source": [
+        "vehicle_nj_selected.head(5)"
+      ],
+      "id": "edcdb619",
+      "execution_count": null,
+      "outputs": []
+    },
+    {
+      "cell_type": "markdown",
+      "metadata": {},
+      "source": [
+        "The weather.csv has data on the weather at the time of the accident.\n"
+      ],
+      "id": "68d9559b"
+    },
+    {
+      "cell_type": "code",
+      "metadata": {},
+      "source": [
+        "weather_nj_selected.head(5)"
+      ],
+      "id": "8b3e9bae",
+      "execution_count": null,
+      "outputs": []
+    },
+    {
+      "cell_type": "markdown",
+      "metadata": {},
+      "source": [
+        "# County Analysis\n",
+        "\n",
+        "### What counties are pedestrian accidents more prevalent in?\n",
+        "\n",
+        "I wanted to examine all the counties in NJ and analyze which of them have the highest number of pedestrian accidents. Understanding the distribution of pedestrian accidents across counties is crucial for identifying areas with higher risk levels and potential hotspots. This insight could aid in implementing targeted road safety strategies and plans to mitigate pedestrian accidents. To visualize the high-risk areas for pedestrian accidents, I created a choropleth heatmap.\n"
+      ],
+      "id": "6d84da51"
+    },
+    {
+      "cell_type": "code",
+      "metadata": {},
+      "source": [
+        "# Filtering out the important columns for this question\n",
+        "accident_nj_peds = accident_nj[['ST_CASE', 'PEDS', 'RUR_URB', 'FUNC_SYS', 'COUNTYNAME','ROUTENAME','LATITUDE', 'LONGITUD', 'FATALS']]\n",
+        "# Filter only the pedestrian accidents from the dataset\n",
+        "pedestrian_accidents = accident_nj_peds[accident_nj_peds['PEDS'] > 0]\n",
+        "# Rename the column COUNTYNAME to COUNTY\n",
+        "pedestrian_accidents_df = pedestrian_accidents.rename(columns={'COUNTYNAME': 'COUNTY'})\n",
+        "# Removes everything after the parenthesis\n",
+        "pedestrian_accidents_df['COUNTY'] = pedestrian_accidents_df['COUNTY'].str.split('(').str[0].str.strip()\n",
+        "# Aggregate the accident counts by county\n",
+        "county_accident_counts = pedestrian_accidents_df.groupby('COUNTY')['PEDS'].sum().reset_index(name='Total_Accidents')\n",
+        "\n",
+        "# Load geospatial data for New Jersey counties\n",
+        "nj_counties = gpd.read_file(r'C:\\Users\\saiha\\OneDrive\\Desktop\\Data Science\\Capstone\\capstone\\data\\County_Boundaries_of_NJ\\County_Boundaries_of_NJ.shp')\n",
+        "\n",
+        "# Merge pedestrian accident data with geospatial data\n",
+        "merged_data = nj_counties.merge(county_accident_counts, on='COUNTY', how='left')\n",
+        "rename_county = accident_nj_peds.rename(columns={'COUNTYNAME': 'COUNTY'})\n",
+        "rename_county['COUNTY'] = rename_county['COUNTY'].str.split('(').str[0].str.strip()\n",
+        "accident_counts = rename_county.groupby('COUNTY')['FATALS'].sum().reset_index(name='Total_Accidents')\n",
+        "nj_counties = gpd.read_file(r'C:\\Users\\saiha\\OneDrive\\Desktop\\Data Science\\Capstone\\capstone\\data\\County_Boundaries_of_NJ\\County_Boundaries_of_NJ.shp')\n",
+        "merged_data_total = nj_counties.merge(accident_counts, on='COUNTY', how='left')\n",
+        "\n",
+        "# Used https://github.com/RomanDataLab/Data_science_analysis_realestate_BCN/blob/main/DS3_FIN_2%2B3.ipynb as reference for this part of the code\n",
+        "'''\n",
+        "This is the part I used for my data:\n",
+        "# Set the plot size to full size\n",
+        "fig, ax = plt.subplots(figsize=(15, 10))\n",
+        "totcol = 'Wistia'\n",
+        "# Plot gdfb with the \"AdvIn\" column\n",
+        "gdfb.plot(column=\"AdvIn\", cmap=totcol, ax=ax)\n",
+        "\n",
+        "# Add names of 'BARRI' in the centers of polygons\n",
+        "for idx, row in gdfb.iterrows():\n",
+        "    centroid = row['geometry'].centroid\n",
+        "    ax.text(centroid.x, centroid.y, row['BARRI'], ha='center', fontsize=6, color='gray')\n",
+        "'''\n",
+        "# Create choropleth map\n",
+        "fig, ax = plt.subplots(1, 1, figsize=(6, 6))\n",
+        "merged_data.plot(column='Total_Accidents', cmap='Purples', linewidth=0.8, ax=ax, edgecolor='0.8', legend=True)\n",
+        "\n",
+        "# Add county names\n",
+        "for idx, row in merged_data.iterrows():\n",
+        "    ax.text(row.geometry.centroid.x, row.geometry.centroid.y, row['COUNTY'], fontsize=4, ha='center', va='center', color='black')\n",
+        "\n",
+        "ax.set_title('Total Pedestrian Accidents by County')\n",
+        "\n",
+        "# Removes the axes\n",
+        "ax.set_axis_off()\n",
+        "\n",
+        "plt.show()"
+      ],
+      "id": "05859ca6",
+      "execution_count": null,
+      "outputs": []
+    },
+    {
+      "cell_type": "markdown",
+      "metadata": {},
+      "source": [
+        "::: callout-caution\n",
+        "The map displays all pedestrian accidents, not just fatal ones.\n",
+        ":::\n",
+        "\n",
+        "Looking at the map, we can see that Essex and Camden counties have high pedestrian accident counts. A few reasons for this could be that both counties are among the most densely populated in NJ, which could correlate with increased pedestrian activity and, consequently, pedestrian accidents. Newark, located in Essex County, and Camden City, situated in Camden County, are major urban areas with heavy pedestrian traffic as people walk to colleges, work, and other places. Densely populated urban areas with heavy traffic can increase the risk of pedestrian accidents.\n",
+        "\n",
+        "Salem and Hunterdon counties show no pedestrian accidents. This may be due to their lower population density compared to Essex and Camden counties. Additionally, they may have less busy streets and lower pedestrian activity. Another possibility for the absence of pedestrian accidents could be underreporting or non-reporting, as these counties are smaller jurisdictions.\n",
+        "\n",
+        "### What counties have the most number of fatal accidents?\n",
+        "\n",
+        "Examining fatal accidents at a county level is crucial because it enables us to visualize areas with high and low accident rates, providing insights into which counties should implement stricter policing measures for drivers exhibiting dangerous behaviors, including speeding, impaired driving, distracted driving, and failure to follow traffic rules. I created a choropleth heatmap to visualize the total fatal accidents by counties. This heatmap provides a clear overview of the distribution of fatal accidents across New Jersey, highlighting areas with higher concentrations of accidents.\n"
+      ],
+      "id": "21a8a58d"
+    },
+    {
+      "cell_type": "code",
+      "metadata": {},
+      "source": [
+        "# Used https://github.com/RomanDataLab/Data_science_analysis_realestate_BCN/blob/main/DS3_FIN_2%2B3.ipynb as reference for this part of the code\n",
+        "'''\n",
+        "This is the part I used for my data:\n",
+        "# Set the plot size to full size\n",
+        "fig, ax = plt.subplots(figsize=(15, 10))\n",
+        "totcol = 'Wistia'\n",
+        "# Plot gdfb with the \"AdvIn\" column\n",
+        "gdfb.plot(column=\"AdvIn\", cmap=totcol, ax=ax)\n",
+        "\n",
+        "# Add names of 'BARRI' in the centers of polygons\n",
+        "for idx, row in gdfb.iterrows():\n",
+        "    centroid = row['geometry'].centroid\n",
+        "    ax.text(centroid.x, centroid.y, row['BARRI'], ha='center', fontsize=6, color='gray')\n",
+        "'''\n",
+        "# Create choropleth map for total fatal accidents\n",
+        "fig, ax = plt.subplots(1, 1, figsize=(6, 6))\n",
+        "merged_data_total.plot(column='Total_Accidents', cmap='Purples', linewidth=0.8, ax=ax, edgecolor='0.8', legend=True)\n",
+        "\n",
+        "# Add county names\n",
+        "for idx, row in merged_data.iterrows():\n",
+        "    ax.text(row.geometry.centroid.x, row.geometry.centroid.y, row['COUNTY'], fontsize=4, ha='center', va='center', color='black')\n",
+        "\n",
+        "# Removes the axes\n",
+        "ax.set_axis_off()\n",
+        "ax.set_title('Total Fatal Accidents by County')\n",
+        "\n",
+        "#plt.savefig('choropleth_map.png', dpi=800, bbox_inches='tight')\n",
+        "\n",
+        "plt.show()"
+      ],
+      "id": "59d74779",
+      "execution_count": null,
+      "outputs": []
+    },
+    {
+      "cell_type": "markdown",
+      "metadata": {},
+      "source": [
+        "The heatmap once again highlights Essex and Camden counties as having the highest number of fatal accidents in NJ, includes both pedestrian and vehicle accident deaths. This trend may be due to the population density in these counties and the prevalence of reckless driving behaviors among drivers. Factors such as speeding, distracted driving, and driving under the influence of alcohol and drugs likely contribute to the high number of fatal accidents observed in these areas.\n",
+        "\n",
+        "# Vehicle Analysis\n",
+        "\n",
+        "### What vehicle make has the most and least number of fatal accidents?\n",
+        "\n",
+        "When shopping for a car, one important factor people consider is the safety and reputation of the vehicle. For many, the brand name carries significant weight and influences their purchasing decisions. Understanding how different vehicle brands perform in terms of fatal accidents is crucial in helping consumers make informed choices. I've created a bar graph to visualize the performance of various vehicle brands in fatal accidents. This information could have a significant impact on the decisions of individuals looking to buy a car, as it provides insight into the safety records of different brands.\n"
+      ],
+      "id": "e3cbf745"
+    },
+    {
+      "cell_type": "code",
+      "metadata": {},
+      "source": [
+        "# Merge the accident and vehicle data\n",
+        "accident_vehicle_merged = pd.merge(accident_nj_selected, vehicle_nj_selected, on='ST_CASE', how='inner')\n",
+        "#Filter the fatalities greater than 1\n",
+        "fatal_accidents_df = accident_vehicle_merged[accident_vehicle_merged['FATALS'] > 0]\n",
+        "\n",
+        "# Group by Vehicle Make and Fatals\n",
+        "grouped_df = fatal_accidents_df.groupby('MAKENAME')['FATALS'].sum().reset_index()\n",
+        "grouped_df = grouped_df.sort_values(by='FATALS', ascending=False)\n",
+        "\n",
+        "# Visualize with Stacked Bar Graph\n",
+        "plt.figure(figsize=(12,10))\n",
+        "plt.barh(grouped_df['MAKENAME'], grouped_df['FATALS'], color='purple', label='Total Fatal Accidents')\n",
+        "plt.xlabel('Number of Fatal Accidents')\n",
+        "plt.ylabel('Vahicle Make')\n",
+        "plt.title('Total Fatal Accidents by Vehicle Make')\n",
+        "plt.xticks(rotation=90)\n",
+        "plt.legend()\n",
+        "plt.tight_layout()\n",
+        "plt.show()"
+      ],
+      "id": "a9f33bc2",
+      "execution_count": null,
+      "outputs": []
+    },
+    {
+      "cell_type": "markdown",
+      "metadata": {},
+      "source": [
+        "According to the analysis, Honda, Ford, and Toyota have the highest number of fatal accidents, while GMC and Jaguar have the lowest. These results may be attributed to several factors, but one possible explanation is the global popularity and widespread presence of Honda, Ford, and Toyota vehicles. With these brands being highly recognizable and commonly seen on roads worldwide, the increased number of vehicles in circulation may contribute to a higher probability of accidents involving them.\n",
+        "\n",
+        "### What vehicle model year has the highest and lowest fatal accidents?\n",
+        "\n",
+        "I also wanted to explore the impact of vehicle model year on fatal accidents, as I had a hunch that newer cars might be safer due to advancements in technology and safety features. By analyzing fatal accident data by model year, I wanted to see if there is a correlation between the age of a vehicle and its involvement in fatal accidents. If newer model years are associated with fewer fatal accidents, it suggests that investing in a newer vehicle with updated safety features may contribute to enhanced road safety.\n"
+      ],
+      "id": "d7eedad6"
+    },
+    {
+      "cell_type": "code",
+      "metadata": {},
+      "source": [
+        "# Filter the years to include only those in the range of 1983 to 2021\n",
+        "fatal_accidents_df = fatal_accidents_df[fatal_accidents_df['MOD_YEAR'].between(1983, 2021)]\n",
+        "\n",
+        "# Group by Vehicle Make and Fatals\n",
+        "modyear_grouped_df = fatal_accidents_df.groupby('MOD_YEAR')['FATALS'].sum().reset_index()\n",
+        "\n",
+        "# Create an interactive bar graph using Plotly\n",
+        "fig = go.Figure(data=[go.Bar(x=modyear_grouped_df['MOD_YEAR'], y=modyear_grouped_df['FATALS'], \n",
+        "                             marker_color='#800080')])\n",
+        "fig.update_layout(title='Total Fatal Accidents by Model Year',\n",
+        "                  xaxis_title='Model Year',\n",
+        "                  yaxis_title='Number of Fatal Accidents',\n",
+        "                  xaxis_tickangle=-45)\n",
+        "fig.show()"
+      ],
+      "id": "75b06511",
+      "execution_count": null,
+      "outputs": []
+    },
+    {
+      "cell_type": "markdown",
+      "metadata": {},
+      "source": [
+        "To my surprise, the analysis revealed that cars manufactured in 2015 and 2017 had the highest number of fatal accidents, while those produced before the 2000s had lower accident rates. One possible explanation is the prevalence of vehicles on the road from different model years. Cars made before the 2000s may comprise a smaller proportion of the total vehicle population, leading to fewer fatal accidents involving these older vehicles. On the other hand, the higher number of cars manufactured in 2015 and 2017 on the road may contribute to their elevated accident rates.\n",
+        "\n",
+        "# Road Type Analysis\n",
+        "\n",
+        "### Are accidents more common in urban or rural areas, and how does road type affect accident rates?\n",
+        "\n",
+        "![A Photo By Alex Cecchini](https://streetsmn.s3.us-east-2.amazonaws.com/wp-content/uploads/2013/12/Road__Functional_Classification-500x414.png)\n",
+        "\n",
+        "Building upon the insights gained from the county analysis, which revealed higher fatal accident rates in counties with more urbanized areas, I wanted to explore whether urban areas indeed experience more accidents compared to rural areas. Additionally, I wanted to investigate how road types contribute to these differences in accident rates across urban and rural settings. I created a grouped bar chart comparing the number of fatal accidents across different road types in both urban and rural areas to examine the relationship.\n"
+      ],
+      "id": "3b36aa4f"
+    },
+    {
+      "cell_type": "code",
+      "metadata": {},
+      "source": [
+        "# Filter data to only include values with 1 and 2\n",
+        "filtered_data = accident_nj[accident_nj['RUR_URB'].isin([1, 2])]\n",
+        "\n",
+        "# Rename \"Principal Arterial-Other Freeways and Expressways\" to \"Other Freeways\"\n",
+        "filtered_data['FUNC_SYSNAME'] = filtered_data['FUNC_SYSNAME'].replace({'Principal Arterial - Other Freeways and Expressways': 'Other Freeways'})\n",
+        "\n",
+        "# Rename \"Principal Arterial-Other\" to \"Principal Arterial\"\n",
+        "filtered_data['FUNC_SYSNAME'] = filtered_data['FUNC_SYSNAME'].replace({'Principal Arterial - Other': 'Principal Arterial'})\n",
+        "\n",
+        "# Group the data by urban/rural and road type and compute the total accidents for each group\n",
+        "func_ru_grouped = filtered_data.groupby(['FUNC_SYSNAME', 'RUR_URB']).size().unstack(fill_value=0)\n",
+        "\n",
+        "# Reset index\n",
+        "func_ru_grouped = func_ru_grouped.reset_index()\n",
+        "\n",
+        "# Melt the dataframe\n",
+        "melted_data = func_ru_grouped.melt(id_vars='FUNC_SYSNAME', var_name='Urban/Rural', value_name='Number of Accidents')\n",
+        "\n",
+        "# Create an interactive grouped bar plot using plotly express\n",
+        "fig = px.bar(melted_data, y='FUNC_SYSNAME', x='Number of Accidents', color='Urban/Rural',\n",
+        "             color_discrete_map={'1': '#800080', '2': '#800080'}, \n",
+        "             labels={'FUNC_SYSNAME': 'Road Types', 'Number of Accidents': 'Number of Accidents'},\n",
+        "             barmode='group') \n",
+        "\n",
+        "fig.update_xaxes(categoryorder=\"total ascending\")\n",
+        "\n",
+        "# Update legend title\n",
+        "fig.update_layout(legend_title_text='Urban/Rural')\n",
+        "\n",
+        "# Rename legend labels\n",
+        "fig.for_each_trace(lambda trace: trace.update(name='Urban' if trace.name == '1' else 'Rural'))\n",
+        "\n",
+        "\n",
+        "fig.show()"
+      ],
+      "id": "6d61268c",
+      "execution_count": null,
+      "outputs": []
+    },
+    {
+      "cell_type": "markdown",
+      "metadata": {},
+      "source": [
+        "Through my analysis, I found that rural areas actually had a higher number of accidents compared to urban areas. I was curious to understand why, so after researching this topic, I concluded that rural areas have less traffic and higher speed limits, which may lead drivers to be more inclined to speed up on these roads, contributing to a higher incidence of accidents. For the road types, Principal Arterial and Minor Arterial roads have the highest accidents in rural areas, while Local and Major Collector roads have the highest accidents in urban areas. This could be because Principal Arterial and Minor Arterial roads in rural areas are typically designed for higher speeds and longer-distance travel, but they may lack safety features such as medians, guardrails, and lighting. In urban areas, Local and Major Collector roads typically have a higher density of intersections and junctions compared to arterial roads. The increased interaction points between vehicles, pedestrians, and cyclists on urban collector roads can increase the risk of accidents, particularly at intersections where conflicting movements occur.\n",
+        "\n",
+        "# Demographic Analysis\n",
+        "\n",
+        "### What age group are the number of accidents most and least prevalent in?\n",
+        "\n",
+        "It is crucial to look at demographics such as age and sex of the people involved in accidents. Age plays a significant role in determining whether targeted interventions are needed for drivers within certain age groups or for passengers involved in accidents. By identifying which age groups have the highest number of accidents, public health officials can focus more on programs aimed at preventing injuries, providing emergency medical assistance, and offering trauma care. I created a histogram displaying the frequencies of age groups present in the dataset.\n"
+      ],
+      "id": "d8b11709"
+    },
+    {
+      "cell_type": "code",
+      "metadata": {},
+      "source": [
+        "# Choosing ages of people above the age of 98\n",
+        "age_drop = person_nj_selected['AGE'] <= 97\n",
+        "Age = person_nj_selected[age_drop]\n",
+        "# Historam for Age\n",
+        "plt.figure(figsize=(10, 6))\n",
+        "plt.hist(Age['AGE'], bins=10, edgecolor='black', alpha=0.7, color='purple')\n",
+        "plt.title('Age Distribution of Accidents')\n",
+        "plt.xlabel('Age')\n",
+        "plt.ylabel('Number of Accidents')\n",
+        "plt.show()"
+      ],
+      "id": "a6381ba5",
+      "execution_count": null,
+      "outputs": []
+    },
+    {
+      "cell_type": "markdown",
+      "metadata": {},
+      "source": [
+        "::: callout-caution\n",
+        "This graph doesn't represent just the number of fatal accidents; it considers the overall number of accidents, including instances where no fatalities occurred.\n",
+        ":::\n",
+        "\n",
+        "The age group with the highest number of accidents falls between 20 and 30 years old. This could be due to several factors. Firstly, individuals in their early 20s often start driving more frequently for college or work, and their lack of experience behind the wheel may increase the likelihood of accidents. Additionally, as age increases, there is a decrease in the number of accidents. This trend could be due to factors such as drivers becoming more experienced over time or fewer individuals in older age groups engaging in activities that involve driving.\n",
+        "\n",
+        "### How does driver impairment relate to fatal accidents differently for male and female drivers?\n",
+        "\n",
+        "I wanted to explore two other interesting factors which are driver impairment while driving and the sex of the driver. Examining driving impairments is crucial due to the numerous warnings against driving under the influence. Whether emphasized in driver education programs or through road signs, individuals are consistently reminded to refrain from driving when impaired. This highlights the significance of understanding the impact of driving impairments on road safety. Analyzing the distribution of driving impairments among both males and females provides valuable insights into gender-specific driving behaviors. Understanding these patterns can inform policy-making processes aimed at enhancing road safety and addressing gender-specific concerns. By looking at how driver impairments vary between male and female drivers, we can identify patterns and risk factors that contribute to road accidents.\n",
+        "\n",
+        "::: callout-caution\n",
+        "The driver impairments are self-reported by the drivers involved in an accident.\n",
+        ":::\n",
+        "\n",
+        "Before beginning the analysis of driving impairment and its correlation with the number of fatal accidents, I decided to examine the distribution of both male and female drivers involved in these accidents.\n"
+      ],
+      "id": "2acef3eb"
+    },
+    {
+      "cell_type": "code",
+      "metadata": {},
+      "source": [
+        "# Merge the accident and drimapir tables on ST_CASE\n",
+        "accident_impair = pd.merge(drimpair_nj_selected, accident_nj_selected, on='ST_CASE', how='inner')\n",
+        "\n",
+        "# Merge the person and accident_imapir tables\n",
+        "sex_accident_impair = pd.merge(accident_impair, person_df[['ST_CASE', 'SEX']], on='ST_CASE', how='inner')\n",
+        "\n",
+        "# Filter out rows where SEX is values other than 1 and 2\n",
+        "sex_accident_impair = sex_accident_impair[sex_accident_impair['SEX'].isin([1, 2])]\n",
+        "\n",
+        "# Rename values for sex\n",
+        "sex_accident_impair['SEX'] = sex_accident_impair['SEX'].replace({1: 'Male', 2: 'Female'})\n",
+        "\n",
+        "# Group by gender and count the number of fatal accidents for each gender\n",
+        "gender_counts = sex_accident_impair['SEX'].value_counts()\n",
+        "\n",
+        "# Set colors for males and females\n",
+        "colors = {'Male': 'purple', 'Female': 'orange'}\n",
+        "\n",
+        "# Create pie chart\n",
+        "plt.figure(figsize=(8, 6))\n",
+        "plt.pie(gender_counts, labels=['', ''], autopct='%1.1f%%', startangle=140, colors=[colors[gender] for gender in gender_counts.index])\n",
+        "plt.title('Fatal Accidents by Gender')\n",
+        "\n",
+        "# legend\n",
+        "plt.legend(labels=['Male', 'Female'], loc='upper right')\n",
+        "plt.axis('equal')\n",
+        "plt.show()"
+      ],
+      "id": "bf21f615",
+      "execution_count": null,
+      "outputs": []
+    },
+    {
+      "cell_type": "markdown",
+      "metadata": {},
+      "source": [
+        "Male drivers were involved in 67.8% of the fatal accidents and female drivers were involved in 32.2%. This gender disparity in fatal accidents could help policymakers make more targetted driving policies/regulations. I want to further examine sex with the driving impairments of the drivers who were involved in fatal car accidents.\n"
+      ],
+      "id": "950f9066"
+    },
+    {
+      "cell_type": "code",
+      "metadata": {},
+      "source": [
+        "# Group by driver impairment and sex, then calculate total fatalities\n",
+        "group_sex_impair = sex_accident_impair.groupby(['DRIMPAIRNAME', 'SEX'])['FATALS'].sum().unstack()\n",
+        "\n",
+        "# Sort the DataFrame by the sum of fatalities in ascending order\n",
+        "group_sex_impair_sorted = group_sex_impair.sum(axis=1).sort_values().index\n",
+        "group_sex_impair = group_sex_impair.loc[group_sex_impair_sorted]\n",
+        "\n",
+        "# Make data frame into plotly\n",
+        "data = []\n",
+        "colors = {'Male': 'rgb(148,0,211)', 'Female': 'rgb(255,140,0)'}\n",
+        "for col in group_sex_impair.columns:\n",
+        "    data.append(go.Bar(name=col, x=group_sex_impair.index, y=group_sex_impair[col], marker=dict(color=colors[col])))\n",
+        "\n",
+        "# layout for the plot\n",
+        "layout = go.Layout(\n",
+        "    title='Fatalities by Driver Impairment and Sex',\n",
+        "    xaxis=dict(title='Driver Impairment'),\n",
+        "    yaxis=dict(title='Total Fatalities'),\n",
+        "    barmode='stack'\n",
+        ")\n",
+        "\n",
+        "# Create the figure\n",
+        "fig = go.Figure(data=data, layout=layout)\n",
+        "\n",
+        "# Show the interactive plot\n",
+        "fig.show()"
+      ],
+      "id": "c1bab56a",
+      "execution_count": null,
+      "outputs": []
+    },
+    {
+      "cell_type": "markdown",
+      "metadata": {},
+      "source": [
+        "The graph shows that the largest proportion of fatal accidents were reported by drivers who claimed no impairment or were uncertain about their impairment status. Following closely behind were incidents involving drivers under the influence of alcohol, drugs, or medication, which accounted for a significant number of fatalities. There were fewer instances where drivers reported other physical impairments, physical fatigue, or falling asleep at the wheel. This informs us that it is important to take initiatives when it comes to addressing alcohol and drug related impairment.\n",
+        "\n",
+        "::: callout-warning\n",
+        "One important thing to note is that since these are self-reported, there might be potential biases in their response since drivers might not provide accurate information. The number of drivers reporting themselves as normal could be because they don't want to disclose their impairment at the time of the accident.\n",
+        ":::\n",
+        "\n",
+        "Each bar represents drivers impairment and the bar is divided between males and females. Across all reported impairments, males accounted for a higher number of fatal accidents compared to females. This finding was unexpected, as while the general trend suggests that males accounted for a higher number of fatal accidents, there could have been at least one scenario where individual impairment categories had more females than males.\n",
+        "\n",
+        "# Dashboard\n",
+        "\n",
+        "![A Photo By National Centers for Environmental Information](https://www.ncei.noaa.gov/sites/g/files/anmtlf171/files/styles/max_1300x1300/public/sites/default/files/collage-of-weather-phenomena_1200x480.png?itok%3DPEeyMVbC)\n",
+        "\n",
+        "There are numerous factors to consider when analyzing the causes of fatal accidents. To explore these factors comprehensively, I developed a dashboard using Dash, a Python framework for building web applications. The dashboard incorporates variables such as weather conditions, day of the week, month, and time of day. These factors are believed to influence traffic patterns and the occurrence of fatal accidents on the road.\n",
+        "\n",
+        "[Open Dashboard](http://127.0.0.1:8050/)\n",
+        "\n",
+        "::: {.callout-tip collapse=\"false\"}\n",
+        "-   There is a dropdown option on the top of the dashboard where you can choose your desired variable.\n",
+        "-   All graphs are interactive\n",
+        "    -   You can scroll your cursor on the specific areas on the graphs\n",
+        "    -   You can take a look at each specific area of the graph by zooming into it\n",
+        ":::\n",
+        "\n",
+        "-   WEATHER: A higher number of fatal accidents occur when the weather is clear, while the lowest number of accidents occurs during freezing rain/drizzle and snow. This surprised me because I expected there to be more accidents on the road in adverse weather conditions, such as rain and snow. Two possible reasons for these results could be that I did not normalize my weather data, meaning that the observed pattern of fatal accidents might be influenced by the frequency of clear days in 2021, and vice versa. Another reason could be that when the weather is inclement, drivers tend to exercise more caution and drive slower, whereas they may be more reckless in clear weather. Additionally, traffic tends to slow down on roads during bad weather, as people drive at reduced speeds, decreasing the likelihood of fatal accidents.\n",
+        "\n",
+        "-   Day of the week: Initially, this seemed counterintuitive, as one might expect more traffic during weekdays due to school, college, and work commutes. However, weekends often see an increase in recreational activities, travel, and events, resulting in higher volumes of vehicles on the roads. Another factor to consider is the possibility of social gatherings and parties on weekends, where alcohol consumption may be more prevalent. This could lead to reckless driving behavior and an elevated risk of accidents on the roads.\n",
+        "\n",
+        "-   Month: In 2021, October recorded the highest number of fatal accidents, while February had the lowest. This correlation aligns with the findings of the weather pie chart, where snowy weather was associated with fewer fatal accidents. Given that February typically experiences more snowfall, this could explain the lower accident rates during this month. Additionally, February 2021 witnessed record-breaking snowfall, with 36.9 inches recorded in seven northern counties, making it the snowiest February in 126 years. The substantial snowfall likely resulted in reduced road travel and contributed to the decrease in fatal accidents during that month [(Scott Fallon)](https://www.northjersey.com/story/news/environment/2021/03/10/north-jersey-february-snowiest-month-record-2021-winter-storm-nj/6938192002/).\n",
+        "\n",
+        "-   Hour of the day: Fatal accidents show an uptick between 8pm to 9pm, with the peak occurring around 9pm. This pattern corresponds to the first rush hour on roads, typically between 5pm to 7pm, when many individuals finish work and traffic density increases, raising the likelihood of accidents. However, there's also a secondary rush hour later in the night, usually after 8 pm, when additional individuals may finish work. During this time, various factors may contribute to a higher accident rate compared to the earlier rush hour. These factors include driver fatigue or reduced visibility as darkness falls. The combination of increased traffic density and these factors may explain the rise in fatal accidents around 9pm [(Are Car Accidents at Night More Common?)](https://finzfirm.com/blog/are-car-accidents-at-night-more-common/#:~:text=Fatigue%20often%20sets%20in%20during,at%20night%20significantly%20more%20hazardous.). On the flip side, the least number of fatal accidents occurs at 10am. This could be due to the same reason: the morning rush hour might have diminished by 10am, resulting in fewer cars on the road and therefore fewer possibilities for crashes.\n",
+        "\n",
+        "# Future Work\n",
+        "\n",
+        "In the future, my primary goal is to develop a predictive model that estimates the probability of a vehicle being involved in a fatal car accident. This approach is interesting because we have gained knowledge about the individual factors contributing to fatal car accidents. By combining these factors, the model aims to offer a comprehensive understanding of accident risk, encouraging drivers to exercise greater caution and make informed decisions on the road.\n",
+        "\n",
+        "Furthermore, I plan to include additional variables in the analysis, encompassing aspects such as vehicle safety features like the utilization of airbags and seat belts, as well as road conditions such as the presence of potholes and insufficient lighting. These factors, which were not explored in the current analysis due to constraints such as time or data availability, are essential components in understanding the complex dynamics of road safety. By including them in future analyses, I hope to refine the predictive accuracy of the model and provide deeper insights into the factors influencing accident outcomes.\n",
+        "\n",
+        "::: {.callout-tip title=\"Citations\" collapse=\"true\"}\n",
+        "[@Cecchini] [@Clark] [@NHTSA] [@Solano] [@Fallon] [@Finz] [@NCEI] [@github]\n",
+        ":::"
+      ],
+      "id": "baa314ec"
+    }
+  ],
+  "metadata": {
+    "kernelspec": {
+      "name": "python3",
+      "language": "python",
+      "display_name": "Python 3 (ipykernel)",
+      "path": "/Users/tariq/Documents/capstone/.venv/share/jupyter/kernels/python3"
+    }
+  },
+  "nbformat": 4,
+  "nbformat_minor": 5
+}

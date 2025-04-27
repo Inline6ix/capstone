@@ -7,7 +7,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
 
-<title>Generating negative sample</title>
+<title>Data import and Cleaning</title>
 <style>
 code{white-space: pre-wrap;}
 span.smallcaps{font-variant: small-caps;}
@@ -57,7 +57,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </style>
 
 
-<script src="capstone_files/libs/clipboard/clipboard.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.5.1/jquery.min.js" integrity="sha512-bLT0Qm9VnAYZDflyKcBaQ2gg0hSYNQrJ8RilYldYQ1FxQYoCLtUjuuRuZo+fjqhx/qtq/1itJ0C2ejDxltZVFg==" crossorigin="anonymous"></script><script src="capstone_files/libs/clipboard/clipboard.min.js"></script>
 <script src="capstone_files/libs/quarto-html/quarto.js"></script>
 <script src="capstone_files/libs/quarto-html/popper.min.js"></script>
 <script src="capstone_files/libs/quarto-html/tippy.umd.min.js"></script>
@@ -67,6 +67,9 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <script src="capstone_files/libs/bootstrap/bootstrap.min.js"></script>
 <link href="capstone_files/libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
 <link href="capstone_files/libs/bootstrap/bootstrap-973236bd072d72a04ee9cd82dcc9cb29.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.6/require.min.js" integrity="sha512-c3Nl8+7g4LMSTdrm621y7kf9v3SDPnhxLNhcjFJbKECVnmZHTdo+IRO05sNLTH/D3vA6u1X32ehoLC7WFVdheg==" crossorigin="anonymous"></script>
+
+<script type="application/javascript">define('jquery', [],function() {return window.jQuery;})</script>
 
 
 </head>
@@ -79,7 +82,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 
 <header id="title-block-header" class="quarto-title-block default">
 <div class="quarto-title">
-<h1 class="title">Generating negative sample</h1>
+<h1 class="title">Data import and Cleaning</h1>
 </div>
 
 
@@ -96,239 +99,1360 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </header>
 
 
-<div id="cell-1" class="cell" data-execution_count="295">
+<div id="cell-2" class="cell" data-execution_count="69">
 <div class="sourceCode cell-code" id="cb1"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> pandas <span class="im">as</span> pd</span>
 <span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> collections <span class="im">import</span> Counter</span>
 <span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> matplotlib.pyplot <span class="im">as</span> plt</span>
-<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a>epitopes <span class="op">=</span> pd.read_csv(<span class="vs">r'/Users/tariq/Documents/capstone/data/epitope_full_seq.csv'</span>)</span>
-<span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a>assays <span class="op">=</span> pd.read_csv(<span class="vs">r'/Users/tariq/Documents/capstone/data/tcell_table_export_1740279970.csv'</span>)</span>
-<span id="cb1-7"><a href="#cb1-7" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb1-8"><a href="#cb1-8" aria-hidden="true" tabindex="-1"></a><span class="co"># make all the column names snake case</span></span>
-<span id="cb1-9"><a href="#cb1-9" aria-hidden="true" tabindex="-1"></a>epitopes.columns <span class="op">=</span> epitopes.columns.<span class="bu">str</span>.lower()</span>
-<span id="cb1-10"><a href="#cb1-10" aria-hidden="true" tabindex="-1"></a>assays.columns <span class="op">=</span> assays.columns.<span class="bu">str</span>.lower()</span>
-<span id="cb1-11"><a href="#cb1-11" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb1-12"><a href="#cb1-12" aria-hidden="true" tabindex="-1"></a><span class="co"># remove spaces from column names</span></span>
-<span id="cb1-13"><a href="#cb1-13" aria-hidden="true" tabindex="-1"></a>epitopes.columns <span class="op">=</span> epitopes.columns.<span class="bu">str</span>.replace(<span class="st">' '</span>, <span class="st">''</span>)</span>
-<span id="cb1-14"><a href="#cb1-14" aria-hidden="true" tabindex="-1"></a>epitopes.columns <span class="op">=</span> epitopes.columns.<span class="bu">str</span>.replace(<span class="st">'-'</span>, <span class="st">' '</span>)</span>
-<span id="cb1-15"><a href="#cb1-15" aria-hidden="true" tabindex="-1"></a>epitopes.columns <span class="op">=</span> epitopes.columns.<span class="bu">str</span>.replace(<span class="st">' '</span>, <span class="st">'_'</span>)</span>
+<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> seaborn <span class="im">as</span> sns</span>
+<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> numpy <span class="im">as</span> np</span>
+<span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> Bio</span>
+<span id="cb1-7"><a href="#cb1-7" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> sklearn.ensemble <span class="im">import</span> RandomForestClassifier</span>
+<span id="cb1-8"><a href="#cb1-8" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> sklearn.metrics <span class="im">import</span> classification_report, accuracy_score, confusion_matrix, roc_auc_score, roc_curve</span>
+<span id="cb1-9"><a href="#cb1-9" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> Bio.SeqUtils.ProtParam <span class="im">import</span> ProteinAnalysis</span>
+<span id="cb1-10"><a href="#cb1-10" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> requests</span>
+<span id="cb1-11"><a href="#cb1-11" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> io <span class="im">import</span> StringIO</span>
+<span id="cb1-12"><a href="#cb1-12" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> Bio <span class="im">import</span> SeqIO</span>
+<span id="cb1-13"><a href="#cb1-13" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-14"><a href="#cb1-14" aria-hidden="true" tabindex="-1"></a>epitopes <span class="op">=</span> pd.read_csv(<span class="vs">r'/Users/tariq/Documents/capstone/data/epitope_table_export_1740279588.csv'</span>)</span>
+<span id="cb1-15"><a href="#cb1-15" aria-hidden="true" tabindex="-1"></a>assays <span class="op">=</span> pd.read_csv(<span class="vs">r'/Users/tariq/Documents/capstone/data/tcell_table_export_1740279970.csv'</span>)</span>
 <span id="cb1-16"><a href="#cb1-16" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb1-17"><a href="#cb1-17" aria-hidden="true" tabindex="-1"></a>assays.columns <span class="op">=</span> assays.columns.<span class="bu">str</span>.replace(<span class="st">' '</span>, <span class="st">''</span>)</span>
-<span id="cb1-18"><a href="#cb1-18" aria-hidden="true" tabindex="-1"></a>assays.columns <span class="op">=</span> assays.columns.<span class="bu">str</span>.replace(<span class="st">'-'</span>, <span class="st">' '</span>)</span>
-<span id="cb1-19"><a href="#cb1-19" aria-hidden="true" tabindex="-1"></a>assays.columns <span class="op">=</span> assays.columns.<span class="bu">str</span>.replace(<span class="st">' '</span>, <span class="st">'_'</span>)</span>
-<span id="cb1-20"><a href="#cb1-20" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb1-21"><a href="#cb1-21" aria-hidden="true" tabindex="-1"></a>epitopes <span class="op">=</span> epitopes.<span class="bu">filter</span>([<span class="st">'epitope_objecttype'</span>, <span class="st">'epitope_name'</span>, <span class="st">'epitope_startingposition'</span>, <span class="st">'epitope_endingposition'</span>, <span class="st">'fullsequence'</span>])</span>
-<span id="cb1-22"><a href="#cb1-22" aria-hidden="true" tabindex="-1"></a>assays <span class="op">=</span> assays.<span class="bu">filter</span>([<span class="st">'epitope_name'</span>, <span class="st">'epitope_moluculeparent'</span>, <span class="st">'host_name'</span>, <span class="st">'host_mhcpresent'</span>, <span class="st">'assay_method'</span>,<span class="st">'assay_responsemeasured'</span>, <span class="st">'assay_qualitativemeasurement'</span>, <span class="st">'mhcrestriction_name'</span>, <span class="st">'mhcrestriction_class'</span>, <span class="st">'assayantigen_name'</span>])</span>
-<span id="cb1-23"><a href="#cb1-23" aria-hidden="true" tabindex="-1"></a>epitopes[<span class="st">'epitope_length'</span>] <span class="op">=</span> epitopes[<span class="st">'epitope_name'</span>].<span class="bu">str</span>.<span class="bu">len</span>()</span>
-<span id="cb1-24"><a href="#cb1-24" aria-hidden="true" tabindex="-1"></a>epitopes[<span class="st">'fullsequence_length'</span>] <span class="op">=</span> epitopes[<span class="st">'fullsequence'</span>].<span class="bu">str</span>.<span class="bu">len</span>()</span>
-<span id="cb1-25"><a href="#cb1-25" aria-hidden="true" tabindex="-1"></a>epitopes[<span class="st">'fullsequence'</span>].fillna(<span class="st">""</span>, inplace<span class="op">=</span><span class="va">True</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb1-17"><a href="#cb1-17" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> fetch_full_sequence(url):</span>
+<span id="cb1-18"><a href="#cb1-18" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span> pd.notna(url):  <span class="co"># Check if the URL is not NaN</span></span>
+<span id="cb1-19"><a href="#cb1-19" aria-hidden="true" tabindex="-1"></a>        url <span class="op">=</span> <span class="ss">f'</span><span class="sc">{</span>url<span class="sc">}</span><span class="ss">.fasta'</span></span>
+<span id="cb1-20"><a href="#cb1-20" aria-hidden="true" tabindex="-1"></a>        <span class="cf">try</span>:</span>
+<span id="cb1-21"><a href="#cb1-21" aria-hidden="true" tabindex="-1"></a>            response <span class="op">=</span> requests.get(url)</span>
+<span id="cb1-22"><a href="#cb1-22" aria-hidden="true" tabindex="-1"></a>            <span class="cf">if</span> response.status_code <span class="op">==</span> <span class="dv">200</span>:</span>
+<span id="cb1-23"><a href="#cb1-23" aria-hidden="true" tabindex="-1"></a>                fasta_io <span class="op">=</span> StringIO(response.text)</span>
+<span id="cb1-24"><a href="#cb1-24" aria-hidden="true" tabindex="-1"></a>                records <span class="op">=</span> <span class="bu">list</span>(SeqIO.parse(fasta_io, <span class="st">"fasta"</span>))</span>
+<span id="cb1-25"><a href="#cb1-25" aria-hidden="true" tabindex="-1"></a>                <span class="cf">if</span> records:  <span class="co"># Check if there are any records</span></span>
+<span id="cb1-26"><a href="#cb1-26" aria-hidden="true" tabindex="-1"></a>                    <span class="cf">return</span> <span class="bu">str</span>(records[<span class="dv">0</span>].seq)</span>
+<span id="cb1-27"><a href="#cb1-27" aria-hidden="true" tabindex="-1"></a>                <span class="cf">else</span>:</span>
+<span id="cb1-28"><a href="#cb1-28" aria-hidden="true" tabindex="-1"></a>                    <span class="bu">print</span>(<span class="st">"No records found in the FASTA file."</span>)</span>
+<span id="cb1-29"><a href="#cb1-29" aria-hidden="true" tabindex="-1"></a>        <span class="cf">except</span> requests.exceptions.RequestException <span class="im">as</span> e:</span>
+<span id="cb1-30"><a href="#cb1-30" aria-hidden="true" tabindex="-1"></a>            <span class="bu">print</span>(<span class="ss">f"Request failed: </span><span class="sc">{</span>e<span class="sc">}</span><span class="ss">"</span>)</span>
+<span id="cb1-31"><a href="#cb1-31" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> <span class="va">None</span></span>
+<span id="cb1-32"><a href="#cb1-32" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-33"><a href="#cb1-33" aria-hidden="true" tabindex="-1"></a><span class="co">#epitopes['Full Sequence'] = epitopes['Epitope - Molecule Parent IRI'].apply(fetch_full_sequence)</span></span>
+<span id="cb1-34"><a href="#cb1-34" aria-hidden="true" tabindex="-1"></a>epitopes <span class="op">=</span> pd.read_csv(<span class="vs">r'/Users/tariq/Documents/capstone/data/epitope_full_seq.csv'</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stderr">
-<pre><code>/var/folders/5j/4p7c5_1x2fg18bk0nf74_hg40000gn/T/ipykernel_74420/378139320.py:6: DtypeWarning: Columns (13,14,45,46,47,48,49,54,55,56,57,60,65,66,67,68,69,70,71,72,73,74,75,76,77,78,79,82,83,84,85,86,87,88,89,90,91,92,93,94,95,96,97,98,99,100,101,102,105,106,107,108,109,110,111,112,113,115,120,123,128,132,134,135,141,142,143,144,145,149,152) have mixed types. Specify dtype option on import or set low_memory=False.
+<pre><code>/var/folders/5j/4p7c5_1x2fg18bk0nf74_hg40000gn/T/ipykernel_79130/1845155022.py:15: DtypeWarning: Columns (13,14,45,46,47,48,49,54,55,56,57,60,65,66,67,68,69,70,71,72,73,74,75,76,77,78,79,82,83,84,85,86,87,88,89,90,91,92,93,94,95,96,97,98,99,100,101,102,105,106,107,108,109,110,111,112,113,115,120,123,128,132,134,135,141,142,143,144,145,149,152) have mixed types. Specify dtype option on import or set low_memory=False.
   assays = pd.read_csv(r'/Users/tariq/Documents/capstone/data/tcell_table_export_1740279970.csv')</code></pre>
 </div>
 </div>
-<div id="cell-2" class="cell" data-execution_count="296">
-<div class="sourceCode cell-code" id="cb3"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Define the function to compute amino acid composition</span></span>
-<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> compute_composition(peptide):</span>
-<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a>    total <span class="op">=</span> <span class="bu">len</span>(peptide)</span>
-<span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a>    <span class="co"># Calculate frequency for each standard amino acid (you can adjust the list if needed)</span></span>
-<span id="cb3-5"><a href="#cb3-5" aria-hidden="true" tabindex="-1"></a>    amino_acids <span class="op">=</span> <span class="st">'ACDEFGHIKLMNPQRSTVWY'</span></span>
-<span id="cb3-6"><a href="#cb3-6" aria-hidden="true" tabindex="-1"></a>    comp <span class="op">=</span> Counter(peptide)</span>
-<span id="cb3-7"><a href="#cb3-7" aria-hidden="true" tabindex="-1"></a>    <span class="co"># Create a dictionary with relative frequency for each amino acid</span></span>
-<span id="cb3-8"><a href="#cb3-8" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> {aa: comp.get(aa, <span class="dv">0</span>) <span class="op">/</span> total <span class="cf">if</span> total <span class="op">!=</span> <span class="dv">0</span> <span class="cf">else</span> <span class="dv">0</span> <span class="cf">for</span> aa <span class="kw">in</span> amino_acids}</span>
+<div id="cell-3" class="cell" data-execution_count="70">
+<div class="sourceCode cell-code" id="cb3"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="co"># make all the column names snake case</span></span>
+<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a>epitopes.columns <span class="op">=</span> epitopes.columns.<span class="bu">str</span>.lower()</span>
+<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a>assays.columns <span class="op">=</span> assays.columns.<span class="bu">str</span>.lower()</span>
+<span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-5"><a href="#cb3-5" aria-hidden="true" tabindex="-1"></a><span class="co"># remove spaces from column names</span></span>
+<span id="cb3-6"><a href="#cb3-6" aria-hidden="true" tabindex="-1"></a>epitopes.columns <span class="op">=</span> epitopes.columns.<span class="bu">str</span>.replace(<span class="st">' '</span>, <span class="st">''</span>)</span>
+<span id="cb3-7"><a href="#cb3-7" aria-hidden="true" tabindex="-1"></a>epitopes.columns <span class="op">=</span> epitopes.columns.<span class="bu">str</span>.replace(<span class="st">'-'</span>, <span class="st">' '</span>)</span>
+<span id="cb3-8"><a href="#cb3-8" aria-hidden="true" tabindex="-1"></a>epitopes.columns <span class="op">=</span> epitopes.columns.<span class="bu">str</span>.replace(<span class="st">' '</span>, <span class="st">'_'</span>)</span>
 <span id="cb3-9"><a href="#cb3-9" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb3-10"><a href="#cb3-10" aria-hidden="true" tabindex="-1"></a><span class="co"># Apply the function to each peptide, creating a Series of dictionaries,</span></span>
-<span id="cb3-11"><a href="#cb3-11" aria-hidden="true" tabindex="-1"></a><span class="co"># then convert that Series to a DataFrame and concatenate it with the original DataFrame.</span></span>
-<span id="cb3-12"><a href="#cb3-12" aria-hidden="true" tabindex="-1"></a>epitope_composition_df <span class="op">=</span> epitopes[<span class="st">'epitope_name'</span>].<span class="bu">apply</span>(compute_composition).<span class="bu">apply</span>(pd.Series)</span>
-<span id="cb3-13"><a href="#cb3-13" aria-hidden="true" tabindex="-1"></a>fullsequence_composition_df <span class="op">=</span> epitopes[<span class="st">'fullsequence'</span>].<span class="bu">apply</span>(compute_composition).<span class="bu">apply</span>(pd.Series)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb3-10"><a href="#cb3-10" aria-hidden="true" tabindex="-1"></a>assays.columns <span class="op">=</span> assays.columns.<span class="bu">str</span>.replace(<span class="st">' '</span>, <span class="st">''</span>)</span>
+<span id="cb3-11"><a href="#cb3-11" aria-hidden="true" tabindex="-1"></a>assays.columns <span class="op">=</span> assays.columns.<span class="bu">str</span>.replace(<span class="st">'-'</span>, <span class="st">' '</span>)</span>
+<span id="cb3-12"><a href="#cb3-12" aria-hidden="true" tabindex="-1"></a>assays.columns <span class="op">=</span> assays.columns.<span class="bu">str</span>.replace(<span class="st">' '</span>, <span class="st">'_'</span>)</span>
+<span id="cb3-13"><a href="#cb3-13" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-14"><a href="#cb3-14" aria-hidden="true" tabindex="-1"></a>epitopes <span class="op">=</span> epitopes.<span class="bu">filter</span>([<span class="st">'epitope_name'</span>, <span class="st">'fullsequence'</span>])</span>
+<span id="cb3-15"><a href="#cb3-15" aria-hidden="true" tabindex="-1"></a>assays <span class="op">=</span> assays.<span class="bu">filter</span>([<span class="st">'epitope_name'</span>, <span class="st">'epitope_moluculeparent'</span>, <span class="st">'host_name'</span>, <span class="st">'host_mhcpresent'</span>, <span class="st">'assay_method'</span>,<span class="st">'assay_responsemeasured'</span>, <span class="st">'assay_qualitativemeasurement'</span>, <span class="st">'mhcrestriction_name'</span>, <span class="st">'mhcrestriction_class'</span>, <span class="st">'assayantigen_name'</span>])</span>
+<span id="cb3-16"><a href="#cb3-16" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-17"><a href="#cb3-17" aria-hidden="true" tabindex="-1"></a><span class="co"># map mhc name and class from the assays dataframe to a new column in the epitopes dataframe based on epitope_name</span></span>
+<span id="cb3-18"><a href="#cb3-18" aria-hidden="true" tabindex="-1"></a>mhc <span class="op">=</span> assays.<span class="bu">filter</span>([<span class="st">'epitope_name'</span>, <span class="st">'mhcrestriction_name'</span>, <span class="st">'mhcrestriction_class'</span>])</span>
+<span id="cb3-19"><a href="#cb3-19" aria-hidden="true" tabindex="-1"></a>mhc <span class="op">=</span> mhc.drop_duplicates(subset<span class="op">=</span>[<span class="st">'epitope_name'</span>])</span>
+<span id="cb3-20"><a href="#cb3-20" aria-hidden="true" tabindex="-1"></a>epitopes <span class="op">=</span> epitopes.merge(mhc, on<span class="op">=</span><span class="st">'epitope_name'</span>, how<span class="op">=</span><span class="st">'left'</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
-<div id="cell-3" class="cell" data-execution_count="297">
-<div class="sourceCode cell-code" id="cb4"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Example DataFrame with a 'peptide' column</span></span>
-<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a>df <span class="op">=</span> pd.DataFrame({</span>
-<span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a>    <span class="st">'peptide'</span>: [<span class="st">'ACDEFGHIK'</span>, <span class="st">'LMNPQRSTV'</span>, <span class="st">'WYFP'</span>]</span>
-<span id="cb4-4"><a href="#cb4-4" aria-hidden="true" tabindex="-1"></a>})</span>
-<span id="cb4-5"><a href="#cb4-5" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb4-6"><a href="#cb4-6" aria-hidden="true" tabindex="-1"></a><span class="co"># Kyte-Doolittle hydrophobicity scale</span></span>
-<span id="cb4-7"><a href="#cb4-7" aria-hidden="true" tabindex="-1"></a>kyte_doolittle <span class="op">=</span> {</span>
-<span id="cb4-8"><a href="#cb4-8" aria-hidden="true" tabindex="-1"></a>    <span class="st">'I'</span>: <span class="fl">4.5</span>, <span class="st">'V'</span>: <span class="fl">4.2</span>, <span class="st">'L'</span>: <span class="fl">3.8</span>, <span class="st">'F'</span>: <span class="fl">2.8</span>, <span class="st">'C'</span>: <span class="fl">2.5</span>,</span>
-<span id="cb4-9"><a href="#cb4-9" aria-hidden="true" tabindex="-1"></a>    <span class="st">'M'</span>: <span class="fl">1.9</span>, <span class="st">'A'</span>: <span class="fl">1.8</span>, <span class="st">'G'</span>: <span class="op">-</span><span class="fl">0.4</span>, <span class="st">'T'</span>: <span class="op">-</span><span class="fl">0.7</span>, <span class="st">'S'</span>: <span class="op">-</span><span class="fl">0.8</span>,</span>
-<span id="cb4-10"><a href="#cb4-10" aria-hidden="true" tabindex="-1"></a>    <span class="st">'W'</span>: <span class="op">-</span><span class="fl">0.9</span>, <span class="st">'Y'</span>: <span class="op">-</span><span class="fl">1.3</span>, <span class="st">'P'</span>: <span class="op">-</span><span class="fl">1.6</span>, <span class="st">'H'</span>: <span class="op">-</span><span class="fl">3.2</span>, <span class="st">'E'</span>: <span class="op">-</span><span class="fl">3.5</span>,</span>
-<span id="cb4-11"><a href="#cb4-11" aria-hidden="true" tabindex="-1"></a>    <span class="st">'Q'</span>: <span class="op">-</span><span class="fl">3.5</span>, <span class="st">'D'</span>: <span class="op">-</span><span class="fl">3.5</span>, <span class="st">'N'</span>: <span class="op">-</span><span class="fl">3.5</span>, <span class="st">'K'</span>: <span class="op">-</span><span class="fl">3.9</span>, <span class="st">'R'</span>: <span class="op">-</span><span class="fl">4.5</span></span>
-<span id="cb4-12"><a href="#cb4-12" aria-hidden="true" tabindex="-1"></a>}</span>
-<span id="cb4-13"><a href="#cb4-13" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb4-14"><a href="#cb4-14" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> compute_avg_hydrophobicity(peptide):</span>
-<span id="cb4-15"><a href="#cb4-15" aria-hidden="true" tabindex="-1"></a>    <span class="co"># Get hydrophobicity scores for each amino acid; default to 0 if missing</span></span>
-<span id="cb4-16"><a href="#cb4-16" aria-hidden="true" tabindex="-1"></a>    scores <span class="op">=</span> [kyte_doolittle.get(aa, <span class="dv">0</span>) <span class="cf">for</span> aa <span class="kw">in</span> peptide]</span>
-<span id="cb4-17"><a href="#cb4-17" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> <span class="bu">sum</span>(scores) <span class="op">/</span> <span class="bu">len</span>(scores) <span class="cf">if</span> scores <span class="cf">else</span> <span class="dv">0</span></span>
-<span id="cb4-18"><a href="#cb4-18" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb4-19"><a href="#cb4-19" aria-hidden="true" tabindex="-1"></a><span class="co"># Apply the function to the 'peptide' column to create a new column 'avg_hydro'</span></span>
-<span id="cb4-20"><a href="#cb4-20" aria-hidden="true" tabindex="-1"></a>epitopes[<span class="st">'epitope_avg_hydro'</span>] <span class="op">=</span> epitopes[<span class="st">'epitope_name'</span>].<span class="bu">apply</span>(compute_avg_hydrophobicity)</span>
-<span id="cb4-21"><a href="#cb4-21" aria-hidden="true" tabindex="-1"></a>epitopes[<span class="st">'fullsequence_avg_hydro'</span>] <span class="op">=</span> epitopes[<span class="st">'fullsequence'</span>].<span class="bu">apply</span>(compute_avg_hydrophobicity)</span>
-<span id="cb4-22"><a href="#cb4-22" aria-hidden="true" tabindex="-1"></a></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-</div>
-<div id="cell-4" class="cell" data-execution_count="298">
-<div class="sourceCode cell-code" id="cb5"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="co"># histogram of epitope length</span></span>
-<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a>plt.figure(figsize<span class="op">=</span>(<span class="dv">10</span>, <span class="dv">6</span>))</span>
-<span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a>plt.hist(epitopes[<span class="st">'epitope_length'</span>], bins<span class="op">=</span><span class="dv">20</span>, edgecolor<span class="op">=</span><span class="st">'black'</span>)</span>
-<span id="cb5-4"><a href="#cb5-4" aria-hidden="true" tabindex="-1"></a>plt.xlabel(<span class="st">'Epitope Length'</span>)</span>
-<span id="cb5-5"><a href="#cb5-5" aria-hidden="true" tabindex="-1"></a>plt.ylabel(<span class="st">'Frequency'</span>)</span>
-<span id="cb5-6"><a href="#cb5-6" aria-hidden="true" tabindex="-1"></a>plt.title(<span class="st">'Histogram of Epitope Length'</span>)</span>
-<span id="cb5-7"><a href="#cb5-7" aria-hidden="true" tabindex="-1"></a>plt.show()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-<div class="cell-output cell-output-display">
+<div id="cell-4" class="cell" data-execution_count="71">
+<div class="sourceCode cell-code" id="cb4"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a>epitopes.head()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-display" data-execution_count="71">
 <div>
-<figure class="figure">
-<p><img src="capstone_files/figure-html/cell-5-output-1.png" class="img-fluid figure-img"></p>
-</figure>
-</div>
-</div>
-</div>
-<div id="cell-5" class="cell" data-execution_count="299">
-<div class="sourceCode cell-code" id="cb6"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a><span class="co"># calculate average hydrophobicity for epitopes and full sequences</span></span>
-<span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(epitopes[<span class="st">'epitope_avg_hydro'</span>].mean())</span>
-<span id="cb6-3"><a href="#cb6-3" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(epitopes[<span class="st">'fullsequence_avg_hydro'</span>].mean())</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-<div class="cell-output cell-output-stdout">
-<pre><code>-0.17841008168438574
--0.0876915981629256</code></pre>
-</div>
-</div>
-<div id="cell-6" class="cell" data-execution_count="300">
-<div class="sourceCode cell-code" id="cb8"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a><span class="co"># histogram of average hydrophobicity</span></span>
-<span id="cb8-2"><a href="#cb8-2" aria-hidden="true" tabindex="-1"></a>plt.figure(figsize<span class="op">=</span>(<span class="dv">10</span>, <span class="dv">6</span>))</span>
-<span id="cb8-3"><a href="#cb8-3" aria-hidden="true" tabindex="-1"></a>plt.hist(epitopes[<span class="st">'epitope_avg_hydro'</span>], bins<span class="op">=</span><span class="dv">20</span>, edgecolor<span class="op">=</span><span class="st">'black'</span>)</span>
-<span id="cb8-4"><a href="#cb8-4" aria-hidden="true" tabindex="-1"></a>plt.xlabel(<span class="st">'Average Hydrophobicity'</span>)</span>
-<span id="cb8-5"><a href="#cb8-5" aria-hidden="true" tabindex="-1"></a>plt.ylabel(<span class="st">'Frequency'</span>)</span>
-<span id="cb8-6"><a href="#cb8-6" aria-hidden="true" tabindex="-1"></a>plt.title(<span class="st">'Histogram of Average Epitope Hydrophobicity'</span>)</span>
-<span id="cb8-7"><a href="#cb8-7" aria-hidden="true" tabindex="-1"></a>plt.show()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-<div class="cell-output cell-output-display">
-<div>
-<figure class="figure">
-<p><img src="capstone_files/figure-html/cell-7-output-1.png" class="img-fluid figure-img"></p>
-</figure>
-</div>
-</div>
-</div>
-<div id="cell-7" class="cell" data-execution_count="301">
-<div class="sourceCode cell-code" id="cb9"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a><span class="co"># histogram of average hydrophobicity</span></span>
-<span id="cb9-2"><a href="#cb9-2" aria-hidden="true" tabindex="-1"></a>plt.figure(figsize<span class="op">=</span>(<span class="dv">10</span>, <span class="dv">6</span>))</span>
-<span id="cb9-3"><a href="#cb9-3" aria-hidden="true" tabindex="-1"></a>plt.hist(epitopes[<span class="st">'fullsequence_avg_hydro'</span>], bins<span class="op">=</span><span class="dv">20</span>, edgecolor<span class="op">=</span><span class="st">'black'</span>)</span>
-<span id="cb9-4"><a href="#cb9-4" aria-hidden="true" tabindex="-1"></a>plt.xlabel(<span class="st">'Average Hydrophobicity'</span>)</span>
-<span id="cb9-5"><a href="#cb9-5" aria-hidden="true" tabindex="-1"></a>plt.ylabel(<span class="st">'Frequency'</span>)</span>
-<span id="cb9-6"><a href="#cb9-6" aria-hidden="true" tabindex="-1"></a>plt.title(<span class="st">'Histogram of Average Full Sequence Hydrophobicity'</span>)</span>
-<span id="cb9-7"><a href="#cb9-7" aria-hidden="true" tabindex="-1"></a>plt.show()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-<div class="cell-output cell-output-display">
-<div>
-<figure class="figure">
-<p><img src="capstone_files/figure-html/cell-8-output-1.png" class="img-fluid figure-img"></p>
-</figure>
-</div>
-</div>
-</div>
-<div id="cell-8" class="cell" data-execution_count="302">
-<div class="sourceCode cell-code" id="cb10"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a><span class="co"># plot the composition of the epitopes, sort by the composition of the amino acids</span></span>
-<span id="cb10-2"><a href="#cb10-2" aria-hidden="true" tabindex="-1"></a><span class="co"># Calculate mean composition and sort</span></span>
-<span id="cb10-3"><a href="#cb10-3" aria-hidden="true" tabindex="-1"></a>mean_composition <span class="op">=</span> epitope_composition_df.mean().sort_values(ascending<span class="op">=</span><span class="va">False</span>)</span>
-<span id="cb10-4"><a href="#cb10-4" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb10-5"><a href="#cb10-5" aria-hidden="true" tabindex="-1"></a><span class="co"># Plot the sorted composition</span></span>
-<span id="cb10-6"><a href="#cb10-6" aria-hidden="true" tabindex="-1"></a>plt.figure(figsize<span class="op">=</span>(<span class="dv">10</span>, <span class="dv">6</span>))</span>
-<span id="cb10-7"><a href="#cb10-7" aria-hidden="true" tabindex="-1"></a>plt.bar(mean_composition.index, mean_composition.values)</span>
-<span id="cb10-8"><a href="#cb10-8" aria-hidden="true" tabindex="-1"></a>plt.xlabel(<span class="st">'Amino Acid'</span>)</span>
-<span id="cb10-9"><a href="#cb10-9" aria-hidden="true" tabindex="-1"></a>plt.ylabel(<span class="st">'Composition'</span>)</span>
-<span id="cb10-10"><a href="#cb10-10" aria-hidden="true" tabindex="-1"></a>plt.title(<span class="st">'Composition of Epitopes'</span>)</span>
-<span id="cb10-11"><a href="#cb10-11" aria-hidden="true" tabindex="-1"></a>plt.show()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-<div class="cell-output cell-output-display">
-<div>
-<figure class="figure">
-<p><img src="capstone_files/figure-html/cell-9-output-1.png" class="img-fluid figure-img"></p>
-</figure>
-</div>
-</div>
-</div>
-<div id="cell-9" class="cell" data-execution_count="303">
-<div class="sourceCode cell-code" id="cb11"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a><span class="co"># plot the composition of the epitopes, sort by the composition of the amino acids</span></span>
-<span id="cb11-2"><a href="#cb11-2" aria-hidden="true" tabindex="-1"></a><span class="co"># Calculate mean composition and sort</span></span>
-<span id="cb11-3"><a href="#cb11-3" aria-hidden="true" tabindex="-1"></a>mean_composition <span class="op">=</span> fullsequence_composition_df.mean().sort_values(ascending<span class="op">=</span><span class="va">False</span>)</span>
-<span id="cb11-4"><a href="#cb11-4" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb11-5"><a href="#cb11-5" aria-hidden="true" tabindex="-1"></a><span class="co"># Plot the sorted composition</span></span>
-<span id="cb11-6"><a href="#cb11-6" aria-hidden="true" tabindex="-1"></a>plt.figure(figsize<span class="op">=</span>(<span class="dv">10</span>, <span class="dv">6</span>))</span>
-<span id="cb11-7"><a href="#cb11-7" aria-hidden="true" tabindex="-1"></a>plt.bar(mean_composition.index, mean_composition.values)</span>
-<span id="cb11-8"><a href="#cb11-8" aria-hidden="true" tabindex="-1"></a>plt.xlabel(<span class="st">'Amino Acid'</span>)</span>
-<span id="cb11-9"><a href="#cb11-9" aria-hidden="true" tabindex="-1"></a>plt.ylabel(<span class="st">'Composition'</span>)</span>
-<span id="cb11-10"><a href="#cb11-10" aria-hidden="true" tabindex="-1"></a>plt.title(<span class="st">'Composition of Full Sequences'</span>)</span>
-<span id="cb11-11"><a href="#cb11-11" aria-hidden="true" tabindex="-1"></a>plt.show()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-<div class="cell-output cell-output-display">
-<div>
-<figure class="figure">
-<p><img src="capstone_files/figure-html/cell-10-output-1.png" class="img-fluid figure-img"></p>
-</figure>
-</div>
-</div>
-</div>
-<div id="cell-11" class="cell" data-execution_count="306">
-<div class="sourceCode cell-code" id="cb12"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb12-1"><a href="#cb12-1" aria-hidden="true" tabindex="-1"></a>epitopes <span class="op">=</span> epitopes.dropna(subset<span class="op">=</span>[<span class="st">"fullsequence"</span>])</span>
-<span id="cb12-2"><a href="#cb12-2" aria-hidden="true" tabindex="-1"></a>epitopes <span class="op">=</span> epitopes[epitopes[<span class="st">"fullsequence"</span>] <span class="op">!=</span> <span class="st">""</span>]</span>
-<span id="cb12-3"><a href="#cb12-3" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb12-4"><a href="#cb12-4" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> generate_negatives(row):</span>
-<span id="cb12-5"><a href="#cb12-5" aria-hidden="true" tabindex="-1"></a>    epitope <span class="op">=</span> row[<span class="st">"epitope_name"</span>]</span>
-<span id="cb12-6"><a href="#cb12-6" aria-hidden="true" tabindex="-1"></a>    full_seq <span class="op">=</span> row[<span class="st">"fullsequence"</span>]</span>
-<span id="cb12-7"><a href="#cb12-7" aria-hidden="true" tabindex="-1"></a>    </span>
-<span id="cb12-8"><a href="#cb12-8" aria-hidden="true" tabindex="-1"></a>    <span class="co"># Handle missing or empty sequences</span></span>
-<span id="cb12-9"><a href="#cb12-9" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span> pd.isnull(full_seq) <span class="kw">or</span> full_seq <span class="op">==</span> <span class="st">""</span>:</span>
-<span id="cb12-10"><a href="#cb12-10" aria-hidden="true" tabindex="-1"></a>        <span class="cf">return</span> []</span>
-<span id="cb12-11"><a href="#cb12-11" aria-hidden="true" tabindex="-1"></a>    </span>
-<span id="cb12-12"><a href="#cb12-12" aria-hidden="true" tabindex="-1"></a>    epitope <span class="op">=</span> <span class="bu">str</span>(epitope)</span>
-<span id="cb12-13"><a href="#cb12-13" aria-hidden="true" tabindex="-1"></a>    full_seq <span class="op">=</span> <span class="bu">str</span>(full_seq)</span>
-<span id="cb12-14"><a href="#cb12-14" aria-hidden="true" tabindex="-1"></a>    ep_len <span class="op">=</span> <span class="bu">len</span>(epitope)</span>
-<span id="cb12-15"><a href="#cb12-15" aria-hidden="true" tabindex="-1"></a>    </span>
-<span id="cb12-16"><a href="#cb12-16" aria-hidden="true" tabindex="-1"></a>    negatives <span class="op">=</span> []</span>
-<span id="cb12-17"><a href="#cb12-17" aria-hidden="true" tabindex="-1"></a>    <span class="cf">for</span> i <span class="kw">in</span> <span class="bu">range</span>(<span class="bu">len</span>(full_seq) <span class="op">-</span> ep_len <span class="op">+</span> <span class="dv">1</span>):</span>
-<span id="cb12-18"><a href="#cb12-18" aria-hidden="true" tabindex="-1"></a>        window <span class="op">=</span> full_seq[i:i<span class="op">+</span>ep_len]</span>
-<span id="cb12-19"><a href="#cb12-19" aria-hidden="true" tabindex="-1"></a>        <span class="cf">if</span> window <span class="op">!=</span> epitope:</span>
-<span id="cb12-20"><a href="#cb12-20" aria-hidden="true" tabindex="-1"></a>            negatives.append(window)</span>
-<span id="cb12-21"><a href="#cb12-21" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> negatives</span>
-<span id="cb12-22"><a href="#cb12-22" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb12-23"><a href="#cb12-23" aria-hidden="true" tabindex="-1"></a><span class="co"># Apply the function to each row</span></span>
-<span id="cb12-24"><a href="#cb12-24" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb12-25"><a href="#cb12-25" aria-hidden="true" tabindex="-1"></a>negatives <span class="op">=</span> pd.DataFrame()</span>
-<span id="cb12-26"><a href="#cb12-26" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb12-27"><a href="#cb12-27" aria-hidden="true" tabindex="-1"></a>negatives[<span class="st">'negatives'</span>] <span class="op">=</span> epitopes.<span class="bu">apply</span>(generate_negatives, axis<span class="op">=</span><span class="dv">1</span>)</span>
-<span id="cb12-28"><a href="#cb12-28" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb12-29"><a href="#cb12-29" aria-hidden="true" tabindex="-1"></a>negatives <span class="op">=</span> negatives[[<span class="st">"negatives"</span>]].explode(<span class="st">"negatives"</span>).reset_index(drop<span class="op">=</span><span class="va">True</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-<div class="cell-output cell-output-stdout">
-<pre><code>            negatives
-0           MPREDAHFI
-1           PREDAHFIY
-2           REDAHFIYG
-3           EDAHFIYGY
-4           DAHFIYGYP
-...               ...
-6117942  ISYPPLHEWVLR
-6117943  SYPPLHEWVLRE
-6117944  YPPLHEWVLREG
-6117945  PPLHEWVLREGE
-6117946  PLHEWVLREGEE
 
-[6117947 rows x 1 columns]</code></pre>
+
+<table class="dataframe caption-top table table-sm table-striped small" data-quarto-postprocess="true" data-border="1">
+<thead>
+<tr class="header">
+<th data-quarto-table-cell-role="th"></th>
+<th data-quarto-table-cell-role="th">epitope_name</th>
+<th data-quarto-table-cell-role="th">fullsequence</th>
+<th data-quarto-table-cell-role="th">mhcrestriction_name</th>
+<th data-quarto-table-cell-role="th">mhcrestriction_class</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td data-quarto-table-cell-role="th">0</td>
+<td>AAGIGILTV</td>
+<td>MPREDAHFIYGYPKKGHGHSYTTAEEAAGIGILTVILGVLLLIGCW...</td>
+<td>HLA-A2</td>
+<td>I</td>
+</tr>
+<tr class="even">
+<td data-quarto-table-cell-role="th">1</td>
+<td>AAGIGILTVI</td>
+<td>MPREDAHFIYGYPKKGHGHSYTTAEEAAGIGILTVILGVLLLIGCW...</td>
+<td>HLA-A*02:01</td>
+<td>I</td>
+</tr>
+<tr class="odd">
+<td data-quarto-table-cell-role="th">2</td>
+<td>ACDPHSGHFV</td>
+<td>NaN</td>
+<td>HLA-A2</td>
+<td>I</td>
+</tr>
+<tr class="even">
+<td data-quarto-table-cell-role="th">3</td>
+<td>ADLVGFLLLK</td>
+<td>MSLEQRSLHCKPEEALEAQQEALGLVCVQAATSSSSPLVLGTLEEV...</td>
+<td>HLA-A*11:01</td>
+<td>I</td>
+</tr>
+<tr class="odd">
+<td data-quarto-table-cell-role="th">4</td>
+<td>ADVEFCLSL</td>
+<td>MLLAVLYCLLWSFQTSAGHFPRACVSSKNLMEKECCPPWSGDRSPC...</td>
+<td>HLA-B*44:03</td>
+<td>I</td>
+</tr>
+</tbody>
+</table>
+
 </div>
 </div>
-<div id="cell-12" class="cell" data-execution_count="308">
-<div class="sourceCode cell-code" id="cb14"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb14-1"><a href="#cb14-1" aria-hidden="true" tabindex="-1"></a>negatives_composition <span class="op">=</span> negatives[<span class="st">'negatives'</span>].<span class="bu">apply</span>(compute_composition).<span class="bu">apply</span>(pd.Series)</span>
-<span id="cb14-2"><a href="#cb14-2" aria-hidden="true" tabindex="-1"></a>negatives[<span class="st">'negatives_avg_hydro'</span>] <span class="op">=</span> negatives[<span class="st">'negatives'</span>].<span class="bu">apply</span>(compute_avg_hydrophobicity)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<div id="cell-5" class="cell" data-execution_count="72">
+<div class="sourceCode cell-code" id="cb5"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a>assays.head()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-display" data-execution_count="72">
+<div>
+
+
+<table class="dataframe caption-top table table-sm table-striped small" data-quarto-postprocess="true" data-border="1">
+<thead>
+<tr class="header">
+<th data-quarto-table-cell-role="th"></th>
+<th data-quarto-table-cell-role="th">epitope_name</th>
+<th data-quarto-table-cell-role="th">host_name</th>
+<th data-quarto-table-cell-role="th">host_mhcpresent</th>
+<th data-quarto-table-cell-role="th">assay_method</th>
+<th data-quarto-table-cell-role="th">assay_responsemeasured</th>
+<th data-quarto-table-cell-role="th">assay_qualitativemeasurement</th>
+<th data-quarto-table-cell-role="th">mhcrestriction_name</th>
+<th data-quarto-table-cell-role="th">mhcrestriction_class</th>
+<th data-quarto-table-cell-role="th">assayantigen_name</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td data-quarto-table-cell-role="th">0</td>
+<td>APIWPYEILY</td>
+<td>Homo sapiens (human)</td>
+<td>NaN</td>
+<td>ELISPOT</td>
+<td>IFNg release</td>
+<td>Positive</td>
+<td>HLA-B*35:01</td>
+<td>I</td>
+<td>APIWPYEILY</td>
+</tr>
+<tr class="even">
+<td data-quarto-table-cell-role="th">1</td>
+<td>LIYDSSLCDL</td>
+<td>Homo sapiens</td>
+<td>NaN</td>
+<td>ELISPOT</td>
+<td>IFNg release</td>
+<td>Positive</td>
+<td>HLA-A2</td>
+<td>I</td>
+<td>LIYDSSLCDL</td>
+</tr>
+<tr class="odd">
+<td data-quarto-table-cell-role="th">2</td>
+<td>DRAHYNIVTFCCKCD</td>
+<td>Homo sapiens (human)</td>
+<td>HLA-DR15</td>
+<td>ELISPOT</td>
+<td>IFNg release</td>
+<td>Positive</td>
+<td>HLA-DR15</td>
+<td>II</td>
+<td>DRAHYNIVTFCCKCD</td>
+</tr>
+<tr class="even">
+<td data-quarto-table-cell-role="th">3</td>
+<td>DRAHYNIVTFCCKCD</td>
+<td>Homo sapiens (human)</td>
+<td>HLA-DR15</td>
+<td>ELISPOT</td>
+<td>IL-5 release</td>
+<td>Positive</td>
+<td>HLA-DR15</td>
+<td>II</td>
+<td>DRAHYNIVTFCCKCD</td>
+</tr>
+<tr class="odd">
+<td data-quarto-table-cell-role="th">4</td>
+<td>MHGDTPTLHEYM</td>
+<td>Homo sapiens (human)</td>
+<td>HLA-DR15;HLA-DR4</td>
+<td>ELISPOT</td>
+<td>IL-5 release</td>
+<td>Positive</td>
+<td>HLA class II</td>
+<td>II</td>
+<td>MHGDTPTLHEYM</td>
+</tr>
+</tbody>
+</table>
+
+</div>
+</div>
+</div>
+<section id="feature-engineering" class="level2">
+<h2 class="anchored" data-anchor-id="feature-engineering">Feature Engineering</h2>
+<div id="cell-7" class="cell" data-execution_count="73">
+<div class="sourceCode cell-code" id="cb6"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a>epitopes[<span class="st">'epitope_length'</span>] <span class="op">=</span> epitopes[<span class="st">'epitope_name'</span>].<span class="bu">str</span>.<span class="bu">len</span>()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<div id="cell-8" class="cell" data-execution_count="74">
+<div class="sourceCode cell-code" id="cb7"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Function to count amino acids in a peptide</span></span>
+<span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> count_amino_acids(peptide):</span>
+<span id="cb7-3"><a href="#cb7-3" aria-hidden="true" tabindex="-1"></a>    <span class="cf">try</span>:</span>
+<span id="cb7-4"><a href="#cb7-4" aria-hidden="true" tabindex="-1"></a>        <span class="co"># Create a ProteinAnalysis object for the peptide</span></span>
+<span id="cb7-5"><a href="#cb7-5" aria-hidden="true" tabindex="-1"></a>        analyzer <span class="op">=</span> ProteinAnalysis(peptide)</span>
+<span id="cb7-6"><a href="#cb7-6" aria-hidden="true" tabindex="-1"></a>        <span class="co"># Get amino acid counts and normalize to frequencies</span></span>
+<span id="cb7-7"><a href="#cb7-7" aria-hidden="true" tabindex="-1"></a>        aa_count <span class="op">=</span> analyzer.count_amino_acids()</span>
+<span id="cb7-8"><a href="#cb7-8" aria-hidden="true" tabindex="-1"></a>        total_aa <span class="op">=</span> <span class="bu">sum</span>(aa_count.values())</span>
+<span id="cb7-9"><a href="#cb7-9" aria-hidden="true" tabindex="-1"></a>        aa_freq <span class="op">=</span> {aa: count <span class="cf">for</span> aa, count <span class="kw">in</span> aa_count.items()}</span>
+<span id="cb7-10"><a href="#cb7-10" aria-hidden="true" tabindex="-1"></a>        <span class="co"># Add the peptide itself to the results</span></span>
+<span id="cb7-11"><a href="#cb7-11" aria-hidden="true" tabindex="-1"></a>        aa_freq[<span class="st">'peptide'</span>] <span class="op">=</span> peptide</span>
+<span id="cb7-12"><a href="#cb7-12" aria-hidden="true" tabindex="-1"></a>        <span class="cf">return</span> aa_freq</span>
+<span id="cb7-13"><a href="#cb7-13" aria-hidden="true" tabindex="-1"></a>    <span class="cf">except</span> <span class="pp">Exception</span> <span class="im">as</span> e:</span>
+<span id="cb7-14"><a href="#cb7-14" aria-hidden="true" tabindex="-1"></a>        <span class="co"># Handle invalid peptides (e.g., with non-standard amino acids)</span></span>
+<span id="cb7-15"><a href="#cb7-15" aria-hidden="true" tabindex="-1"></a>        result <span class="op">=</span> {aa: <span class="dv">0</span> <span class="cf">for</span> aa <span class="kw">in</span> <span class="st">'ACDEFGHIKLMNPQRSTVWY'</span>}</span>
+<span id="cb7-16"><a href="#cb7-16" aria-hidden="true" tabindex="-1"></a>        result[<span class="st">'peptide'</span>] <span class="op">=</span> peptide</span>
+<span id="cb7-17"><a href="#cb7-17" aria-hidden="true" tabindex="-1"></a>        <span class="cf">return</span> result</span>
+<span id="cb7-18"><a href="#cb7-18" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-19"><a href="#cb7-19" aria-hidden="true" tabindex="-1"></a><span class="co"># Create analyzer function that will be used in the next cell</span></span>
+<span id="cb7-20"><a href="#cb7-20" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> analyzer(peptide):</span>
+<span id="cb7-21"><a href="#cb7-21" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> count_amino_acids(peptide)</span>
+<span id="cb7-22"><a href="#cb7-22" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-23"><a href="#cb7-23" aria-hidden="true" tabindex="-1"></a><span class="co"># Use both epitope name and peptide sequence in the DataFrame</span></span>
+<span id="cb7-24"><a href="#cb7-24" aria-hidden="true" tabindex="-1"></a>epitope_composition_df <span class="op">=</span> epitopes.<span class="bu">apply</span>(<span class="kw">lambda</span> row: count_amino_acids(row[<span class="st">'epitope_name'</span>]), axis<span class="op">=</span><span class="dv">1</span>).<span class="bu">apply</span>(pd.Series)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<div id="cell-9" class="cell" data-execution_count="75">
+<div class="sourceCode cell-code" id="cb8"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a>epitope_composition_df.head()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-display" data-execution_count="75">
+<div>
+
+
+<table class="dataframe caption-top table table-sm table-striped small" data-quarto-postprocess="true" data-border="1">
+<thead>
+<tr class="header">
+<th data-quarto-table-cell-role="th"></th>
+<th data-quarto-table-cell-role="th">A</th>
+<th data-quarto-table-cell-role="th">C</th>
+<th data-quarto-table-cell-role="th">D</th>
+<th data-quarto-table-cell-role="th">E</th>
+<th data-quarto-table-cell-role="th">F</th>
+<th data-quarto-table-cell-role="th">G</th>
+<th data-quarto-table-cell-role="th">H</th>
+<th data-quarto-table-cell-role="th">I</th>
+<th data-quarto-table-cell-role="th">K</th>
+<th data-quarto-table-cell-role="th">L</th>
+<th data-quarto-table-cell-role="th">...</th>
+<th data-quarto-table-cell-role="th">N</th>
+<th data-quarto-table-cell-role="th">P</th>
+<th data-quarto-table-cell-role="th">Q</th>
+<th data-quarto-table-cell-role="th">R</th>
+<th data-quarto-table-cell-role="th">S</th>
+<th data-quarto-table-cell-role="th">T</th>
+<th data-quarto-table-cell-role="th">V</th>
+<th data-quarto-table-cell-role="th">W</th>
+<th data-quarto-table-cell-role="th">Y</th>
+<th data-quarto-table-cell-role="th">peptide</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td data-quarto-table-cell-role="th">0</td>
+<td>2</td>
+<td>0</td>
+<td>0</td>
+<td>0</td>
+<td>0</td>
+<td>2</td>
+<td>0</td>
+<td>2</td>
+<td>0</td>
+<td>1</td>
+<td>...</td>
+<td>0</td>
+<td>0</td>
+<td>0</td>
+<td>0</td>
+<td>0</td>
+<td>1</td>
+<td>1</td>
+<td>0</td>
+<td>0</td>
+<td>AAGIGILTV</td>
+</tr>
+<tr class="even">
+<td data-quarto-table-cell-role="th">1</td>
+<td>2</td>
+<td>0</td>
+<td>0</td>
+<td>0</td>
+<td>0</td>
+<td>2</td>
+<td>0</td>
+<td>3</td>
+<td>0</td>
+<td>1</td>
+<td>...</td>
+<td>0</td>
+<td>0</td>
+<td>0</td>
+<td>0</td>
+<td>0</td>
+<td>1</td>
+<td>1</td>
+<td>0</td>
+<td>0</td>
+<td>AAGIGILTVI</td>
+</tr>
+<tr class="odd">
+<td data-quarto-table-cell-role="th">2</td>
+<td>1</td>
+<td>1</td>
+<td>1</td>
+<td>0</td>
+<td>1</td>
+<td>1</td>
+<td>2</td>
+<td>0</td>
+<td>0</td>
+<td>0</td>
+<td>...</td>
+<td>0</td>
+<td>1</td>
+<td>0</td>
+<td>0</td>
+<td>1</td>
+<td>0</td>
+<td>1</td>
+<td>0</td>
+<td>0</td>
+<td>ACDPHSGHFV</td>
+</tr>
+<tr class="even">
+<td data-quarto-table-cell-role="th">3</td>
+<td>1</td>
+<td>0</td>
+<td>1</td>
+<td>0</td>
+<td>1</td>
+<td>1</td>
+<td>0</td>
+<td>0</td>
+<td>1</td>
+<td>4</td>
+<td>...</td>
+<td>0</td>
+<td>0</td>
+<td>0</td>
+<td>0</td>
+<td>0</td>
+<td>0</td>
+<td>1</td>
+<td>0</td>
+<td>0</td>
+<td>ADLVGFLLLK</td>
+</tr>
+<tr class="odd">
+<td data-quarto-table-cell-role="th">4</td>
+<td>1</td>
+<td>1</td>
+<td>1</td>
+<td>1</td>
+<td>1</td>
+<td>0</td>
+<td>0</td>
+<td>0</td>
+<td>0</td>
+<td>2</td>
+<td>...</td>
+<td>0</td>
+<td>0</td>
+<td>0</td>
+<td>0</td>
+<td>1</td>
+<td>0</td>
+<td>1</td>
+<td>0</td>
+<td>0</td>
+<td>ADVEFCLSL</td>
+</tr>
+</tbody>
+</table>
+
+<p>5 rows × 21 columns</p>
+</div>
+</div>
+</div>
+<div id="cell-10" class="cell" data-execution_count="76">
+<div class="sourceCode cell-code" id="cb9"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Example DataFrame with a 'peptide' column</span></span>
+<span id="cb9-2"><a href="#cb9-2" aria-hidden="true" tabindex="-1"></a>df <span class="op">=</span> pd.DataFrame({</span>
+<span id="cb9-3"><a href="#cb9-3" aria-hidden="true" tabindex="-1"></a>    <span class="st">'peptide'</span>: [<span class="st">'ACDEFGHIK'</span>, <span class="st">'LMNPQRSTV'</span>, <span class="st">'WYFP'</span>]</span>
+<span id="cb9-4"><a href="#cb9-4" aria-hidden="true" tabindex="-1"></a>})</span>
+<span id="cb9-5"><a href="#cb9-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-6"><a href="#cb9-6" aria-hidden="true" tabindex="-1"></a><span class="co"># Kyte-Doolittle hydrophobicity scale</span></span>
+<span id="cb9-7"><a href="#cb9-7" aria-hidden="true" tabindex="-1"></a>kyte_doolittle <span class="op">=</span> {</span>
+<span id="cb9-8"><a href="#cb9-8" aria-hidden="true" tabindex="-1"></a>    <span class="st">'I'</span>: <span class="fl">4.5</span>, <span class="st">'V'</span>: <span class="fl">4.2</span>, <span class="st">'L'</span>: <span class="fl">3.8</span>, <span class="st">'F'</span>: <span class="fl">2.8</span>, <span class="st">'C'</span>: <span class="fl">2.5</span>,</span>
+<span id="cb9-9"><a href="#cb9-9" aria-hidden="true" tabindex="-1"></a>    <span class="st">'M'</span>: <span class="fl">1.9</span>, <span class="st">'A'</span>: <span class="fl">1.8</span>, <span class="st">'G'</span>: <span class="op">-</span><span class="fl">0.4</span>, <span class="st">'T'</span>: <span class="op">-</span><span class="fl">0.7</span>, <span class="st">'S'</span>: <span class="op">-</span><span class="fl">0.8</span>,</span>
+<span id="cb9-10"><a href="#cb9-10" aria-hidden="true" tabindex="-1"></a>    <span class="st">'W'</span>: <span class="op">-</span><span class="fl">0.9</span>, <span class="st">'Y'</span>: <span class="op">-</span><span class="fl">1.3</span>, <span class="st">'P'</span>: <span class="op">-</span><span class="fl">1.6</span>, <span class="st">'H'</span>: <span class="op">-</span><span class="fl">3.2</span>, <span class="st">'E'</span>: <span class="op">-</span><span class="fl">3.5</span>,</span>
+<span id="cb9-11"><a href="#cb9-11" aria-hidden="true" tabindex="-1"></a>    <span class="st">'Q'</span>: <span class="op">-</span><span class="fl">3.5</span>, <span class="st">'D'</span>: <span class="op">-</span><span class="fl">3.5</span>, <span class="st">'N'</span>: <span class="op">-</span><span class="fl">3.5</span>, <span class="st">'K'</span>: <span class="op">-</span><span class="fl">3.9</span>, <span class="st">'R'</span>: <span class="op">-</span><span class="fl">4.5</span></span>
+<span id="cb9-12"><a href="#cb9-12" aria-hidden="true" tabindex="-1"></a>}</span>
+<span id="cb9-13"><a href="#cb9-13" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-14"><a href="#cb9-14" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> compute_avg_hydrophobicity(peptide):</span>
+<span id="cb9-15"><a href="#cb9-15" aria-hidden="true" tabindex="-1"></a>    <span class="co"># Get hydrophobicity scores for each amino acid; default to 0 if missing</span></span>
+<span id="cb9-16"><a href="#cb9-16" aria-hidden="true" tabindex="-1"></a>    scores <span class="op">=</span> [kyte_doolittle.get(aa, <span class="dv">0</span>) <span class="cf">for</span> aa <span class="kw">in</span> peptide]</span>
+<span id="cb9-17"><a href="#cb9-17" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> <span class="bu">sum</span>(scores) <span class="op">/</span> <span class="bu">len</span>(scores) <span class="cf">if</span> scores <span class="cf">else</span> <span class="dv">0</span></span>
+<span id="cb9-18"><a href="#cb9-18" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-19"><a href="#cb9-19" aria-hidden="true" tabindex="-1"></a><span class="co"># Apply the function to the 'peptide' column to create a new column 'avg_hydro'</span></span>
+<span id="cb9-20"><a href="#cb9-20" aria-hidden="true" tabindex="-1"></a>epitopes[<span class="st">'epitope_avg_hydro'</span>] <span class="op">=</span> epitopes[<span class="st">'epitope_name'</span>].<span class="bu">apply</span>(compute_avg_hydrophobicity)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<div id="cell-11" class="cell" data-execution_count="77">
+<div class="sourceCode cell-code" id="cb10"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Import the molecular_weight function from Bio.SeqUtils</span></span>
+<span id="cb10-2"><a href="#cb10-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb10-3"><a href="#cb10-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb10-4"><a href="#cb10-4" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> calculate_molecular_weight(peptide):</span>
+<span id="cb10-5"><a href="#cb10-5" aria-hidden="true" tabindex="-1"></a>    <span class="co">"""Calculate the molecular weight of a peptide sequence using Biopython."""</span></span>
+<span id="cb10-6"><a href="#cb10-6" aria-hidden="true" tabindex="-1"></a>    <span class="cf">try</span>:</span>
+<span id="cb10-7"><a href="#cb10-7" aria-hidden="true" tabindex="-1"></a>        <span class="co"># ProteinAnalysis only works with standard amino acids</span></span>
+<span id="cb10-8"><a href="#cb10-8" aria-hidden="true" tabindex="-1"></a>        protein <span class="op">=</span> ProteinAnalysis(peptide)</span>
+<span id="cb10-9"><a href="#cb10-9" aria-hidden="true" tabindex="-1"></a>        <span class="cf">return</span> protein.molecular_weight()</span>
+<span id="cb10-10"><a href="#cb10-10" aria-hidden="true" tabindex="-1"></a>    <span class="cf">except</span> <span class="pp">Exception</span> <span class="im">as</span> e:</span>
+<span id="cb10-11"><a href="#cb10-11" aria-hidden="true" tabindex="-1"></a>        <span class="co"># Handle peptides with non-standard amino acids</span></span>
+<span id="cb10-12"><a href="#cb10-12" aria-hidden="true" tabindex="-1"></a>        <span class="cf">return</span> <span class="va">None</span></span>
+<span id="cb10-13"><a href="#cb10-13" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb10-14"><a href="#cb10-14" aria-hidden="true" tabindex="-1"></a><span class="co"># Apply the function to calculate molecular weight for each epitope</span></span>
+<span id="cb10-15"><a href="#cb10-15" aria-hidden="true" tabindex="-1"></a>epitopes[<span class="st">'molecular_weight'</span>] <span class="op">=</span> epitopes[<span class="st">'epitope_name'</span>].<span class="bu">apply</span>(calculate_molecular_weight)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<div id="cell-12" class="cell" data-execution_count="78">
+<div class="sourceCode cell-code" id="cb11"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> calculate_aromaticity(peptide):</span>
+<span id="cb11-2"><a href="#cb11-2" aria-hidden="true" tabindex="-1"></a>    <span class="co">"""Calculate the aromaticity of a peptide sequence using Biopython."""</span></span>
+<span id="cb11-3"><a href="#cb11-3" aria-hidden="true" tabindex="-1"></a>    <span class="cf">try</span>:</span>
+<span id="cb11-4"><a href="#cb11-4" aria-hidden="true" tabindex="-1"></a>        <span class="co"># ProteinAnalysis only works with standard amino acids</span></span>
+<span id="cb11-5"><a href="#cb11-5" aria-hidden="true" tabindex="-1"></a>        protein <span class="op">=</span> ProteinAnalysis(peptide)</span>
+<span id="cb11-6"><a href="#cb11-6" aria-hidden="true" tabindex="-1"></a>        <span class="cf">return</span> protein.aromaticity()</span>
+<span id="cb11-7"><a href="#cb11-7" aria-hidden="true" tabindex="-1"></a>    <span class="cf">except</span> <span class="pp">Exception</span> <span class="im">as</span> e:</span>
+<span id="cb11-8"><a href="#cb11-8" aria-hidden="true" tabindex="-1"></a>        <span class="co"># Handle peptides with non-standard amino acids</span></span>
+<span id="cb11-9"><a href="#cb11-9" aria-hidden="true" tabindex="-1"></a>        <span class="cf">return</span> <span class="va">None</span></span>
+<span id="cb11-10"><a href="#cb11-10" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb11-11"><a href="#cb11-11" aria-hidden="true" tabindex="-1"></a><span class="co"># Apply the function to calculate molecular weight for each epitope</span></span>
+<span id="cb11-12"><a href="#cb11-12" aria-hidden="true" tabindex="-1"></a>epitopes[<span class="st">'aromaticity'</span>] <span class="op">=</span> epitopes[<span class="st">'epitope_name'</span>].<span class="bu">apply</span>(calculate_aromaticity)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<div id="cell-13" class="cell" data-execution_count="79">
+<div class="sourceCode cell-code" id="cb12"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb12-1"><a href="#cb12-1" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> calculate_isoelectric_point(peptide):</span>
+<span id="cb12-2"><a href="#cb12-2" aria-hidden="true" tabindex="-1"></a>    <span class="co">"""Calculate the isoelectric point of a peptide sequence using Biopython."""</span></span>
+<span id="cb12-3"><a href="#cb12-3" aria-hidden="true" tabindex="-1"></a>    <span class="cf">try</span>:</span>
+<span id="cb12-4"><a href="#cb12-4" aria-hidden="true" tabindex="-1"></a>        <span class="co"># ProteinAnalysis only works with standard amino acids</span></span>
+<span id="cb12-5"><a href="#cb12-5" aria-hidden="true" tabindex="-1"></a>        protein <span class="op">=</span> ProteinAnalysis(peptide)</span>
+<span id="cb12-6"><a href="#cb12-6" aria-hidden="true" tabindex="-1"></a>        <span class="cf">return</span> protein.isoelectric_point()</span>
+<span id="cb12-7"><a href="#cb12-7" aria-hidden="true" tabindex="-1"></a>    <span class="cf">except</span> <span class="pp">Exception</span> <span class="im">as</span> e:</span>
+<span id="cb12-8"><a href="#cb12-8" aria-hidden="true" tabindex="-1"></a>        <span class="co"># Handle peptides with non-standard amino acids</span></span>
+<span id="cb12-9"><a href="#cb12-9" aria-hidden="true" tabindex="-1"></a>        <span class="cf">return</span> <span class="va">None</span></span>
+<span id="cb12-10"><a href="#cb12-10" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb12-11"><a href="#cb12-11" aria-hidden="true" tabindex="-1"></a><span class="co"># Apply the function to calculate molecular weight for each epitope</span></span>
+<span id="cb12-12"><a href="#cb12-12" aria-hidden="true" tabindex="-1"></a>epitopes[<span class="st">'isoelectric_point'</span>] <span class="op">=</span> epitopes[<span class="st">'epitope_name'</span>].<span class="bu">apply</span>(calculate_isoelectric_point)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<div id="cell-14" class="cell" data-execution_count="80">
+<div class="sourceCode cell-code" id="cb13"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb13-1"><a href="#cb13-1" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> calculate_instability(peptide):</span>
+<span id="cb13-2"><a href="#cb13-2" aria-hidden="true" tabindex="-1"></a>    <span class="co">"""Calculate the instability of a peptide sequence using Biopython."""</span></span>
+<span id="cb13-3"><a href="#cb13-3" aria-hidden="true" tabindex="-1"></a>    <span class="cf">try</span>:</span>
+<span id="cb13-4"><a href="#cb13-4" aria-hidden="true" tabindex="-1"></a>        <span class="co"># ProteinAnalysis only works with standard amino acids</span></span>
+<span id="cb13-5"><a href="#cb13-5" aria-hidden="true" tabindex="-1"></a>        protein <span class="op">=</span> ProteinAnalysis(peptide)</span>
+<span id="cb13-6"><a href="#cb13-6" aria-hidden="true" tabindex="-1"></a>        <span class="cf">return</span> protein.instability_index()</span>
+<span id="cb13-7"><a href="#cb13-7" aria-hidden="true" tabindex="-1"></a>    <span class="cf">except</span> <span class="pp">Exception</span> <span class="im">as</span> e:</span>
+<span id="cb13-8"><a href="#cb13-8" aria-hidden="true" tabindex="-1"></a>        <span class="co"># Handle peptides with non-standard amino acids</span></span>
+<span id="cb13-9"><a href="#cb13-9" aria-hidden="true" tabindex="-1"></a>        <span class="cf">return</span> <span class="va">None</span></span>
+<span id="cb13-10"><a href="#cb13-10" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb13-11"><a href="#cb13-11" aria-hidden="true" tabindex="-1"></a><span class="co"># Apply the function to calculate molecular weight for each epitope</span></span>
+<span id="cb13-12"><a href="#cb13-12" aria-hidden="true" tabindex="-1"></a>epitopes[<span class="st">'instability'</span>] <span class="op">=</span> epitopes[<span class="st">'epitope_name'</span>].<span class="bu">apply</span>(calculate_instability)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<div id="cell-15" class="cell" data-execution_count="81">
+<div class="sourceCode cell-code" id="cb14"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb14-1"><a href="#cb14-1" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> calculate_charge_at_pH7(peptide):</span>
+<span id="cb14-2"><a href="#cb14-2" aria-hidden="true" tabindex="-1"></a>    <span class="co">"""Calculate the charge of a peptide sequence at pH 7 using Biopython."""</span></span>
+<span id="cb14-3"><a href="#cb14-3" aria-hidden="true" tabindex="-1"></a>    <span class="cf">try</span>:</span>
+<span id="cb14-4"><a href="#cb14-4" aria-hidden="true" tabindex="-1"></a>        <span class="co"># ProteinAnalysis only works with standard amino acids</span></span>
+<span id="cb14-5"><a href="#cb14-5" aria-hidden="true" tabindex="-1"></a>        protein <span class="op">=</span> ProteinAnalysis(peptide)</span>
+<span id="cb14-6"><a href="#cb14-6" aria-hidden="true" tabindex="-1"></a>        <span class="cf">return</span> protein.charge_at_pH(<span class="dv">7</span>)</span>
+<span id="cb14-7"><a href="#cb14-7" aria-hidden="true" tabindex="-1"></a>    <span class="cf">except</span> <span class="pp">Exception</span> <span class="im">as</span> e:</span>
+<span id="cb14-8"><a href="#cb14-8" aria-hidden="true" tabindex="-1"></a>        <span class="co"># Handle peptides with non-standard amino acids</span></span>
+<span id="cb14-9"><a href="#cb14-9" aria-hidden="true" tabindex="-1"></a>        <span class="cf">return</span> <span class="va">None</span></span>
+<span id="cb14-10"><a href="#cb14-10" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb14-11"><a href="#cb14-11" aria-hidden="true" tabindex="-1"></a><span class="co"># Apply the function to calculate molecular weight for each epitope</span></span>
+<span id="cb14-12"><a href="#cb14-12" aria-hidden="true" tabindex="-1"></a>epitopes[<span class="st">'charge_at_pH7'</span>] <span class="op">=</span> epitopes[<span class="st">'epitope_name'</span>].<span class="bu">apply</span>(calculate_charge_at_pH7)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<div id="cell-16" class="cell" data-execution_count="82">
+<div class="sourceCode cell-code" id="cb15"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb15-1"><a href="#cb15-1" aria-hidden="true" tabindex="-1"></a>epitopes.head()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-display" data-execution_count="82">
+<div>
+
+
+<table class="dataframe caption-top table table-sm table-striped small" data-quarto-postprocess="true" data-border="1">
+<thead>
+<tr class="header">
+<th data-quarto-table-cell-role="th"></th>
+<th data-quarto-table-cell-role="th">epitope_name</th>
+<th data-quarto-table-cell-role="th">fullsequence</th>
+<th data-quarto-table-cell-role="th">mhcrestriction_name</th>
+<th data-quarto-table-cell-role="th">mhcrestriction_class</th>
+<th data-quarto-table-cell-role="th">epitope_length</th>
+<th data-quarto-table-cell-role="th">epitope_avg_hydro</th>
+<th data-quarto-table-cell-role="th">molecular_weight</th>
+<th data-quarto-table-cell-role="th">aromaticity</th>
+<th data-quarto-table-cell-role="th">isoelectric_point</th>
+<th data-quarto-table-cell-role="th">instability</th>
+<th data-quarto-table-cell-role="th">charge_at_pH7</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td data-quarto-table-cell-role="th">0</td>
+<td>AAGIGILTV</td>
+<td>MPREDAHFIYGYPKKGHGHSYTTAEEAAGIGILTVILGVLLLIGCW...</td>
+<td>HLA-A2</td>
+<td>I</td>
+<td>9</td>
+<td>2.122222</td>
+<td>813.9814</td>
+<td>0.000000</td>
+<td>5.570017</td>
+<td>11.422222</td>
+<td>-0.204125</td>
+</tr>
+<tr class="even">
+<td data-quarto-table-cell-role="th">1</td>
+<td>AAGIGILTVI</td>
+<td>MPREDAHFIYGYPKKGHGHSYTTAEEAAGIGILTVILGVLLLIGCW...</td>
+<td>HLA-A*02:01</td>
+<td>I</td>
+<td>10</td>
+<td>2.360000</td>
+<td>927.1390</td>
+<td>0.000000</td>
+<td>5.570017</td>
+<td>11.280000</td>
+<td>-0.204125</td>
+</tr>
+<tr class="odd">
+<td data-quarto-table-cell-role="th">2</td>
+<td>ACDPHSGHFV</td>
+<td>NaN</td>
+<td>HLA-A2</td>
+<td>I</td>
+<td>10</td>
+<td>-0.140000</td>
+<td>1069.1507</td>
+<td>0.100000</td>
+<td>5.972266</td>
+<td>61.830000</td>
+<td>-1.038557</td>
+</tr>
+<tr class="even">
+<td data-quarto-table-cell-role="th">3</td>
+<td>ADLVGFLLLK</td>
+<td>MSLEQRSLHCKPEEALEAQQEALGLVCVQAATSSSSPLVLGTLEEV...</td>
+<td>HLA-A*11:01</td>
+<td>I</td>
+<td>10</td>
+<td>1.620000</td>
+<td>1088.3394</td>
+<td>0.100000</td>
+<td>5.880358</td>
+<td>-16.470000</td>
+<td>-0.204004</td>
+</tr>
+<tr class="odd">
+<td data-quarto-table-cell-role="th">4</td>
+<td>ADVEFCLSL</td>
+<td>MLLAVLYCLLWSFQTSAGHFPRACVSSKNLMEKECCPPWSGDRSPC...</td>
+<td>HLA-B*44:03</td>
+<td>I</td>
+<td>9</td>
+<td>1.233333</td>
+<td>996.1348</td>
+<td>0.111111</td>
+<td>4.050028</td>
+<td>20.855556</td>
+<td>-2.210095</td>
+</tr>
+</tbody>
+</table>
+
+</div>
+</div>
+</div>
+</section>
+<section id="generation-of-negative-samples" class="level2">
+<h2 class="anchored" data-anchor-id="generation-of-negative-samples">Generation of Negative Samples</h2>
+<div id="cell-18" class="cell" data-execution_count="83">
+<div class="sourceCode cell-code" id="cb16"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb16-1"><a href="#cb16-1" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> generate_negatives(row):</span>
+<span id="cb16-2"><a href="#cb16-2" aria-hidden="true" tabindex="-1"></a>    epitope <span class="op">=</span> row[<span class="st">"epitope_name"</span>]</span>
+<span id="cb16-3"><a href="#cb16-3" aria-hidden="true" tabindex="-1"></a>    full_seq <span class="op">=</span> row[<span class="st">"fullsequence"</span>]</span>
+<span id="cb16-4"><a href="#cb16-4" aria-hidden="true" tabindex="-1"></a>    mhc <span class="op">=</span> row[<span class="st">"mhcrestriction_name"</span>]</span>
+<span id="cb16-5"><a href="#cb16-5" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb16-6"><a href="#cb16-6" aria-hidden="true" tabindex="-1"></a>    <span class="co"># Handle missing or empty sequences</span></span>
+<span id="cb16-7"><a href="#cb16-7" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span> pd.isnull(full_seq) <span class="kw">or</span> full_seq <span class="op">==</span> <span class="st">""</span>:</span>
+<span id="cb16-8"><a href="#cb16-8" aria-hidden="true" tabindex="-1"></a>        <span class="cf">return</span> []</span>
+<span id="cb16-9"><a href="#cb16-9" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb16-10"><a href="#cb16-10" aria-hidden="true" tabindex="-1"></a>    epitope <span class="op">=</span> <span class="bu">str</span>(epitope)</span>
+<span id="cb16-11"><a href="#cb16-11" aria-hidden="true" tabindex="-1"></a>    full_seq <span class="op">=</span> <span class="bu">str</span>(full_seq)</span>
+<span id="cb16-12"><a href="#cb16-12" aria-hidden="true" tabindex="-1"></a>    ep_len <span class="op">=</span> <span class="bu">len</span>(epitope)</span>
+<span id="cb16-13"><a href="#cb16-13" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb16-14"><a href="#cb16-14" aria-hidden="true" tabindex="-1"></a>    negatives <span class="op">=</span> []</span>
+<span id="cb16-15"><a href="#cb16-15" aria-hidden="true" tabindex="-1"></a>    <span class="cf">for</span> i <span class="kw">in</span> <span class="bu">range</span>(<span class="bu">len</span>(full_seq) <span class="op">-</span> ep_len <span class="op">+</span> <span class="dv">1</span>):</span>
+<span id="cb16-16"><a href="#cb16-16" aria-hidden="true" tabindex="-1"></a>        window <span class="op">=</span> full_seq[i:i<span class="op">+</span>ep_len]</span>
+<span id="cb16-17"><a href="#cb16-17" aria-hidden="true" tabindex="-1"></a>        <span class="cf">if</span> window <span class="op">!=</span> epitope:</span>
+<span id="cb16-18"><a href="#cb16-18" aria-hidden="true" tabindex="-1"></a>            negatives.append({<span class="st">"peptide"</span>: window, <span class="st">"mhc"</span>: mhc})</span>
+<span id="cb16-19"><a href="#cb16-19" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> negatives</span>
+<span id="cb16-20"><a href="#cb16-20" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb16-21"><a href="#cb16-21" aria-hidden="true" tabindex="-1"></a><span class="co"># Apply the function to each row</span></span>
+<span id="cb16-22"><a href="#cb16-22" aria-hidden="true" tabindex="-1"></a><span class="co">'''</span></span>
+<span id="cb16-23"><a href="#cb16-23" aria-hidden="true" tabindex="-1"></a><span class="co">negatives = pd.DataFrame()</span></span>
+<span id="cb16-24"><a href="#cb16-24" aria-hidden="true" tabindex="-1"></a><span class="co">negatives['negatives'] = epitopes.apply(generate_negatives, axis=1)</span></span>
+<span id="cb16-25"><a href="#cb16-25" aria-hidden="true" tabindex="-1"></a><span class="co">negatives = negatives[["negatives"]].explode("negatives").reset_index(drop=True)</span></span>
+<span id="cb16-26"><a href="#cb16-26" aria-hidden="true" tabindex="-1"></a><span class="co">negatives.dropna(subset=["negatives"], inplace=True)</span></span>
+<span id="cb16-27"><a href="#cb16-27" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb16-28"><a href="#cb16-28" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb16-29"><a href="#cb16-29" aria-hidden="true" tabindex="-1"></a><span class="co"># Remove duplicate peptide-mhc combinations</span></span>
+<span id="cb16-30"><a href="#cb16-30" aria-hidden="true" tabindex="-1"></a><span class="co">print(f"Shape before removing duplicates: {negatives.shape}")</span></span>
+<span id="cb16-31"><a href="#cb16-31" aria-hidden="true" tabindex="-1"></a><span class="co">negatives = negatives.drop_duplicates(subset=['negatives'])</span></span>
+<span id="cb16-32"><a href="#cb16-32" aria-hidden="true" tabindex="-1"></a><span class="co">print(f"Shape after removing duplicates: {negatives.shape}")</span></span>
+<span id="cb16-33"><a href="#cb16-33" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb16-34"><a href="#cb16-34" aria-hidden="true" tabindex="-1"></a><span class="co"># Check for any remaining NaN values</span></span>
+<span id="cb16-35"><a href="#cb16-35" aria-hidden="true" tabindex="-1"></a><span class="co">print(f"Number of NaN values in negatives: {negatives['negatives'].isna().sum()}")</span></span>
+<span id="cb16-36"><a href="#cb16-36" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb16-37"><a href="#cb16-37" aria-hidden="true" tabindex="-1"></a><span class="co"># Extract peptide and mhc into separate columns</span></span>
+<span id="cb16-38"><a href="#cb16-38" aria-hidden="true" tabindex="-1"></a><span class="co">negatives['peptide'] = negatives['negatives'].apply(lambda x: x['peptide'])</span></span>
+<span id="cb16-39"><a href="#cb16-39" aria-hidden="true" tabindex="-1"></a><span class="co">negatives['mhc'] = negatives['negatives'].apply(lambda x: x['mhc'])</span></span>
+<span id="cb16-40"><a href="#cb16-40" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb16-41"><a href="#cb16-41" aria-hidden="true" tabindex="-1"></a><span class="co"># Calculate features on the peptide column</span></span>
+<span id="cb16-42"><a href="#cb16-42" aria-hidden="true" tabindex="-1"></a><span class="co">negatives['peptide_length'] = negatives['peptide'].apply(len)</span></span>
+<span id="cb16-43"><a href="#cb16-43" aria-hidden="true" tabindex="-1"></a><span class="co">negatives['peptide_avg_hydro'] = negatives['peptide'].apply(compute_avg_hydrophobicity)</span></span>
+<span id="cb16-44"><a href="#cb16-44" aria-hidden="true" tabindex="-1"></a><span class="co">negatives['molecular_weight'] = negatives['peptide'].apply(calculate_molecular_weight)</span></span>
+<span id="cb16-45"><a href="#cb16-45" aria-hidden="true" tabindex="-1"></a><span class="co">negatives['aromaticity'] = negatives['peptide'].apply(calculate_aromaticity)</span></span>
+<span id="cb16-46"><a href="#cb16-46" aria-hidden="true" tabindex="-1"></a><span class="co">negatives['isoelectric_point'] = negatives['peptide'].apply(calculate_isoelectric_point)</span></span>
+<span id="cb16-47"><a href="#cb16-47" aria-hidden="true" tabindex="-1"></a><span class="co">negatives['instability'] = negatives['peptide'].apply(calculate_instability)</span></span>
+<span id="cb16-48"><a href="#cb16-48" aria-hidden="true" tabindex="-1"></a><span class="co">negatives['charge_at_pH7'] = negatives['peptide'].apply(calculate_charge_at_pH7)</span></span>
+<span id="cb16-49"><a href="#cb16-49" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb16-50"><a href="#cb16-50" aria-hidden="true" tabindex="-1"></a><span class="co"># Drop the original dictionary column if no longer needed</span></span>
+<span id="cb16-51"><a href="#cb16-51" aria-hidden="true" tabindex="-1"></a><span class="co">negatives.drop('negatives', axis=1, inplace=True)</span></span>
+<span id="cb16-52"><a href="#cb16-52" aria-hidden="true" tabindex="-1"></a><span class="co">'''</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-display" data-execution_count="83">
+<pre><code>'\nnegatives = pd.DataFrame()\nnegatives[\'negatives\'] = epitopes.apply(generate_negatives, axis=1)\nnegatives = negatives[["negatives"]].explode("negatives").reset_index(drop=True)\nnegatives.dropna(subset=["negatives"], inplace=True)\n\n\n# Remove duplicate peptide-mhc combinations\nprint(f"Shape before removing duplicates: {negatives.shape}")\nnegatives = negatives.drop_duplicates(subset=[\'negatives\'])\nprint(f"Shape after removing duplicates: {negatives.shape}")\n\n# Check for any remaining NaN values\nprint(f"Number of NaN values in negatives: {negatives[\'negatives\'].isna().sum()}")\n\n# Extract peptide and mhc into separate columns\nnegatives[\'peptide\'] = negatives[\'negatives\'].apply(lambda x: x[\'peptide\'])\nnegatives[\'mhc\'] = negatives[\'negatives\'].apply(lambda x: x[\'mhc\'])\n\n# Calculate features on the peptide column\nnegatives[\'peptide_length\'] = negatives[\'peptide\'].apply(len)\nnegatives[\'peptide_avg_hydro\'] = negatives[\'peptide\'].apply(compute_avg_hydrophobicity)\nnegatives[\'molecular_weight\'] = negatives[\'peptide\'].apply(calculate_molecular_weight)\nnegatives[\'aromaticity\'] = negatives[\'peptide\'].apply(calculate_aromaticity)\nnegatives[\'isoelectric_point\'] = negatives[\'peptide\'].apply(calculate_isoelectric_point)\nnegatives[\'instability\'] = negatives[\'peptide\'].apply(calculate_instability)\nnegatives[\'charge_at_pH7\'] = negatives[\'peptide\'].apply(calculate_charge_at_pH7)\n\n# Drop the original dictionary column if no longer needed\nnegatives.drop(\'negatives\', axis=1, inplace=True)\n'</code></pre>
+</div>
+</div>
+<div id="cell-19" class="cell" data-execution_count="84">
+<div class="sourceCode cell-code" id="cb18"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb18-1"><a href="#cb18-1" aria-hidden="true" tabindex="-1"></a>negatives <span class="op">=</span> pd.read_csv(<span class="st">"data/negatives_MHC.csv"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stderr">
+<pre><code>/var/folders/5j/4p7c5_1x2fg18bk0nf74_hg40000gn/T/ipykernel_79130/1811011591.py:1: DtypeWarning: Columns (1) have mixed types. Specify dtype option on import or set low_memory=False.
+  negatives = pd.read_csv("data/negatives_MHC.csv")</code></pre>
+</div>
+</div>
+<div id="cell-20" class="cell" data-execution_count="85">
+<div class="sourceCode cell-code" id="cb20"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb20-1"><a href="#cb20-1" aria-hidden="true" tabindex="-1"></a>nine_mers <span class="op">=</span> epitopes[epitopes[<span class="st">'epitope_length'</span>] <span class="op">==</span> <span class="dv">9</span>]</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<div id="cell-21" class="cell" data-execution_count="86">
+<div class="sourceCode cell-code" id="cb21"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb21-1"><a href="#cb21-1" aria-hidden="true" tabindex="-1"></a>ninemer_negatives <span class="op">=</span> negatives[negatives[<span class="st">'peptide_length'</span>] <span class="op">==</span> <span class="dv">9</span>]</span>
+<span id="cb21-2"><a href="#cb21-2" aria-hidden="true" tabindex="-1"></a>ninemer_negatives_trimmed <span class="op">=</span> ninemer_negatives[:<span class="dv">50000</span>]</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+</section>
+<section id="eda" class="level2">
+<h2 class="anchored" data-anchor-id="eda">EDA</h2>
+<section id="data-summary" class="level3">
+<h3 class="anchored" data-anchor-id="data-summary">Data Summary</h3>
+<div id="cell-24" class="cell" data-execution_count="87">
+<div class="sourceCode cell-code" id="cb22"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb22-1"><a href="#cb22-1" aria-hidden="true" tabindex="-1"></a>epitopes.head()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-display" data-execution_count="87">
+<div>
+
+
+<table class="dataframe caption-top table table-sm table-striped small" data-quarto-postprocess="true" data-border="1">
+<thead>
+<tr class="header">
+<th data-quarto-table-cell-role="th"></th>
+<th data-quarto-table-cell-role="th">epitope_name</th>
+<th data-quarto-table-cell-role="th">fullsequence</th>
+<th data-quarto-table-cell-role="th">mhcrestriction_name</th>
+<th data-quarto-table-cell-role="th">mhcrestriction_class</th>
+<th data-quarto-table-cell-role="th">epitope_length</th>
+<th data-quarto-table-cell-role="th">epitope_avg_hydro</th>
+<th data-quarto-table-cell-role="th">molecular_weight</th>
+<th data-quarto-table-cell-role="th">aromaticity</th>
+<th data-quarto-table-cell-role="th">isoelectric_point</th>
+<th data-quarto-table-cell-role="th">instability</th>
+<th data-quarto-table-cell-role="th">charge_at_pH7</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td data-quarto-table-cell-role="th">0</td>
+<td>AAGIGILTV</td>
+<td>MPREDAHFIYGYPKKGHGHSYTTAEEAAGIGILTVILGVLLLIGCW...</td>
+<td>HLA-A2</td>
+<td>I</td>
+<td>9</td>
+<td>2.122222</td>
+<td>813.9814</td>
+<td>0.000000</td>
+<td>5.570017</td>
+<td>11.422222</td>
+<td>-0.204125</td>
+</tr>
+<tr class="even">
+<td data-quarto-table-cell-role="th">1</td>
+<td>AAGIGILTVI</td>
+<td>MPREDAHFIYGYPKKGHGHSYTTAEEAAGIGILTVILGVLLLIGCW...</td>
+<td>HLA-A*02:01</td>
+<td>I</td>
+<td>10</td>
+<td>2.360000</td>
+<td>927.1390</td>
+<td>0.000000</td>
+<td>5.570017</td>
+<td>11.280000</td>
+<td>-0.204125</td>
+</tr>
+<tr class="odd">
+<td data-quarto-table-cell-role="th">2</td>
+<td>ACDPHSGHFV</td>
+<td>NaN</td>
+<td>HLA-A2</td>
+<td>I</td>
+<td>10</td>
+<td>-0.140000</td>
+<td>1069.1507</td>
+<td>0.100000</td>
+<td>5.972266</td>
+<td>61.830000</td>
+<td>-1.038557</td>
+</tr>
+<tr class="even">
+<td data-quarto-table-cell-role="th">3</td>
+<td>ADLVGFLLLK</td>
+<td>MSLEQRSLHCKPEEALEAQQEALGLVCVQAATSSSSPLVLGTLEEV...</td>
+<td>HLA-A*11:01</td>
+<td>I</td>
+<td>10</td>
+<td>1.620000</td>
+<td>1088.3394</td>
+<td>0.100000</td>
+<td>5.880358</td>
+<td>-16.470000</td>
+<td>-0.204004</td>
+</tr>
+<tr class="odd">
+<td data-quarto-table-cell-role="th">4</td>
+<td>ADVEFCLSL</td>
+<td>MLLAVLYCLLWSFQTSAGHFPRACVSSKNLMEKECCPPWSGDRSPC...</td>
+<td>HLA-B*44:03</td>
+<td>I</td>
+<td>9</td>
+<td>1.233333</td>
+<td>996.1348</td>
+<td>0.111111</td>
+<td>4.050028</td>
+<td>20.855556</td>
+<td>-2.210095</td>
+</tr>
+</tbody>
+</table>
+
+</div>
+</div>
+</div>
+<div id="cell-25" class="cell" data-execution_count="88">
+<div class="sourceCode cell-code" id="cb23"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb23-1"><a href="#cb23-1" aria-hidden="true" tabindex="-1"></a>epitopes.info()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>&lt;class 'pandas.core.frame.DataFrame'&gt;
+RangeIndex: 28681 entries, 0 to 28680
+Data columns (total 11 columns):
+ #   Column                Non-Null Count  Dtype  
+---  ------                --------------  -----  
+ 0   epitope_name          28681 non-null  object 
+ 1   fullsequence          7164 non-null   object 
+ 2   mhcrestriction_name   17613 non-null  object 
+ 3   mhcrestriction_class  17613 non-null  object 
+ 4   epitope_length        28681 non-null  int64  
+ 5   epitope_avg_hydro     28681 non-null  float64
+ 6   molecular_weight      28623 non-null  float64
+ 7   aromaticity           28681 non-null  float64
+ 8   isoelectric_point     28681 non-null  float64
+ 9   instability           28623 non-null  float64
+ 10  charge_at_pH7         28681 non-null  float64
+dtypes: float64(6), int64(1), object(4)
+memory usage: 2.4+ MB</code></pre>
+</div>
+</div>
+</section>
+<section id="properties-of-epitopes" class="level3">
+<h3 class="anchored" data-anchor-id="properties-of-epitopes">Properties of Epitopes</h3>
+<section id="length" class="level4">
+<h4 class="anchored" data-anchor-id="length">Length</h4>
+<div id="cell-28" class="cell" data-execution_count="89">
+<div class="sourceCode cell-code" id="cb25"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb25-1"><a href="#cb25-1" aria-hidden="true" tabindex="-1"></a><span class="co"># hist of epitope length</span></span>
+<span id="cb25-2"><a href="#cb25-2" aria-hidden="true" tabindex="-1"></a>plt.figure(figsize<span class="op">=</span>(<span class="dv">10</span>, <span class="dv">6</span>))</span>
+<span id="cb25-3"><a href="#cb25-3" aria-hidden="true" tabindex="-1"></a>plt.hist(epitopes[<span class="st">'epitope_length'</span>], bins<span class="op">=</span><span class="dv">20</span>, edgecolor<span class="op">=</span><span class="st">'black'</span>)</span>
+<span id="cb25-4"><a href="#cb25-4" aria-hidden="true" tabindex="-1"></a>plt.xlabel(<span class="st">'Epitope Length'</span>)</span>
+<span id="cb25-5"><a href="#cb25-5" aria-hidden="true" tabindex="-1"></a>plt.ylabel(<span class="st">'Frequency'</span>)</span>
+<span id="cb25-6"><a href="#cb25-6" aria-hidden="true" tabindex="-1"></a>plt.title(<span class="st">'Histogram of Epitope Length'</span>)</span>
+<span id="cb25-7"><a href="#cb25-7" aria-hidden="true" tabindex="-1"></a>plt.show()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-display">
 <div>
 <figure class="figure">
-<p><img src="capstone_files/figure-html/cell-12-output-1.png" class="img-fluid figure-img"></p>
+<p><img src="capstone_files/figure-html/cell-22-output-1.png" class="img-fluid figure-img"></p>
 </figure>
 </div>
 </div>
 </div>
-<div id="cell-13" class="cell">
-<div class="sourceCode cell-code" id="cb15"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb15-1"><a href="#cb15-1" aria-hidden="true" tabindex="-1"></a>plt.figure(figsize<span class="op">=</span>(<span class="dv">10</span>, <span class="dv">6</span>))</span>
-<span id="cb15-2"><a href="#cb15-2" aria-hidden="true" tabindex="-1"></a>plt.hist(negatives[<span class="st">'negatives_avg_hydro'</span>], bins<span class="op">=</span><span class="dv">20</span>, edgecolor<span class="op">=</span><span class="st">'black'</span>)</span>
-<span id="cb15-3"><a href="#cb15-3" aria-hidden="true" tabindex="-1"></a>plt.xlabel(<span class="st">'Average Hydrophobicity'</span>)</span>
-<span id="cb15-4"><a href="#cb15-4" aria-hidden="true" tabindex="-1"></a>plt.ylabel(<span class="st">'Frequency'</span>)</span>
-<span id="cb15-5"><a href="#cb15-5" aria-hidden="true" tabindex="-1"></a>plt.title(<span class="st">'Histogram of Average Negative Hydrophobicity'</span>)</span>
-<span id="cb15-6"><a href="#cb15-6" aria-hidden="true" tabindex="-1"></a>plt.show()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div id="cell-29" class="cell" data-execution_count="90">
+<div class="sourceCode cell-code" id="cb26"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb26-1"><a href="#cb26-1" aria-hidden="true" tabindex="-1"></a>epitopes[<span class="st">'epitope_length'</span>].describe()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-display" data-execution_count="90">
+<pre><code>count    28681.000000
+mean        19.389422
+std          8.255925
+min          6.000000
+25%         10.000000
+50%         20.000000
+75%         25.000000
+max         50.000000
+Name: epitope_length, dtype: float64</code></pre>
 </div>
+</div>
+</section>
+<section id="hydrophobicity" class="level4">
+<h4 class="anchored" data-anchor-id="hydrophobicity">Hydrophobicity</h4>
+<div id="cell-31" class="cell" data-execution_count="91">
+<div class="sourceCode cell-code" id="cb28"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb28-1"><a href="#cb28-1" aria-hidden="true" tabindex="-1"></a><span class="co"># histogram of average hydrophobicity</span></span>
+<span id="cb28-2"><a href="#cb28-2" aria-hidden="true" tabindex="-1"></a>plt.figure(figsize<span class="op">=</span>(<span class="dv">10</span>, <span class="dv">6</span>))</span>
+<span id="cb28-3"><a href="#cb28-3" aria-hidden="true" tabindex="-1"></a>plt.hist(epitopes[<span class="st">'epitope_avg_hydro'</span>], bins<span class="op">=</span><span class="dv">20</span>, edgecolor<span class="op">=</span><span class="st">'black'</span>)</span>
+<span id="cb28-4"><a href="#cb28-4" aria-hidden="true" tabindex="-1"></a>plt.xlabel(<span class="st">'Average Hydrophobicity'</span>)</span>
+<span id="cb28-5"><a href="#cb28-5" aria-hidden="true" tabindex="-1"></a>plt.ylabel(<span class="st">'Frequency'</span>)</span>
+<span id="cb28-6"><a href="#cb28-6" aria-hidden="true" tabindex="-1"></a>plt.title(<span class="st">'Histogram of Average Epitope Hydrophobicity'</span>)</span>
+<span id="cb28-7"><a href="#cb28-7" aria-hidden="true" tabindex="-1"></a>plt.show()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="capstone_files/figure-html/cell-24-output-1.png" class="img-fluid figure-img"></p>
+</figure>
+</div>
+</div>
+</div>
+<div id="cell-32" class="cell" data-execution_count="92">
+<div class="sourceCode cell-code" id="cb29"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb29-1"><a href="#cb29-1" aria-hidden="true" tabindex="-1"></a>epitopes[<span class="st">'epitope_avg_hydro'</span>].describe()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-display" data-execution_count="92">
+<pre><code>count    28681.000000
+mean        -0.178410
+std          0.883064
+min         -3.312000
+25%         -0.762500
+50%         -0.240000
+75%          0.333333
+max          3.688889
+Name: epitope_avg_hydro, dtype: float64</code></pre>
+</div>
+</div>
+</section>
+<section id="composition" class="level4">
+<h4 class="anchored" data-anchor-id="composition">Composition</h4>
+<div id="cell-34" class="cell" data-execution_count="93">
+<div class="sourceCode cell-code" id="cb31"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb31-1"><a href="#cb31-1" aria-hidden="true" tabindex="-1"></a><span class="co"># plot the composition of the epitopes, sort by the composition of the amino acids</span></span>
+<span id="cb31-2"><a href="#cb31-2" aria-hidden="true" tabindex="-1"></a><span class="co"># Calculate mean composition and sort</span></span>
+<span id="cb31-3"><a href="#cb31-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb31-4"><a href="#cb31-4" aria-hidden="true" tabindex="-1"></a><span class="co">'''</span></span>
+<span id="cb31-5"><a href="#cb31-5" aria-hidden="true" tabindex="-1"></a><span class="co">mean_composition = epitope_composition_df.mean().sort_values(ascending=False)</span></span>
+<span id="cb31-6"><a href="#cb31-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb31-7"><a href="#cb31-7" aria-hidden="true" tabindex="-1"></a><span class="co"># Plot the sorted composition</span></span>
+<span id="cb31-8"><a href="#cb31-8" aria-hidden="true" tabindex="-1"></a><span class="co">plt.figure(figsize=(10, 6))</span></span>
+<span id="cb31-9"><a href="#cb31-9" aria-hidden="true" tabindex="-1"></a><span class="co">plt.bar(mean_composition.index, mean_composition.values)</span></span>
+<span id="cb31-10"><a href="#cb31-10" aria-hidden="true" tabindex="-1"></a><span class="co">plt.xlabel('Amino Acid')</span></span>
+<span id="cb31-11"><a href="#cb31-11" aria-hidden="true" tabindex="-1"></a><span class="co">plt.ylabel('Composition')</span></span>
+<span id="cb31-12"><a href="#cb31-12" aria-hidden="true" tabindex="-1"></a><span class="co">plt.title('Composition of Epitopes')</span></span>
+<span id="cb31-13"><a href="#cb31-13" aria-hidden="true" tabindex="-1"></a><span class="co">plt.show()</span></span>
+<span id="cb31-14"><a href="#cb31-14" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb31-15"><a href="#cb31-15" aria-hidden="true" tabindex="-1"></a><span class="co">'''</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-display" data-execution_count="93">
+<pre><code>"\nmean_composition = epitope_composition_df.mean().sort_values(ascending=False)\n\n# Plot the sorted composition\nplt.figure(figsize=(10, 6))\nplt.bar(mean_composition.index, mean_composition.values)\nplt.xlabel('Amino Acid')\nplt.ylabel('Composition')\nplt.title('Composition of Epitopes')\nplt.show()\n\n"</code></pre>
+</div>
+</div>
+</section>
+<section id="n-gram-frequency-analysis" class="level4">
+<h4 class="anchored" data-anchor-id="n-gram-frequency-analysis">n-gram frequency analysis</h4>
+<div id="cell-36" class="cell" data-execution_count="94">
+<div class="sourceCode cell-code" id="cb33"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb33-1"><a href="#cb33-1" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> ngram_frequency(peptides, n<span class="op">=</span><span class="dv">2</span>):</span>
+<span id="cb33-2"><a href="#cb33-2" aria-hidden="true" tabindex="-1"></a>    ngrams <span class="op">=</span> []</span>
+<span id="cb33-3"><a href="#cb33-3" aria-hidden="true" tabindex="-1"></a>    <span class="cf">for</span> peptide <span class="kw">in</span> peptides:</span>
+<span id="cb33-4"><a href="#cb33-4" aria-hidden="true" tabindex="-1"></a>        <span class="cf">if</span> <span class="bu">len</span>(peptide) <span class="op">&lt;</span> n:</span>
+<span id="cb33-5"><a href="#cb33-5" aria-hidden="true" tabindex="-1"></a>            <span class="cf">continue</span></span>
+<span id="cb33-6"><a href="#cb33-6" aria-hidden="true" tabindex="-1"></a>        <span class="cf">for</span> i <span class="kw">in</span> <span class="bu">range</span>(<span class="bu">len</span>(peptide) <span class="op">-</span> n <span class="op">+</span> <span class="dv">1</span>):</span>
+<span id="cb33-7"><a href="#cb33-7" aria-hidden="true" tabindex="-1"></a>            ngram <span class="op">=</span> peptide[i:i<span class="op">+</span>n]</span>
+<span id="cb33-8"><a href="#cb33-8" aria-hidden="true" tabindex="-1"></a>            ngrams.append(ngram)</span>
+<span id="cb33-9"><a href="#cb33-9" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> Counter(ngrams)</span>
+<span id="cb33-10"><a href="#cb33-10" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb33-11"><a href="#cb33-11" aria-hidden="true" tabindex="-1"></a>dipeptide_freq <span class="op">=</span> ngram_frequency(epitopes[<span class="st">'epitope_name'</span>], n<span class="op">=</span><span class="dv">2</span>)</span>
+<span id="cb33-12"><a href="#cb33-12" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb33-13"><a href="#cb33-13" aria-hidden="true" tabindex="-1"></a>df_ngram <span class="op">=</span> pd.DataFrame(dipeptide_freq.items(), columns<span class="op">=</span>[<span class="st">'ngram'</span>, <span class="st">'count'</span>])</span>
+<span id="cb33-14"><a href="#cb33-14" aria-hidden="true" tabindex="-1"></a>df_ngram <span class="op">=</span> df_ngram.sort_values(<span class="st">'count'</span>, ascending<span class="op">=</span><span class="va">False</span>)</span>
+<span id="cb33-15"><a href="#cb33-15" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb33-16"><a href="#cb33-16" aria-hidden="true" tabindex="-1"></a>top_n <span class="op">=</span> <span class="dv">20</span></span>
+<span id="cb33-17"><a href="#cb33-17" aria-hidden="true" tabindex="-1"></a>top_ngram <span class="op">=</span> df_ngram.head(top_n)</span>
+<span id="cb33-18"><a href="#cb33-18" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb33-19"><a href="#cb33-19" aria-hidden="true" tabindex="-1"></a>plt.figure(figsize<span class="op">=</span>(<span class="dv">12</span>, <span class="dv">6</span>))</span>
+<span id="cb33-20"><a href="#cb33-20" aria-hidden="true" tabindex="-1"></a>sns.barplot(x<span class="op">=</span><span class="st">'ngram'</span>, y<span class="op">=</span><span class="st">'count'</span>, data<span class="op">=</span>top_ngram, palette<span class="op">=</span><span class="st">"viridis"</span>)</span>
+<span id="cb33-21"><a href="#cb33-21" aria-hidden="true" tabindex="-1"></a>plt.title(<span class="ss">f"Epitopes Top </span><span class="sc">{</span>top_n<span class="sc">}</span><span class="ss"> Dipeptides Frequency"</span>)</span>
+<span id="cb33-22"><a href="#cb33-22" aria-hidden="true" tabindex="-1"></a>plt.xlabel(<span class="st">"Dipeptide"</span>)</span>
+<span id="cb33-23"><a href="#cb33-23" aria-hidden="true" tabindex="-1"></a>plt.ylabel(<span class="st">"Frequency"</span>)</span>
+<span id="cb33-24"><a href="#cb33-24" aria-hidden="true" tabindex="-1"></a>plt.show()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stderr">
+<pre><code>/var/folders/5j/4p7c5_1x2fg18bk0nf74_hg40000gn/T/ipykernel_79130/733366050.py:20: FutureWarning: 
+
+Passing `palette` without assigning `hue` is deprecated and will be removed in v0.14.0. Assign the `x` variable to `hue` and set `legend=False` for the same effect.
+
+  sns.barplot(x='ngram', y='count', data=top_ngram, palette="viridis")</code></pre>
+</div>
+<div class="cell-output cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="capstone_files/figure-html/cell-27-output-2.png" class="img-fluid figure-img"></p>
+</figure>
+</div>
+</div>
+</div>
+</section>
+<section id="mhc-binding-affinity" class="level4">
+<h4 class="anchored" data-anchor-id="mhc-binding-affinity">MHC Binding Affinity</h4>
+</section>
+</section>
+<section id="properties-of-negative-samples" class="level3">
+<h3 class="anchored" data-anchor-id="properties-of-negative-samples">Properties of negative samples</h3>
+<div id="cell-39" class="cell" data-execution_count="95">
+<div class="sourceCode cell-code" id="cb35"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb35-1"><a href="#cb35-1" aria-hidden="true" tabindex="-1"></a><span class="co"># hist of negative length</span></span>
+<span id="cb35-2"><a href="#cb35-2" aria-hidden="true" tabindex="-1"></a>plt.figure(figsize<span class="op">=</span>(<span class="dv">10</span>, <span class="dv">6</span>))</span>
+<span id="cb35-3"><a href="#cb35-3" aria-hidden="true" tabindex="-1"></a>plt.hist(negatives[<span class="st">'peptide_length'</span>], bins<span class="op">=</span><span class="dv">20</span>, edgecolor<span class="op">=</span><span class="st">'black'</span>)</span>
+<span id="cb35-4"><a href="#cb35-4" aria-hidden="true" tabindex="-1"></a>plt.xlabel(<span class="st">'Negative Length'</span>)</span>
+<span id="cb35-5"><a href="#cb35-5" aria-hidden="true" tabindex="-1"></a>plt.ylabel(<span class="st">'Frequency'</span>)</span>
+<span id="cb35-6"><a href="#cb35-6" aria-hidden="true" tabindex="-1"></a>plt.title(<span class="st">'Histogram of Negative Length'</span>)</span>
+<span id="cb35-7"><a href="#cb35-7" aria-hidden="true" tabindex="-1"></a>plt.show()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="capstone_files/figure-html/cell-28-output-1.png" class="img-fluid figure-img"></p>
+</figure>
+</div>
+</div>
+</div>
+<div id="cell-40" class="cell" data-execution_count="96">
+<div class="sourceCode cell-code" id="cb36"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb36-1"><a href="#cb36-1" aria-hidden="true" tabindex="-1"></a><span class="co"># histogram of average hydrophobicity</span></span>
+<span id="cb36-2"><a href="#cb36-2" aria-hidden="true" tabindex="-1"></a>plt.figure(figsize<span class="op">=</span>(<span class="dv">10</span>, <span class="dv">6</span>))</span>
+<span id="cb36-3"><a href="#cb36-3" aria-hidden="true" tabindex="-1"></a>plt.hist(negatives[<span class="st">'peptide_avg_hydro'</span>], bins<span class="op">=</span><span class="dv">20</span>, edgecolor<span class="op">=</span><span class="st">'black'</span>)</span>
+<span id="cb36-4"><a href="#cb36-4" aria-hidden="true" tabindex="-1"></a>plt.xlabel(<span class="st">'Average Hydrophobicity'</span>)</span>
+<span id="cb36-5"><a href="#cb36-5" aria-hidden="true" tabindex="-1"></a>plt.ylabel(<span class="st">'Frequency'</span>)</span>
+<span id="cb36-6"><a href="#cb36-6" aria-hidden="true" tabindex="-1"></a>plt.title(<span class="st">'Histogram of Negative Average Hydrophobicity'</span>)</span>
+<span id="cb36-7"><a href="#cb36-7" aria-hidden="true" tabindex="-1"></a>plt.show()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="capstone_files/figure-html/cell-29-output-1.png" class="img-fluid figure-img"></p>
+</figure>
+</div>
+</div>
+</div>
+<div id="cell-41" class="cell" data-execution_count="97">
+<div class="sourceCode cell-code" id="cb37"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb37-1"><a href="#cb37-1" aria-hidden="true" tabindex="-1"></a>negatives[<span class="st">'peptide_avg_hydro'</span>].mean()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-display" data-execution_count="97">
+<pre><code>-0.4169864724628861</code></pre>
+</div>
+</div>
+<div id="cell-42" class="cell" data-execution_count="98">
+<div class="sourceCode cell-code" id="cb39"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb39-1"><a href="#cb39-1" aria-hidden="true" tabindex="-1"></a><span class="co"># plot the composition of the negatives, sort by the composition of the amino acids</span></span>
+<span id="cb39-2"><a href="#cb39-2" aria-hidden="true" tabindex="-1"></a><span class="co"># Calculate mean composition and sort</span></span>
+<span id="cb39-3"><a href="#cb39-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb39-4"><a href="#cb39-4" aria-hidden="true" tabindex="-1"></a><span class="co">'''</span></span>
+<span id="cb39-5"><a href="#cb39-5" aria-hidden="true" tabindex="-1"></a><span class="co">mean_composition = negatives_composition_df.mean().sort_values(ascending=False)</span></span>
+<span id="cb39-6"><a href="#cb39-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb39-7"><a href="#cb39-7" aria-hidden="true" tabindex="-1"></a><span class="co"># Plot the sorted composition</span></span>
+<span id="cb39-8"><a href="#cb39-8" aria-hidden="true" tabindex="-1"></a><span class="co">plt.figure(figsize=(10, 6))</span></span>
+<span id="cb39-9"><a href="#cb39-9" aria-hidden="true" tabindex="-1"></a><span class="co">plt.bar(mean_composition.index, mean_composition.values)</span></span>
+<span id="cb39-10"><a href="#cb39-10" aria-hidden="true" tabindex="-1"></a><span class="co">plt.xlabel('Amino Acid')</span></span>
+<span id="cb39-11"><a href="#cb39-11" aria-hidden="true" tabindex="-1"></a><span class="co">plt.ylabel('Composition')</span></span>
+<span id="cb39-12"><a href="#cb39-12" aria-hidden="true" tabindex="-1"></a><span class="co">plt.title('Composition of Negative Samples')</span></span>
+<span id="cb39-13"><a href="#cb39-13" aria-hidden="true" tabindex="-1"></a><span class="co">plt.show()</span></span>
+<span id="cb39-14"><a href="#cb39-14" aria-hidden="true" tabindex="-1"></a><span class="co">'''</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-display" data-execution_count="98">
+<pre><code>"\nmean_composition = negatives_composition_df.mean().sort_values(ascending=False)\n\n# Plot the sorted composition\nplt.figure(figsize=(10, 6))\nplt.bar(mean_composition.index, mean_composition.values)\nplt.xlabel('Amino Acid')\nplt.ylabel('Composition')\nplt.title('Composition of Negative Samples')\nplt.show()\n"</code></pre>
+</div>
+</div>
+</section>
+</section>
+<section id="modeling" class="level2">
+<h2 class="anchored" data-anchor-id="modeling">Modeling</h2>
+<section id="data-preprocessing" class="level3">
+<h3 class="anchored" data-anchor-id="data-preprocessing">Data Preprocessing</h3>
+<div id="cell-45" class="cell" data-execution_count="99">
+<div class="sourceCode cell-code" id="cb41"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb41-1"><a href="#cb41-1" aria-hidden="true" tabindex="-1"></a>epitopes <span class="op">=</span> pd.read_csv(<span class="st">"data/ninemer_epitopes.csv"</span>)</span>
+<span id="cb41-2"><a href="#cb41-2" aria-hidden="true" tabindex="-1"></a>epitopes <span class="op">=</span> epitopes.drop(columns<span class="op">=</span>[<span class="st">'fullsequence'</span>, <span class="st">'mhcrestriction_name'</span>, <span class="st">'mhcrestriction_class'</span>, <span class="st">'epitope_length'</span>])</span>
+<span id="cb41-3"><a href="#cb41-3" aria-hidden="true" tabindex="-1"></a>epitopes <span class="op">=</span> epitopes.rename(columns<span class="op">=</span>{<span class="st">'epitope_name'</span>: <span class="st">'peptide'</span>, <span class="st">'epitope_avg_hydro'</span>: <span class="st">'peptide_avg_hydro'</span>})</span>
+<span id="cb41-4"><a href="#cb41-4" aria-hidden="true" tabindex="-1"></a>epitopes_BA_pred <span class="op">=</span> pd.read_csv(<span class="st">"data/ninemer_epitopes_BA_pred.csv"</span>)</span>
+<span id="cb41-5"><a href="#cb41-5" aria-hidden="true" tabindex="-1"></a>epitopes_composition <span class="op">=</span> epitopes.<span class="bu">apply</span>(<span class="kw">lambda</span> row: count_amino_acids(row[<span class="st">'peptide'</span>]), axis<span class="op">=</span><span class="dv">1</span>).<span class="bu">apply</span>(pd.Series)</span>
+<span id="cb41-6"><a href="#cb41-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb41-7"><a href="#cb41-7" aria-hidden="true" tabindex="-1"></a>negatives <span class="op">=</span> pd.read_csv(<span class="st">"data/ninemer_negatives_trimmed.csv"</span>)</span>
+<span id="cb41-8"><a href="#cb41-8" aria-hidden="true" tabindex="-1"></a>negatives <span class="op">=</span> negatives.drop(columns<span class="op">=</span>[<span class="st">'mhc'</span>, <span class="st">'peptide_length'</span>])</span>
+<span id="cb41-9"><a href="#cb41-9" aria-hidden="true" tabindex="-1"></a>negatives <span class="op">=</span> negatives.rename(columns<span class="op">=</span>{<span class="st">'peptide'</span>: <span class="st">'peptide'</span>})</span>
+<span id="cb41-10"><a href="#cb41-10" aria-hidden="true" tabindex="-1"></a>negatives <span class="op">=</span> negatives.drop_duplicates(subset<span class="op">=</span>[<span class="st">'peptide'</span>])</span>
+<span id="cb41-11"><a href="#cb41-11" aria-hidden="true" tabindex="-1"></a>negatives_BA_pred <span class="op">=</span> pd.read_csv(<span class="st">"data/ninemer_negatives_trimmed_BA_pred.csv"</span>)</span>
+<span id="cb41-12"><a href="#cb41-12" aria-hidden="true" tabindex="-1"></a>negatives_BA_pred <span class="op">=</span> negatives_BA_pred.drop_duplicates(subset<span class="op">=</span>[<span class="st">'peptide'</span>])</span>
+<span id="cb41-13"><a href="#cb41-13" aria-hidden="true" tabindex="-1"></a>negatives_composition <span class="op">=</span> negatives.<span class="bu">apply</span>(<span class="kw">lambda</span> row: count_amino_acids(row[<span class="st">'peptide'</span>]), axis<span class="op">=</span><span class="dv">1</span>).<span class="bu">apply</span>(pd.Series)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<div id="cell-46" class="cell" data-execution_count="100">
+<div class="sourceCode cell-code" id="cb42"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb42-1"><a href="#cb42-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Merge the 'Score_BA' column from epitopes_BA_pred into the epitopes dataframe</span></span>
+<span id="cb42-2"><a href="#cb42-2" aria-hidden="true" tabindex="-1"></a>epitopes <span class="op">=</span> pd.merge(epitopes, epitopes_BA_pred[[<span class="st">'peptide'</span>, <span class="st">'Score_BA'</span>, <span class="st">'ic50'</span>]], on<span class="op">=</span><span class="st">'peptide'</span>, how<span class="op">=</span><span class="st">'left'</span>)</span>
+<span id="cb42-3"><a href="#cb42-3" aria-hidden="true" tabindex="-1"></a><span class="co">#epitopes = pd.merge(epitopes, epitopes_composition, on='peptide', how='left')</span></span>
+<span id="cb42-4"><a href="#cb42-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb42-5"><a href="#cb42-5" aria-hidden="true" tabindex="-1"></a>negatives <span class="op">=</span> pd.merge(negatives, negatives_BA_pred[[<span class="st">'peptide'</span>, <span class="st">'Score_BA'</span>, <span class="st">'ic50'</span>]], on<span class="op">=</span><span class="st">'peptide'</span>, how<span class="op">=</span><span class="st">'left'</span>)</span>
+<span id="cb42-6"><a href="#cb42-6" aria-hidden="true" tabindex="-1"></a><span class="co">#negatives = pd.merge(negatives, negatives_composition, on='peptide', how='left')</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<div id="cell-47" class="cell" data-execution_count="101">
+<div class="sourceCode cell-code" id="cb43"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb43-1"><a href="#cb43-1" aria-hidden="true" tabindex="-1"></a><span class="co"># plot Score_BA for epitopes and negatives overlaid on the same plot</span></span>
+<span id="cb43-2"><a href="#cb43-2" aria-hidden="true" tabindex="-1"></a>plt.figure(figsize<span class="op">=</span>(<span class="dv">10</span>, <span class="dv">6</span>))</span>
+<span id="cb43-3"><a href="#cb43-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb43-4"><a href="#cb43-4" aria-hidden="true" tabindex="-1"></a><span class="co"># Use density instead of raw counts to normalize the histograms</span></span>
+<span id="cb43-5"><a href="#cb43-5" aria-hidden="true" tabindex="-1"></a>plt.hist(epitopes[<span class="st">'Score_BA'</span>], bins<span class="op">=</span><span class="dv">20</span>, alpha<span class="op">=</span><span class="fl">0.5</span>, color<span class="op">=</span><span class="st">'blue'</span>, edgecolor<span class="op">=</span><span class="st">'black'</span>, </span>
+<span id="cb43-6"><a href="#cb43-6" aria-hidden="true" tabindex="-1"></a>         label<span class="op">=</span><span class="st">'Epitopes'</span>, density<span class="op">=</span><span class="va">True</span>)</span>
+<span id="cb43-7"><a href="#cb43-7" aria-hidden="true" tabindex="-1"></a>plt.hist(negatives[<span class="st">'Score_BA'</span>], bins<span class="op">=</span><span class="dv">20</span>, alpha<span class="op">=</span><span class="fl">0.5</span>, color<span class="op">=</span><span class="st">'red'</span>, edgecolor<span class="op">=</span><span class="st">'black'</span>, </span>
+<span id="cb43-8"><a href="#cb43-8" aria-hidden="true" tabindex="-1"></a>         label<span class="op">=</span><span class="st">'Negatives'</span>, density<span class="op">=</span><span class="va">True</span>)</span>
+<span id="cb43-9"><a href="#cb43-9" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb43-10"><a href="#cb43-10" aria-hidden="true" tabindex="-1"></a><span class="co"># Alternative approach: use log scale for y-axis</span></span>
+<span id="cb43-11"><a href="#cb43-11" aria-hidden="true" tabindex="-1"></a>plt.yscale(<span class="st">'log'</span>)</span>
+<span id="cb43-12"><a href="#cb43-12" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb43-13"><a href="#cb43-13" aria-hidden="true" tabindex="-1"></a>plt.xlabel(<span class="st">'Binding Affinity'</span>)</span>
+<span id="cb43-14"><a href="#cb43-14" aria-hidden="true" tabindex="-1"></a>plt.ylabel(<span class="st">'Density (log scale)'</span>)</span>
+<span id="cb43-15"><a href="#cb43-15" aria-hidden="true" tabindex="-1"></a>plt.title(<span class="st">'Normalized Histogram of Binding Affinity for Epitopes vs Negatives'</span>)</span>
+<span id="cb43-16"><a href="#cb43-16" aria-hidden="true" tabindex="-1"></a>plt.legend(prop<span class="op">=</span>{<span class="st">'size'</span>: <span class="dv">14</span>})  <span class="co"># Increased legend font size</span></span>
+<span id="cb43-17"><a href="#cb43-17" aria-hidden="true" tabindex="-1"></a>plt.tight_layout()</span>
+<span id="cb43-18"><a href="#cb43-18" aria-hidden="true" tabindex="-1"></a>plt.show()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="capstone_files/figure-html/cell-34-output-1.png" class="img-fluid figure-img"></p>
+</figure>
+</div>
+</div>
+</div>
+<div id="cell-49" class="cell" data-execution_count="102">
+<div class="sourceCode cell-code" id="cb44"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb44-1"><a href="#cb44-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Add label column to epitopes dataframe (positive class = 1)</span></span>
+<span id="cb44-2"><a href="#cb44-2" aria-hidden="true" tabindex="-1"></a>epitopes[<span class="st">'label'</span>] <span class="op">=</span> <span class="dv">1</span></span>
+<span id="cb44-3"><a href="#cb44-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb44-4"><a href="#cb44-4" aria-hidden="true" tabindex="-1"></a><span class="co"># Add label column to negatives dataframe (negative class = 0)</span></span>
+<span id="cb44-5"><a href="#cb44-5" aria-hidden="true" tabindex="-1"></a>negatives[<span class="st">'label'</span>] <span class="op">=</span> <span class="dv">0</span></span>
+<span id="cb44-6"><a href="#cb44-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb44-7"><a href="#cb44-7" aria-hidden="true" tabindex="-1"></a><span class="co"># Combine the positive and negative examples</span></span>
+<span id="cb44-8"><a href="#cb44-8" aria-hidden="true" tabindex="-1"></a>combined_data <span class="op">=</span> pd.concat([epitopes, negatives], ignore_index<span class="op">=</span><span class="va">True</span>)</span>
+<span id="cb44-9"><a href="#cb44-9" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb44-10"><a href="#cb44-10" aria-hidden="true" tabindex="-1"></a><span class="co"># Shuffle the combined dataset</span></span>
+<span id="cb44-11"><a href="#cb44-11" aria-hidden="true" tabindex="-1"></a>combined_data <span class="op">=</span> combined_data.sample(frac<span class="op">=</span><span class="dv">1</span>, random_state<span class="op">=</span><span class="dv">42</span>).reset_index(drop<span class="op">=</span><span class="va">True</span>)</span>
+<span id="cb44-12"><a href="#cb44-12" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb44-13"><a href="#cb44-13" aria-hidden="true" tabindex="-1"></a><span class="co"># Define features and target</span></span>
+<span id="cb44-14"><a href="#cb44-14" aria-hidden="true" tabindex="-1"></a>X <span class="op">=</span> combined_data.drop(columns<span class="op">=</span>[<span class="st">'peptide'</span>, <span class="st">'label'</span>])</span>
+<span id="cb44-15"><a href="#cb44-15" aria-hidden="true" tabindex="-1"></a>y <span class="op">=</span> combined_data[<span class="st">'label'</span>]</span>
+<span id="cb44-16"><a href="#cb44-16" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb44-17"><a href="#cb44-17" aria-hidden="true" tabindex="-1"></a><span class="co"># Identify numerical columns to scale (exclude one-hot encoded amino acid columns)</span></span>
+<span id="cb44-18"><a href="#cb44-18" aria-hidden="true" tabindex="-1"></a>numerical_cols <span class="op">=</span> [<span class="st">'peptide_avg_hydro'</span>, <span class="st">'molecular_weight'</span>, <span class="st">'aromaticity'</span>, <span class="st">'isoelectric_point'</span>, <span class="st">'instability'</span>,<span class="st">'Score_BA'</span>, <span class="st">'charge_at_pH7'</span>]</span>
+<span id="cb44-19"><a href="#cb44-19" aria-hidden="true" tabindex="-1"></a>amino_acid_cols <span class="op">=</span> [col <span class="cf">for</span> col <span class="kw">in</span> X.columns <span class="cf">if</span> col <span class="kw">not</span> <span class="kw">in</span> numerical_cols]</span>
+<span id="cb44-20"><a href="#cb44-20" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb44-21"><a href="#cb44-21" aria-hidden="true" tabindex="-1"></a><span class="co"># Split the data into training and testing sets (80% train, 20% test)</span></span>
+<span id="cb44-22"><a href="#cb44-22" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> sklearn.model_selection <span class="im">import</span> train_test_split</span>
+<span id="cb44-23"><a href="#cb44-23" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> sklearn.preprocessing <span class="im">import</span> StandardScaler</span>
+<span id="cb44-24"><a href="#cb44-24" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb44-25"><a href="#cb44-25" aria-hidden="true" tabindex="-1"></a>X_train, X_test, y_train, y_test <span class="op">=</span> train_test_split(</span>
+<span id="cb44-26"><a href="#cb44-26" aria-hidden="true" tabindex="-1"></a>    X, y, test_size<span class="op">=</span><span class="fl">0.2</span>, random_state<span class="op">=</span><span class="dv">42</span>, stratify<span class="op">=</span>y</span>
+<span id="cb44-27"><a href="#cb44-27" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb44-28"><a href="#cb44-28" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb44-29"><a href="#cb44-29" aria-hidden="true" tabindex="-1"></a><span class="co"># Scale numerical features using StandardScaler</span></span>
+<span id="cb44-30"><a href="#cb44-30" aria-hidden="true" tabindex="-1"></a>scaler <span class="op">=</span> StandardScaler()</span>
+<span id="cb44-31"><a href="#cb44-31" aria-hidden="true" tabindex="-1"></a>X_train[numerical_cols] <span class="op">=</span> scaler.fit_transform(X_train[numerical_cols])</span>
+<span id="cb44-32"><a href="#cb44-32" aria-hidden="true" tabindex="-1"></a>X_test[numerical_cols] <span class="op">=</span> scaler.transform(X_test[numerical_cols])</span>
+<span id="cb44-33"><a href="#cb44-33" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb44-34"><a href="#cb44-34" aria-hidden="true" tabindex="-1"></a><span class="co"># Print the shapes to verify the split</span></span>
+<span id="cb44-35"><a href="#cb44-35" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="ss">f"Training set: </span><span class="sc">{</span>X_train<span class="sc">.</span>shape[<span class="dv">0</span>]<span class="sc">}</span><span class="ss"> samples"</span>)</span>
+<span id="cb44-36"><a href="#cb44-36" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="ss">f"Testing set: </span><span class="sc">{</span>X_test<span class="sc">.</span>shape[<span class="dv">0</span>]<span class="sc">}</span><span class="ss"> samples"</span>)</span>
+<span id="cb44-37"><a href="#cb44-37" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="ss">f"Positive samples in training: </span><span class="sc">{</span><span class="bu">sum</span>(y_train <span class="op">==</span> <span class="dv">1</span>)<span class="sc">}</span><span class="ss">"</span>)</span>
+<span id="cb44-38"><a href="#cb44-38" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="ss">f"Negative samples in training: </span><span class="sc">{</span><span class="bu">sum</span>(y_train <span class="op">==</span> <span class="dv">0</span>)<span class="sc">}</span><span class="ss">"</span>)</span>
+<span id="cb44-39"><a href="#cb44-39" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="ss">f"Positive samples in testing: </span><span class="sc">{</span><span class="bu">sum</span>(y_test <span class="op">==</span> <span class="dv">1</span>)<span class="sc">}</span><span class="ss">"</span>)</span>
+<span id="cb44-40"><a href="#cb44-40" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="ss">f"Negative samples in testing: </span><span class="sc">{</span><span class="bu">sum</span>(y_test <span class="op">==</span> <span class="dv">0</span>)<span class="sc">}</span><span class="ss">"</span>)</span>
+<span id="cb44-41"><a href="#cb44-41" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="ss">f"Scaled numerical features: </span><span class="sc">{</span>numerical_cols<span class="sc">}</span><span class="ss">"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>Training set: 20502 samples
+Testing set: 5126 samples
+Positive samples in training: 4236
+Negative samples in training: 16266
+Positive samples in testing: 1059
+Negative samples in testing: 4067
+Scaled numerical features: ['peptide_avg_hydro', 'molecular_weight', 'aromaticity', 'isoelectric_point', 'instability', 'Score_BA', 'charge_at_pH7']</code></pre>
+</div>
+</div>
+<div id="cell-50" class="cell" data-execution_count="103">
+<div class="sourceCode cell-code" id="cb46"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb46-1"><a href="#cb46-1" aria-hidden="true" tabindex="-1"></a><span class="co"># drop the Score_BA column</span></span>
+<span id="cb46-2"><a href="#cb46-2" aria-hidden="true" tabindex="-1"></a><span class="co">#X_train = X_train.drop(columns=['Score_BA'])</span></span>
+<span id="cb46-3"><a href="#cb46-3" aria-hidden="true" tabindex="-1"></a><span class="co">#X_test = X_test.drop(columns=['Score_BA'])</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<div id="cell-51" class="cell" data-execution_count="106">
+<div class="sourceCode cell-code" id="cb47"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb47-1"><a href="#cb47-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Initialize the Random Forest Classifier</span></span>
+<span id="cb47-2"><a href="#cb47-2" aria-hidden="true" tabindex="-1"></a>rf_model <span class="op">=</span> RandomForestClassifier(</span>
+<span id="cb47-3"><a href="#cb47-3" aria-hidden="true" tabindex="-1"></a>    n_estimators<span class="op">=</span><span class="dv">100</span>,  <span class="co"># Number of trees</span></span>
+<span id="cb47-4"><a href="#cb47-4" aria-hidden="true" tabindex="-1"></a>    max_depth<span class="op">=</span><span class="va">None</span>,    <span class="co"># Maximum depth of trees</span></span>
+<span id="cb47-5"><a href="#cb47-5" aria-hidden="true" tabindex="-1"></a>    min_samples_split<span class="op">=</span><span class="dv">2</span>,</span>
+<span id="cb47-6"><a href="#cb47-6" aria-hidden="true" tabindex="-1"></a>    min_samples_leaf<span class="op">=</span><span class="dv">1</span>,</span>
+<span id="cb47-7"><a href="#cb47-7" aria-hidden="true" tabindex="-1"></a>    random_state<span class="op">=</span><span class="dv">42</span></span>
+<span id="cb47-8"><a href="#cb47-8" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb47-9"><a href="#cb47-9" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb47-10"><a href="#cb47-10" aria-hidden="true" tabindex="-1"></a><span class="co"># Train the model</span></span>
+<span id="cb47-11"><a href="#cb47-11" aria-hidden="true" tabindex="-1"></a>rf_model.fit(X_train, y_train)</span>
+<span id="cb47-12"><a href="#cb47-12" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb47-13"><a href="#cb47-13" aria-hidden="true" tabindex="-1"></a><span class="co"># Make predictions on the test set</span></span>
+<span id="cb47-14"><a href="#cb47-14" aria-hidden="true" tabindex="-1"></a>y_pred <span class="op">=</span> rf_model.predict(X_test)</span>
+<span id="cb47-15"><a href="#cb47-15" aria-hidden="true" tabindex="-1"></a>y_pred_proba <span class="op">=</span> rf_model.predict_proba(X_test)[:, <span class="dv">1</span>]  <span class="co"># Probability estimates for positive class</span></span>
+<span id="cb47-16"><a href="#cb47-16" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb47-17"><a href="#cb47-17" aria-hidden="true" tabindex="-1"></a><span class="co"># Evaluate the model</span></span>
+<span id="cb47-18"><a href="#cb47-18" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="st">"Random Forest Model Evaluation:"</span>)</span>
+<span id="cb47-19"><a href="#cb47-19" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="ss">f"Accuracy: </span><span class="sc">{</span>accuracy_score(y_test, y_pred)<span class="sc">:.4f}</span><span class="ss">"</span>)</span>
+<span id="cb47-20"><a href="#cb47-20" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="st">"</span><span class="ch">\n</span><span class="st">Classification Report:"</span>)</span>
+<span id="cb47-21"><a href="#cb47-21" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(classification_report(y_test, y_pred))</span>
+<span id="cb47-22"><a href="#cb47-22" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb47-23"><a href="#cb47-23" aria-hidden="true" tabindex="-1"></a><span class="co"># Confusion Matrix</span></span>
+<span id="cb47-24"><a href="#cb47-24" aria-hidden="true" tabindex="-1"></a>cm <span class="op">=</span> confusion_matrix(y_test, y_pred)</span>
+<span id="cb47-25"><a href="#cb47-25" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="st">"</span><span class="ch">\n</span><span class="st">Confusion Matrix:"</span>)</span>
+<span id="cb47-26"><a href="#cb47-26" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(cm)</span>
+<span id="cb47-27"><a href="#cb47-27" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb47-28"><a href="#cb47-28" aria-hidden="true" tabindex="-1"></a><span class="co"># Calculate ROC AUC</span></span>
+<span id="cb47-29"><a href="#cb47-29" aria-hidden="true" tabindex="-1"></a>roc_auc <span class="op">=</span> roc_auc_score(y_test, y_pred_proba)</span>
+<span id="cb47-30"><a href="#cb47-30" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="ss">f"</span><span class="ch">\n</span><span class="ss">ROC AUC Score: </span><span class="sc">{</span>roc_auc<span class="sc">:.4f}</span><span class="ss">"</span>)</span>
+<span id="cb47-31"><a href="#cb47-31" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb47-32"><a href="#cb47-32" aria-hidden="true" tabindex="-1"></a><span class="co"># Plot ROC Curve</span></span>
+<span id="cb47-33"><a href="#cb47-33" aria-hidden="true" tabindex="-1"></a>fpr, tpr, _ <span class="op">=</span> roc_curve(y_test, y_pred_proba)</span>
+<span id="cb47-34"><a href="#cb47-34" aria-hidden="true" tabindex="-1"></a>plt.figure(figsize<span class="op">=</span>(<span class="dv">8</span>, <span class="dv">6</span>))</span>
+<span id="cb47-35"><a href="#cb47-35" aria-hidden="true" tabindex="-1"></a>plt.plot(fpr, tpr, label<span class="op">=</span><span class="ss">f'Random Forest (AUC = </span><span class="sc">{</span>roc_auc<span class="sc">:.4f}</span><span class="ss">)'</span>)</span>
+<span id="cb47-36"><a href="#cb47-36" aria-hidden="true" tabindex="-1"></a>plt.plot([<span class="dv">0</span>, <span class="dv">1</span>], [<span class="dv">0</span>, <span class="dv">1</span>], <span class="st">'k--'</span>, label<span class="op">=</span><span class="st">'Random (AUC = 0.5)'</span>)</span>
+<span id="cb47-37"><a href="#cb47-37" aria-hidden="true" tabindex="-1"></a>plt.xlabel(<span class="st">'False Positive Rate'</span>)</span>
+<span id="cb47-38"><a href="#cb47-38" aria-hidden="true" tabindex="-1"></a>plt.ylabel(<span class="st">'True Positive Rate'</span>)</span>
+<span id="cb47-39"><a href="#cb47-39" aria-hidden="true" tabindex="-1"></a>plt.title(<span class="st">'ROC Curve - Random Forest'</span>)</span>
+<span id="cb47-40"><a href="#cb47-40" aria-hidden="true" tabindex="-1"></a>plt.legend()</span>
+<span id="cb47-41"><a href="#cb47-41" aria-hidden="true" tabindex="-1"></a>plt.grid(<span class="va">True</span>, alpha<span class="op">=</span><span class="fl">0.3</span>)</span>
+<span id="cb47-42"><a href="#cb47-42" aria-hidden="true" tabindex="-1"></a>plt.show()</span>
+<span id="cb47-43"><a href="#cb47-43" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb47-44"><a href="#cb47-44" aria-hidden="true" tabindex="-1"></a><span class="co"># Feature importance</span></span>
+<span id="cb47-45"><a href="#cb47-45" aria-hidden="true" tabindex="-1"></a>feature_importance <span class="op">=</span> pd.DataFrame({</span>
+<span id="cb47-46"><a href="#cb47-46" aria-hidden="true" tabindex="-1"></a>    <span class="st">'Feature'</span>: X_train.columns,</span>
+<span id="cb47-47"><a href="#cb47-47" aria-hidden="true" tabindex="-1"></a>    <span class="st">'Importance'</span>: rf_model.feature_importances_</span>
+<span id="cb47-48"><a href="#cb47-48" aria-hidden="true" tabindex="-1"></a>})</span>
+<span id="cb47-49"><a href="#cb47-49" aria-hidden="true" tabindex="-1"></a>feature_importance <span class="op">=</span> feature_importance.sort_values(<span class="st">'Importance'</span>, ascending<span class="op">=</span><span class="va">True</span>)</span>
+<span id="cb47-50"><a href="#cb47-50" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb47-51"><a href="#cb47-51" aria-hidden="true" tabindex="-1"></a><span class="co"># Plot top 15 features</span></span>
+<span id="cb47-52"><a href="#cb47-52" aria-hidden="true" tabindex="-1"></a>plt.figure(figsize<span class="op">=</span>(<span class="dv">10</span>, <span class="dv">6</span>))</span>
+<span id="cb47-53"><a href="#cb47-53" aria-hidden="true" tabindex="-1"></a>top_features <span class="op">=</span> feature_importance.head(<span class="dv">15</span>)</span>
+<span id="cb47-54"><a href="#cb47-54" aria-hidden="true" tabindex="-1"></a>plt.barh(np.arange(<span class="bu">len</span>(top_features)), top_features[<span class="st">'Importance'</span>], align<span class="op">=</span><span class="st">'center'</span>)</span>
+<span id="cb47-55"><a href="#cb47-55" aria-hidden="true" tabindex="-1"></a>plt.yticks(np.arange(<span class="bu">len</span>(top_features)), top_features[<span class="st">'Feature'</span>])</span>
+<span id="cb47-56"><a href="#cb47-56" aria-hidden="true" tabindex="-1"></a>plt.xlabel(<span class="st">'Importance'</span>)</span>
+<span id="cb47-57"><a href="#cb47-57" aria-hidden="true" tabindex="-1"></a>plt.title(<span class="st">'Top 15 Feature Importance - Random Forest'</span>)</span>
+<span id="cb47-58"><a href="#cb47-58" aria-hidden="true" tabindex="-1"></a>plt.tight_layout()</span>
+<span id="cb47-59"><a href="#cb47-59" aria-hidden="true" tabindex="-1"></a>plt.show()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>Random Forest Model Evaluation:
+Accuracy: 0.9138
+
+Classification Report:
+              precision    recall  f1-score   support
+
+           0       0.94      0.96      0.95      4067
+           1       0.82      0.75      0.78      1059
+
+    accuracy                           0.91      5126
+   macro avg       0.88      0.85      0.86      5126
+weighted avg       0.91      0.91      0.91      5126
+
+
+Confusion Matrix:
+[[3893  174]
+ [ 268  791]]
+
+ROC AUC Score: 0.9523</code></pre>
+</div>
+<div class="cell-output cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="capstone_files/figure-html/cell-38-output-2.png" class="img-fluid figure-img"></p>
+</figure>
+</div>
+</div>
+<div class="cell-output cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="capstone_files/figure-html/cell-38-output-3.png" class="img-fluid figure-img"></p>
+</figure>
+</div>
+</div>
+</div>
+</section>
+<section id="clustering" class="level3">
+<h3 class="anchored" data-anchor-id="clustering">Clustering</h3>
+<div id="cell-53" class="cell" data-execution_count="105">
+<div class="sourceCode cell-code" id="cb49"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb49-1"><a href="#cb49-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Example clustering approach</span></span>
+<span id="cb49-2"><a href="#cb49-2" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> sklearn.cluster <span class="im">import</span> KMeans, DBSCAN, AgglomerativeClustering</span>
+<span id="cb49-3"><a href="#cb49-3" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> sklearn.manifold <span class="im">import</span> TSNE</span>
+<span id="cb49-4"><a href="#cb49-4" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> matplotlib.pyplot <span class="im">as</span> plt</span>
+<span id="cb49-5"><a href="#cb49-5" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> seaborn <span class="im">as</span> sns</span>
+<span id="cb49-6"><a href="#cb49-6" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> sklearn.impute <span class="im">import</span> SimpleImputer</span>
+<span id="cb49-7"><a href="#cb49-7" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb49-8"><a href="#cb49-8" aria-hidden="true" tabindex="-1"></a><span class="co"># Create feature matrix (using your existing features)</span></span>
+<span id="cb49-9"><a href="#cb49-9" aria-hidden="true" tabindex="-1"></a>X <span class="op">=</span> pd.concat([epitopes[[<span class="st">'peptide_avg_hydro'</span>, <span class="st">'molecular_weight'</span>, <span class="st">'aromaticity'</span>, </span>
+<span id="cb49-10"><a href="#cb49-10" aria-hidden="true" tabindex="-1"></a>                         <span class="st">'isoelectric_point'</span>, <span class="st">'instability'</span>, <span class="st">'charge_at_pH7'</span>, <span class="st">'Score_BA'</span>]], </span>
+<span id="cb49-11"><a href="#cb49-11" aria-hidden="true" tabindex="-1"></a>               <span class="co"># Add amino acid composition features</span></span>
+<span id="cb49-12"><a href="#cb49-12" aria-hidden="true" tabindex="-1"></a>               pd.get_dummies(epitopes[<span class="st">'peptide'</span>].<span class="bu">apply</span>(<span class="kw">lambda</span> x: <span class="st">''</span>.join(x)), prefix<span class="op">=</span><span class="st">'pos'</span>)], axis<span class="op">=</span><span class="dv">1</span>)</span>
+<span id="cb49-13"><a href="#cb49-13" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb49-14"><a href="#cb49-14" aria-hidden="true" tabindex="-1"></a><span class="co"># Handle missing values</span></span>
+<span id="cb49-15"><a href="#cb49-15" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="st">"Number of NaN values in dataset:"</span>, X.isna().<span class="bu">sum</span>().<span class="bu">sum</span>())</span>
+<span id="cb49-16"><a href="#cb49-16" aria-hidden="true" tabindex="-1"></a>imputer <span class="op">=</span> SimpleImputer(strategy<span class="op">=</span><span class="st">'mean'</span>)</span>
+<span id="cb49-17"><a href="#cb49-17" aria-hidden="true" tabindex="-1"></a>X_imputed <span class="op">=</span> imputer.fit_transform(X)</span>
+<span id="cb49-18"><a href="#cb49-18" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb49-19"><a href="#cb49-19" aria-hidden="true" tabindex="-1"></a><span class="co"># Option 1: K-means clustering</span></span>
+<span id="cb49-20"><a href="#cb49-20" aria-hidden="true" tabindex="-1"></a>kmeans <span class="op">=</span> KMeans(n_clusters<span class="op">=</span><span class="dv">5</span>, random_state<span class="op">=</span><span class="dv">42</span>)  <span class="co"># Adjust number of clusters</span></span>
+<span id="cb49-21"><a href="#cb49-21" aria-hidden="true" tabindex="-1"></a>clusters <span class="op">=</span> kmeans.fit_predict(X_imputed)</span>
+<span id="cb49-22"><a href="#cb49-22" aria-hidden="true" tabindex="-1"></a>epitopes[<span class="st">'cluster'</span>] <span class="op">=</span> clusters</span>
+<span id="cb49-23"><a href="#cb49-23" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb49-24"><a href="#cb49-24" aria-hidden="true" tabindex="-1"></a><span class="co"># Option 2: Hierarchical clustering</span></span>
+<span id="cb49-25"><a href="#cb49-25" aria-hidden="true" tabindex="-1"></a><span class="co"># hclust = AgglomerativeClustering(n_clusters=5)</span></span>
+<span id="cb49-26"><a href="#cb49-26" aria-hidden="true" tabindex="-1"></a><span class="co"># clusters = hclust.fit_predict(X_imputed)</span></span>
+<span id="cb49-27"><a href="#cb49-27" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb49-28"><a href="#cb49-28" aria-hidden="true" tabindex="-1"></a><span class="co"># Visualize with t-SNE</span></span>
+<span id="cb49-29"><a href="#cb49-29" aria-hidden="true" tabindex="-1"></a>tsne <span class="op">=</span> TSNE(n_components<span class="op">=</span><span class="dv">2</span>, random_state<span class="op">=</span><span class="dv">42</span>)</span>
+<span id="cb49-30"><a href="#cb49-30" aria-hidden="true" tabindex="-1"></a>X_tsne <span class="op">=</span> tsne.fit_transform(X_imputed)</span>
+<span id="cb49-31"><a href="#cb49-31" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb49-32"><a href="#cb49-32" aria-hidden="true" tabindex="-1"></a>plt.figure(figsize<span class="op">=</span>(<span class="dv">10</span>, <span class="dv">8</span>))</span>
+<span id="cb49-33"><a href="#cb49-33" aria-hidden="true" tabindex="-1"></a>sns.scatterplot(x<span class="op">=</span>X_tsne[:, <span class="dv">0</span>], y<span class="op">=</span>X_tsne[:, <span class="dv">1</span>], hue<span class="op">=</span>clusters, palette<span class="op">=</span><span class="st">'viridis'</span>)</span>
+<span id="cb49-34"><a href="#cb49-34" aria-hidden="true" tabindex="-1"></a>plt.title(<span class="st">'Epitope Clusters Visualization'</span>)</span>
+<span id="cb49-35"><a href="#cb49-35" aria-hidden="true" tabindex="-1"></a>plt.show()</span>
+<span id="cb49-36"><a href="#cb49-36" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb49-37"><a href="#cb49-37" aria-hidden="true" tabindex="-1"></a><span class="co"># Analyze cluster characteristics</span></span>
+<span id="cb49-38"><a href="#cb49-38" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> cluster_id <span class="kw">in</span> <span class="bu">range</span>(<span class="dv">5</span>):</span>
+<span id="cb49-39"><a href="#cb49-39" aria-hidden="true" tabindex="-1"></a>    cluster_peptides <span class="op">=</span> epitopes[epitopes[<span class="st">'cluster'</span>] <span class="op">==</span> cluster_id]</span>
+<span id="cb49-40"><a href="#cb49-40" aria-hidden="true" tabindex="-1"></a>    <span class="bu">print</span>(<span class="ss">f"Cluster </span><span class="sc">{</span>cluster_id<span class="sc">}</span><span class="ss">: </span><span class="sc">{</span><span class="bu">len</span>(cluster_peptides)<span class="sc">}</span><span class="ss"> peptides"</span>)</span>
+<span id="cb49-41"><a href="#cb49-41" aria-hidden="true" tabindex="-1"></a>    <span class="bu">print</span>(<span class="ss">f"Average binding score: </span><span class="sc">{</span>cluster_peptides[<span class="st">'Score_BA'</span>]<span class="sc">.</span>mean()<span class="sc">:.2f}</span><span class="ss">"</span>)</span>
+<span id="cb49-42"><a href="#cb49-42" aria-hidden="true" tabindex="-1"></a>    <span class="bu">print</span>(<span class="ss">f"Average hydrophobicity: </span><span class="sc">{</span>cluster_peptides[<span class="st">'peptide_avg_hydro'</span>]<span class="sc">.</span>mean()<span class="sc">:.2f}</span><span class="ss">"</span>)</span>
+<span id="cb49-43"><a href="#cb49-43" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb49-44"><a href="#cb49-44" aria-hidden="true" tabindex="-1"></a>    <span class="co"># Find sequence motifs in cluster</span></span>
+<span id="cb49-45"><a href="#cb49-45" aria-hidden="true" tabindex="-1"></a>    motif_analysis <span class="op">=</span> pd.DataFrame()</span>
+<span id="cb49-46"><a href="#cb49-46" aria-hidden="true" tabindex="-1"></a>    <span class="cf">for</span> i <span class="kw">in</span> <span class="bu">range</span>(<span class="dv">9</span>):  <span class="co"># For 9-mer peptides</span></span>
+<span id="cb49-47"><a href="#cb49-47" aria-hidden="true" tabindex="-1"></a>        aa_counts <span class="op">=</span> cluster_peptides[<span class="st">'peptide'</span>].<span class="bu">str</span>[i].value_counts(normalize<span class="op">=</span><span class="va">True</span>)</span>
+<span id="cb49-48"><a href="#cb49-48" aria-hidden="true" tabindex="-1"></a>        motif_analysis[<span class="ss">f'Position_</span><span class="sc">{</span>i<span class="op">+</span><span class="dv">1</span><span class="sc">}</span><span class="ss">'</span>] <span class="op">=</span> aa_counts</span>
+<span id="cb49-49"><a href="#cb49-49" aria-hidden="true" tabindex="-1"></a>    <span class="bu">print</span>(<span class="st">"Top amino acids at each position:"</span>)</span>
+<span id="cb49-50"><a href="#cb49-50" aria-hidden="true" tabindex="-1"></a>    <span class="cf">for</span> col <span class="kw">in</span> motif_analysis.columns:</span>
+<span id="cb49-51"><a href="#cb49-51" aria-hidden="true" tabindex="-1"></a>        top_aas <span class="op">=</span> motif_analysis[col].nlargest(<span class="dv">3</span>)</span>
+<span id="cb49-52"><a href="#cb49-52" aria-hidden="true" tabindex="-1"></a>        <span class="bu">print</span>(<span class="ss">f"</span><span class="sc">{</span>col<span class="sc">}</span><span class="ss">: </span><span class="sc">{</span><span class="st">', '</span><span class="sc">.</span>join([<span class="ss">f'</span><span class="sc">{</span>aa<span class="sc">}</span><span class="ss">(</span><span class="sc">{</span>freq<span class="sc">:.2f}</span><span class="ss">)'</span> <span class="cf">for</span> aa, freq <span class="kw">in</span> top_aas.items()])<span class="sc">}</span><span class="ss">"</span>)</span>
+<span id="cb49-53"><a href="#cb49-53" aria-hidden="true" tabindex="-1"></a>    <span class="bu">print</span>(<span class="st">"</span><span class="ch">\n</span><span class="st">"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>Number of NaN values in dataset: 937</code></pre>
+</div>
+<div class="cell-output cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="capstone_files/figure-html/cell-39-output-2.png" class="img-fluid figure-img"></p>
+</figure>
+</div>
+</div>
+<div class="cell-output cell-output-stdout">
+<pre><code>Cluster 0: 827 peptides
+Average binding score: 0.55
+Average hydrophobicity: 0.02
+Top amino acids at each position:
+Position_1: S(0.12), L(0.11), A(0.07)
+Position_2: L(0.22), P(0.13), S(0.09)
+Position_3: S(0.12), L(0.10), A(0.08)
+Position_4: S(0.13), E(0.13), P(0.13)
+Position_5: S(0.10), L(0.10), R(0.07)
+Position_6: S(0.12), L(0.12), P(0.09)
+Position_7: P(0.13), S(0.13), L(0.09)
+Position_8: S(0.12), P(0.12), L(0.09)
+Position_9: L(0.31), V(0.16), I(0.10)
+
+
+Cluster 1: 732 peptides
+Average binding score: 0.53
+Average hydrophobicity: 0.75
+Top amino acids at each position:
+Position_1: A(0.20), G(0.14), S(0.14)
+Position_2: L(0.31), A(0.13), P(0.13)
+Position_3: A(0.16), G(0.11), S(0.11)
+Position_4: G(0.17), P(0.16), A(0.15)
+Position_5: G(0.19), A(0.16), V(0.11)
+Position_6: G(0.16), S(0.14), L(0.12)
+Position_7: A(0.13), P(0.12), S(0.11)
+Position_8: A(0.18), S(0.16), G(0.12)
+Position_9: L(0.29), V(0.25), A(0.14)
+
+
+Cluster 2: 1419 peptides
+Average binding score: 0.56
+Average hydrophobicity: 0.57
+Top amino acids at each position:
+Position_1: L(0.10), A(0.10), S(0.09)
+Position_2: L(0.32), V(0.10), T(0.08)
+Position_3: L(0.14), A(0.09), S(0.09)
+Position_4: S(0.09), G(0.09), L(0.09)
+Position_5: L(0.11), G(0.11), A(0.09)
+Position_6: L(0.14), V(0.09), S(0.09)
+Position_7: L(0.14), V(0.11), A(0.09)
+Position_8: L(0.11), A(0.10), S(0.10)
+Position_9: L(0.28), V(0.20), K(0.12)
+
+
+Cluster 3: 863 peptides
+Average binding score: 0.57
+Average hydrophobicity: -0.31
+Top amino acids at each position:
+Position_1: R(0.14), F(0.12), Y(0.12)
+Position_2: L(0.19), Y(0.15), R(0.10)
+Position_3: Y(0.11), F(0.11), L(0.10)
+Position_4: E(0.11), R(0.10), L(0.08)
+Position_5: R(0.14), F(0.11), L(0.09)
+Position_6: L(0.12), F(0.10), R(0.08)
+Position_7: L(0.12), F(0.09), R(0.08)
+Position_8: L(0.10), E(0.09), R(0.09)
+Position_9: L(0.26), F(0.18), Y(0.12)
+
+
+Cluster 4: 1454 peptides
+Average binding score: 0.58
+Average hydrophobicity: 0.19
+Top amino acids at each position:
+Position_1: F(0.12), K(0.11), R(0.10)
+Position_2: L(0.27), V(0.09), Y(0.08)
+Position_3: L(0.13), F(0.08), D(0.07)
+Position_4: E(0.11), D(0.08), L(0.08)
+Position_5: L(0.11), F(0.08), V(0.08)
+Position_6: L(0.15), V(0.09), I(0.09)
+Position_7: L(0.14), F(0.09), V(0.06)
+Position_8: L(0.13), S(0.08), F(0.08)
+Position_9: L(0.28), V(0.15), F(0.11)
+
+</code></pre>
+</div>
+</div>
+</section>
+<section id="new-model" class="level3">
+<h3 class="anchored" data-anchor-id="new-model">New Model</h3>
+</section>
+</section>
 
 </main>
 <!-- /main column -->

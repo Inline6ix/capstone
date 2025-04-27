@@ -1,10 +1,8 @@
 ---
-title: "My awesome blog"
-subtitle: "Spring 2023"
-author: "Prof. Yuster"
+title: "Cancer T-Cell Epitope Classification"
+subtitle: "Identifying key target antigens for cancer immunotherapy"
+author: "Tariq Alagha"
 bibliography: references.bib
-nocite: |
-  @*
 number-sections: false
 format:
   html:
@@ -13,58 +11,171 @@ format:
     code-fold: true
     code-tools: true
     toc: true
+editor:
+  render-on-save: false
 jupyter: python3
+nocite: |
+  @*
 ---
 
+![@AWAD20221010](https://www.cell.com/cms/10.1016/j.ccell.2022.08.003/asset/eb36c8cd-3880-4d48-8a8b-f10accd01fba/main.assets/fx1_lrg.jpg){width=50% fig-align="center" fig-alt="End to end personalized peptide vaccine cancer treatment"}
 
-![Source: Ramapo College of New Jersey](https://www.ramapo.edu/tours/wp-content/uploads/sites/344/2020/10/Fall-Arch-Straigh-Edit.jpg){fig-alt="A photo of the arch at Ramapo College."}
+Epitope classification is a critical area of immunology and vaccine development that focuses on identifying and characterizing specific regions of antigens that are recognized by the immune system. Epitopes serve as the molecular interface between pathogens and the host immune response, making their accurate identification essential for understanding immune responses and developing targeted therapeutics.
+As shown in Figure 2, standard chemotherapy treatment targets rapidly dividing cells which can include the hosts immune system, making them counterproductive. However, effective fabrication of personalized antigens would make treatment much less physically devastating.
 
+# Data
 
-# Welcome
+### Dataset
 
+The dataset utilized for this analysis is sourced from [The Immune Epitope Database (IEDB)](https://www.iedb.org/), a publicly available database of manually extracted data from published scientific research on antibody and T-cell epitopes. It was created to aggregate and centralize data on how the immune system recognizes specific molecular features, known as epitopes, on antigens.
 
-**Welcome** to *my* ~~super~~ SUPER awesome `blog` post!
-$$x^2 = 1$$
+The database can be queried for known epitopes, returning a list of assays — commonly known as tests or experiments — that have been performed on the antigen and their results. These tests can include whether or not a particular epitope binds to the MHC complex or is capable of triggering a cytokine release to kill living cells.
 
-## Quarto is cool
+The scope of my analysis will be limited to epitopes sourced from human cancer T-cells that were tested and found to produce an autoimmune response. While the database has a wide range of information about each antigen, I will only be utilizing the epitopes' amino acid sequence and the MHC allele it was tested against.
 
-This section was copy/pasted from various parts of the [Quarto website](https://quarto.org/docs/get-started/hello/vscode.html).
+Along with these features, each epitope entry also contains a link to the antigen's full amino acid sequence. These full sequences come from the [UniProt](https://www.uniprot.org/) database, which contains a collection of protein sequences and their associated information. These full sequences will be used to generate negative samples for the model.
 
-:::{.callout-note}
-Note that there are five types of callouts, including:
-`note`, `tip`, `warning`, `caution`, and `important`.
+::: {.callout-note title="Libraries and packages" collapse="false"}
+```{python q-collapse}
+# Importing libraries
+import pandas as pd
+from collections import Counter
+import matplotlib.pyplot as plt
+import seaborn as sns
+import numpy as np
+import Bio
+from sklearn.ensemble import RandomForestClassifier
+from sklearn.metrics import classification_report, accuracy_score, confusion_matrix, roc_auc_score, roc_curve
+from Bio.SeqUtils.ProtParam import ProteinAnalysis
+import requests
+from io import StringIO
+from Bio import SeqIO
+```
 :::
 
-:::{.callout-tip}
-## Tip With Caption
-
-This is an example of a callout with a caption.
-:::
-
-
-For your reference, here's an example of a Python code cell in Quarto, along with a figure that gets generated, along with a caption and a label so that it can be referred to automatically as "Figure 1" (or whatever) in the writeup.
-
-For a demonstration of a line plot on a polar axis, see @fig-polar.
+### Preprocessing
 
 ```{python}
-#| label: fig-polar
-#| fig-cap: "A line plot on a polar axis"
+#| warning: false
 
-import numpy as np
-import matplotlib.pyplot as plt
+epitopes = pd.read_csv(r'/Users/tariq/Documents/capstone/data/epitope_table_export_1740279588.csv')
+assays = pd.read_csv(r'/Users/tariq/Documents/capstone/data/tcell_table_export_1740279970.csv')
 
-r = np.arange(0, 2, 0.01)
-theta = 2 * np.pi * r
-fig, ax = plt.subplots(
-  subplot_kw = {'projection': 'polar'} 
-)
-ax.plot(theta, r)
-ax.set_rticks([0.5, 1, 1.5, 2])
-ax.grid(True)
-plt.show()
+def fetch_full_sequence(url):
+    if pd.notna(url):  # Check if the URL is not NaN
+        url = f'{url}.fasta'
+        try:
+            response = requests.get(url)
+            if response.status_code == 200:
+                fasta_io = StringIO(response.text)
+                records = list(SeqIO.parse(fasta_io, "fasta"))
+                if records:  # Check if there are any records
+                    return str(records[0].seq)
+                else:
+                    print("No records found in the FASTA file.")
+        except requests.exceptions.RequestException as e:
+            print(f"Request failed: {e}")
+    return None
+
+#epitopes['Full Sequence'] = epitopes['Epitope - Molecule Parent IRI'].apply(fetch_full_sequence)
+epitopes = pd.read_csv(r'/Users/tariq/Documents/capstone/data/epitope_full_seq.csv')
+
+# make all the column names snake case
+epitopes.columns = epitopes.columns.str.lower()
+assays.columns = assays.columns.str.lower()
+
+# remove spaces from column names
+epitopes.columns = epitopes.columns.str.replace(' ', '')
+epitopes.columns = epitopes.columns.str.replace('-', ' ')
+epitopes.columns = epitopes.columns.str.replace(' ', '_')
+
+assays.columns = assays.columns.str.replace(' ', '')
+assays.columns = assays.columns.str.replace('-', ' ')
+assays.columns = assays.columns.str.replace(' ', '_')
+
+epitopes = epitopes.filter(['epitope_name', 'fullsequence'])
+assays = assays.filter(['epitope_name', 'epitope_moluculeparent', 'host_name', 'host_mhcpresent', 'assay_method','assay_responsemeasured', 'assay_qualitativemeasurement', 'mhcrestriction_name', 'mhcrestriction_class', 'assayantigen_name'])
+
+# map mhc name and class from the assays dataframe to a new column in the epitopes dataframe based on epitope_name
+mhc = assays.filter(['epitope_name', 'mhcrestriction_name', 'mhcrestriction_class'])
+mhc = mhc.drop_duplicates(subset=['epitope_name'])
+epitopes = epitopes.merge(mhc, on='epitope_name', how='left')
 ```
 
-Here's an example of citing a source [see @phil99, pp. 33-35]. Be sure the source information is entered in "BibTeX" form in the `references.bib` file.
+Retriving the data from IEDB was as simple as doing a search and clicking exoprt. Two files were exported, one containing 28,681 unique epitopes and another with their corresponding assays and respective results. Roughly 10% of the epitopes in the dataset came with a corresponding [UniProt](https://www.uniprot.org/) link. For our purposes this will be enough. Using the requests python library, the full antigen sequence was downloaded and appended to the epitope dataset. Next, simple formatting was done to standardize the column names. Finally, the epitope dataset was merged with the assays dataset on the epitope_name column and filtered to include the following columns:
+
+```{python}
+epitopes.head()
+```
+
+### Negative Sample Generation
+
+```{python negative_sample_generation}
+#| eval: false
+
+def generate_negatives(row):
+    epitope = row["epitope_name"]
+    full_seq = row["fullsequence"]
+    mhc = row["mhcrestriction_name"]
+    
+    # Handle missing or empty sequences
+    if pd.isnull(full_seq) or full_seq == "":
+        return []
+    
+    epitope = str(epitope)
+    full_seq = str(full_seq)
+    ep_len = len(epitope)
+    
+    negatives = []
+    for i in range(len(full_seq) - ep_len + 1):
+        window = full_seq[i:i+ep_len]
+        if window != epitope:
+            negatives.append({"peptide": window, "mhc": mhc})
+    return negatives
+
+# Apply the function to each row
+
+negatives = pd.DataFrame()
+negatives['negatives'] = epitopes.apply(generate_negatives, axis=1)
+negatives = negatives[["negatives"]].explode("negatives").reset_index(drop=True)
+negatives.dropna(subset=["negatives"], inplace=True)
 
 
-The bibliography will automatically be generated, listing all sources in the `.bib` file.
+# Remove duplicate peptide-mhc combinations
+print(f"Shape before removing duplicates: {negatives.shape}")
+negatives = negatives.drop_duplicates(subset=['negatives'])
+print(f"Shape after removing duplicates: {negatives.shape}")
+
+# Check for any remaining NaN values
+print(f"Number of NaN values in negatives: {negatives['negatives'].isna().sum()}")
+
+# Extract peptide and mhc into separate columns
+negatives['peptide'] = negatives['negatives'].apply(lambda x: x['peptide'])
+negatives['mhc'] = negatives['negatives'].apply(lambda x: x['mhc'])
+
+# Calculate features on the peptide column
+negatives['peptide_length'] = negatives['peptide'].apply(len)
+negatives['peptide_avg_hydro'] = negatives['peptide'].apply(compute_avg_hydrophobicity)
+negatives['molecular_weight'] = negatives['peptide'].apply(calculate_molecular_weight)
+negatives['aromaticity'] = negatives['peptide'].apply(calculate_aromaticity)
+negatives['isoelectric_point'] = negatives['peptide'].apply(calculate_isoelectric_point)
+negatives['instability'] = negatives['peptide'].apply(calculate_instability)
+negatives['charge_at_pH7'] = negatives['peptide'].apply(calculate_charge_at_pH7)
+
+# Drop the original dictionary column if no longer needed
+negatives.drop('negatives', axis=1, inplace=True)
+```
+
+Although the IEDB database provided a substantial amount of epitopes, in order draw comparisons and gain insight into what distinguishes an eptitope from any other sequence of amino acids, samples of non-epitope peptides are needed. These were obtained by shuffling and sampling amino acid sequences from the full antigen sequences of the epitopes, ensuring that the sampled sequences did not overlap with the epitope sequences. 
+
+There are pros and cons to this methodology. As opposed to generating completely random sequences of amino acids — sampling from larger sequences allows for natural patterns and physiochemical motifs to be retained. That is not to say the performance of statistical modeling or qualitative analysis will be better. Random sequences are more likely to be highly irregular, or even biologically implausible. Sampling from the full antigen sequences eliminates this potential bias.
+
+Conversely, it is possible for a randomly sampled peptide to be an epitope that has not been tested yet, or simply isn't in the subset of data used for this analysis — resulting in an increase in the number of false negatives.
+
+### Feature Engineering
+
+
+
+# Exploratory Data Analysis
+
+###
