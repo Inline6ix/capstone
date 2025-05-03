@@ -110,9 +110,10 @@ div.csl-indent {
   <li><a href="#negative-sample-generation" id="toc-negative-sample-generation" class="nav-link" data-scroll-target="#negative-sample-generation">Negative Sample Generation</a></li>
   <li><a href="#feature-engineering" id="toc-feature-engineering" class="nav-link" data-scroll-target="#feature-engineering">Feature Engineering</a></li>
   </ul></li>
-  <li><a href="#exploratory-data-analysis" id="toc-exploratory-data-analysis" class="nav-link" data-scroll-target="#exploratory-data-analysis">Exploratory Data Analysis</a>
+  <li><a href="#exploratory-analysis" id="toc-exploratory-analysis" class="nav-link" data-scroll-target="#exploratory-analysis">Exploratory Analysis</a></li>
+  <li><a href="#modeling" id="toc-modeling" class="nav-link" data-scroll-target="#modeling">Modeling</a>
   <ul class="collapse">
-  <li><a href="#section" id="toc-section" class="nav-link" data-scroll-target="#section"></a></li>
+  <li><a href="#preprocessing-1" id="toc-preprocessing-1" class="nav-link" data-scroll-target="#preprocessing-1">Preprocessing</a></li>
   </ul></li>
   </ul>
 </nav>
@@ -157,7 +158,7 @@ div.csl-indent {
 <section id="dataset" class="level3">
 <h3 class="anchored" data-anchor-id="dataset">Dataset</h3>
 <p>The dataset utilized for this analysis is sourced from <a href="https://www.iedb.org/">The Immune Epitope Database (IEDB)</a>, a publicly available database of manually extracted data from published scientific research on antibody and T-cell epitopes. It was created to aggregate and centralize data on how the immune system recognizes specific molecular features, known as epitopes, on antigens.</p>
-<p>The database can be queried for known epitopes, returning a list of assays — commonly known as tests or experiments — that have been performed on the antigen and their results. These tests can include whether or not a particular epitope binds to the MHC complex or is capable of triggering a cytokine release to kill living cells.</p>
+<p>The database can be queried for known epitopes, returning a list of assays — tests or experiments — that have been performed on the antigen and their results. These tests can include whether or not a particular epitope binds to the MHC complex or is capable of triggering a cytokine release to kill living cells.</p>
 <p>The scope of my analysis will be limited to epitopes sourced from human cancer T-cells that were tested and found to produce an autoimmune response. While the database has a wide range of information about each antigen, I will only be utilizing the epitopes’ amino acid sequence and the MHC allele it was tested against.</p>
 <p>Along with these features, each epitope entry also contains a link to the antigen’s full amino acid sequence. These full sequences come from the <a href="https://www.uniprot.org/">UniProt</a> database, which contains a collection of protein sequences and their associated information. These full sequences will be used to generate negative samples for the model.</p>
 <div class="callout callout-style-default callout-note callout-titled" title="Libraries and packages">
@@ -172,7 +173,7 @@ Libraries and packages
 </div>
 <div id="callout-1" class="callout-1-contents callout-collapse collapse show">
 <div class="callout-body-container callout-body">
-<div id="5743b318" class="cell" data-execution_count="1">
+<div id="0f19dc24" class="cell" data-execution_count="1">
 <details class="code-fold">
 <summary>Code</summary>
 <div class="sourceCode cell-code" id="cb1"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Importing libraries</span></span>
@@ -196,7 +197,7 @@ Libraries and packages
 </section>
 <section id="preprocessing" class="level3">
 <h3 class="anchored" data-anchor-id="preprocessing">Preprocessing</h3>
-<div id="f74cf205" class="cell" data-execution_count="2">
+<div id="924ec7ed" class="cell" data-execution_count="2">
 <details class="code-fold">
 <summary>Code</summary>
 <div class="sourceCode cell-code" id="cb2"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a>epitopes <span class="op">=</span> pd.read_csv(<span class="vs">r'/Users/tariq/Documents/capstone/data/epitope_table_export_1740279588.csv'</span>)</span>
@@ -244,7 +245,7 @@ Libraries and packages
 </details>
 </div>
 <p>Retriving the data from IEDB was as simple as doing a search and clicking exoprt. Two files were exported, one containing 28,681 unique epitopes and another with their corresponding assays and respective results. Roughly 10% of the epitopes in the dataset came with a corresponding <a href="https://www.uniprot.org/">UniProt</a> link. For our purposes this will be enough. Using the requests python library, the full antigen sequence was downloaded and appended to the epitope dataset. Next, simple formatting was done to standardize the column names. Finally, the epitope dataset was merged with the assays dataset on the epitope_name column and filtered to include the following columns:</p>
-<div id="c9f321fa" class="cell" data-execution_count="3">
+<div id="f04948be" class="cell" data-execution_count="3">
 <details class="code-fold">
 <summary>Code</summary>
 <div class="sourceCode cell-code" id="cb3"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a>epitopes.head()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
@@ -308,7 +309,7 @@ Libraries and packages
 </section>
 <section id="negative-sample-generation" class="level3">
 <h3 class="anchored" data-anchor-id="negative-sample-generation">Negative Sample Generation</h3>
-<div id="9f0caf5e" class="cell" data-execution_count="4">
+<div id="26d6ba8a" class="cell" data-execution_count="4">
 <details class="code-fold">
 <summary>Code</summary>
 <div class="sourceCode cell-code" id="cb4"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> generate_negatives(row):</span>
@@ -349,33 +350,311 @@ Libraries and packages
 <span id="cb4-36"><a href="#cb4-36" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb4-37"><a href="#cb4-37" aria-hidden="true" tabindex="-1"></a><span class="co"># Extract peptide and mhc into separate columns</span></span>
 <span id="cb4-38"><a href="#cb4-38" aria-hidden="true" tabindex="-1"></a>negatives[<span class="st">'peptide'</span>] <span class="op">=</span> negatives[<span class="st">'negatives'</span>].<span class="bu">apply</span>(<span class="kw">lambda</span> x: x[<span class="st">'peptide'</span>])</span>
-<span id="cb4-39"><a href="#cb4-39" aria-hidden="true" tabindex="-1"></a>negatives[<span class="st">'mhc'</span>] <span class="op">=</span> negatives[<span class="st">'negatives'</span>].<span class="bu">apply</span>(<span class="kw">lambda</span> x: x[<span class="st">'mhc'</span>])</span>
-<span id="cb4-40"><a href="#cb4-40" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb4-41"><a href="#cb4-41" aria-hidden="true" tabindex="-1"></a><span class="co"># Calculate features on the peptide column</span></span>
-<span id="cb4-42"><a href="#cb4-42" aria-hidden="true" tabindex="-1"></a>negatives[<span class="st">'peptide_length'</span>] <span class="op">=</span> negatives[<span class="st">'peptide'</span>].<span class="bu">apply</span>(<span class="bu">len</span>)</span>
-<span id="cb4-43"><a href="#cb4-43" aria-hidden="true" tabindex="-1"></a>negatives[<span class="st">'peptide_avg_hydro'</span>] <span class="op">=</span> negatives[<span class="st">'peptide'</span>].<span class="bu">apply</span>(compute_avg_hydrophobicity)</span>
-<span id="cb4-44"><a href="#cb4-44" aria-hidden="true" tabindex="-1"></a>negatives[<span class="st">'molecular_weight'</span>] <span class="op">=</span> negatives[<span class="st">'peptide'</span>].<span class="bu">apply</span>(calculate_molecular_weight)</span>
-<span id="cb4-45"><a href="#cb4-45" aria-hidden="true" tabindex="-1"></a>negatives[<span class="st">'aromaticity'</span>] <span class="op">=</span> negatives[<span class="st">'peptide'</span>].<span class="bu">apply</span>(calculate_aromaticity)</span>
-<span id="cb4-46"><a href="#cb4-46" aria-hidden="true" tabindex="-1"></a>negatives[<span class="st">'isoelectric_point'</span>] <span class="op">=</span> negatives[<span class="st">'peptide'</span>].<span class="bu">apply</span>(calculate_isoelectric_point)</span>
-<span id="cb4-47"><a href="#cb4-47" aria-hidden="true" tabindex="-1"></a>negatives[<span class="st">'instability'</span>] <span class="op">=</span> negatives[<span class="st">'peptide'</span>].<span class="bu">apply</span>(calculate_instability)</span>
-<span id="cb4-48"><a href="#cb4-48" aria-hidden="true" tabindex="-1"></a>negatives[<span class="st">'charge_at_pH7'</span>] <span class="op">=</span> negatives[<span class="st">'peptide'</span>].<span class="bu">apply</span>(calculate_charge_at_pH7)</span>
-<span id="cb4-49"><a href="#cb4-49" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb4-50"><a href="#cb4-50" aria-hidden="true" tabindex="-1"></a><span class="co"># Drop the original dictionary column if no longer needed</span></span>
-<span id="cb4-51"><a href="#cb4-51" aria-hidden="true" tabindex="-1"></a>negatives.drop(<span class="st">'negatives'</span>, axis<span class="op">=</span><span class="dv">1</span>, inplace<span class="op">=</span><span class="va">True</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb4-39"><a href="#cb4-39" aria-hidden="true" tabindex="-1"></a>negatives[<span class="st">'mhc'</span>] <span class="op">=</span> negatives[<span class="st">'negatives'</span>].<span class="bu">apply</span>(<span class="kw">lambda</span> x: x[<span class="st">'mhc'</span>])</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </details>
 </div>
-<p>Although the IEDB database provided a substantial amount of epitopes, in order draw comparisons and gain insight into what distinguishes an eptitope from any other sequence of amino acids, samples of non-epitope peptides are needed. These were obtained by shuffling and sampling amino acid sequences from the full antigen sequences of the epitopes, ensuring that the sampled sequences did not overlap with the epitope sequences.</p>
+<p>Although the IEDB database provided a substantial amount of epitopes, in order draw visual comparisons and create models to classify epitopes, samples of non-epitope peptides are needed. These can be generated by shuffling and sampling amino acid sequences from the full antigen sequences of the epitopes, ensuring that the sampled sequences did not overlap with the epitope sequences.</p>
 <p>There are pros and cons to this methodology. As opposed to generating completely random sequences of amino acids — sampling from larger sequences allows for natural patterns and physiochemical motifs to be retained. That is not to say the performance of statistical modeling or qualitative analysis will be better. Random sequences are more likely to be highly irregular, or even biologically implausible. Sampling from the full antigen sequences eliminates this potential bias.</p>
-<p>Conversely, it is possible for a randomly sampled peptide to be an epitope that has not been tested yet, or simply isn’t in the subset of data used for this analysis — resulting in an increase in the number of false negatives.</p>
+<p>Conversely, it is possible for a randomly sampled peptide to be an epitope that has not been tested yet, or simply isn’t in the subset of data used for this analysis — resulting in an increase in the number of false negatives in our data.</p>
 </section>
 <section id="feature-engineering" class="level3">
 <h3 class="anchored" data-anchor-id="feature-engineering">Feature Engineering</h3>
-</section>
-</section>
-<section id="exploratory-data-analysis" class="level1">
-<h1>Exploratory Data Analysis</h1>
-<section id="section" class="level3">
+<div id="234a7aff" class="cell" data-execution_count="5">
+<details class="code-fold">
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb5"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Kyte-Doolittle hydrophobicity scale</span></span>
+<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a>kyte_doolittle <span class="op">=</span> {</span>
+<span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a>    <span class="st">'I'</span>: <span class="fl">4.5</span>, <span class="st">'V'</span>: <span class="fl">4.2</span>, <span class="st">'L'</span>: <span class="fl">3.8</span>, <span class="st">'F'</span>: <span class="fl">2.8</span>, <span class="st">'C'</span>: <span class="fl">2.5</span>,</span>
+<span id="cb5-4"><a href="#cb5-4" aria-hidden="true" tabindex="-1"></a>    <span class="st">'M'</span>: <span class="fl">1.9</span>, <span class="st">'A'</span>: <span class="fl">1.8</span>, <span class="st">'G'</span>: <span class="op">-</span><span class="fl">0.4</span>, <span class="st">'T'</span>: <span class="op">-</span><span class="fl">0.7</span>, <span class="st">'S'</span>: <span class="op">-</span><span class="fl">0.8</span>,</span>
+<span id="cb5-5"><a href="#cb5-5" aria-hidden="true" tabindex="-1"></a>    <span class="st">'W'</span>: <span class="op">-</span><span class="fl">0.9</span>, <span class="st">'Y'</span>: <span class="op">-</span><span class="fl">1.3</span>, <span class="st">'P'</span>: <span class="op">-</span><span class="fl">1.6</span>, <span class="st">'H'</span>: <span class="op">-</span><span class="fl">3.2</span>, <span class="st">'E'</span>: <span class="op">-</span><span class="fl">3.5</span>,</span>
+<span id="cb5-6"><a href="#cb5-6" aria-hidden="true" tabindex="-1"></a>    <span class="st">'Q'</span>: <span class="op">-</span><span class="fl">3.5</span>, <span class="st">'D'</span>: <span class="op">-</span><span class="fl">3.5</span>, <span class="st">'N'</span>: <span class="op">-</span><span class="fl">3.5</span>, <span class="st">'K'</span>: <span class="op">-</span><span class="fl">3.9</span>, <span class="st">'R'</span>: <span class="op">-</span><span class="fl">4.5</span></span>
+<span id="cb5-7"><a href="#cb5-7" aria-hidden="true" tabindex="-1"></a>}</span>
+<span id="cb5-8"><a href="#cb5-8" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-9"><a href="#cb5-9" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> compute_avg_hydrophobicity(peptide):</span>
+<span id="cb5-10"><a href="#cb5-10" aria-hidden="true" tabindex="-1"></a>    <span class="co"># Get hydrophobicity scores for each amino acid; default to 0 if missing</span></span>
+<span id="cb5-11"><a href="#cb5-11" aria-hidden="true" tabindex="-1"></a>    scores <span class="op">=</span> [kyte_doolittle.get(aa, <span class="dv">0</span>) <span class="cf">for</span> aa <span class="kw">in</span> peptide]</span>
+<span id="cb5-12"><a href="#cb5-12" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> <span class="bu">sum</span>(scores) <span class="op">/</span> <span class="bu">len</span>(scores) <span class="cf">if</span> scores <span class="cf">else</span> <span class="dv">0</span></span>
+<span id="cb5-13"><a href="#cb5-13" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-14"><a href="#cb5-14" aria-hidden="true" tabindex="-1"></a><span class="co"># Apply the function to the 'peptide' column to create a new column 'avg_hydro'</span></span>
+<span id="cb5-15"><a href="#cb5-15" aria-hidden="true" tabindex="-1"></a>epitopes[<span class="st">'epitope_avg_hydro'</span>] <span class="op">=</span> epitopes[<span class="st">'epitope_name'</span>].<span class="bu">apply</span>(compute_avg_hydrophobicity)</span>
+<span id="cb5-16"><a href="#cb5-16" aria-hidden="true" tabindex="-1"></a><span class="co"># Import the molecular_weight function from Bio.SeqUtils</span></span>
+<span id="cb5-17"><a href="#cb5-17" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-18"><a href="#cb5-18" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-19"><a href="#cb5-19" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> calculate_molecular_weight(peptide):</span>
+<span id="cb5-20"><a href="#cb5-20" aria-hidden="true" tabindex="-1"></a>    <span class="co">"""Calculate the molecular weight of a peptide sequence using Biopython."""</span></span>
+<span id="cb5-21"><a href="#cb5-21" aria-hidden="true" tabindex="-1"></a>    <span class="cf">try</span>:</span>
+<span id="cb5-22"><a href="#cb5-22" aria-hidden="true" tabindex="-1"></a>        <span class="co"># ProteinAnalysis only works with standard amino acids</span></span>
+<span id="cb5-23"><a href="#cb5-23" aria-hidden="true" tabindex="-1"></a>        protein <span class="op">=</span> ProteinAnalysis(peptide)</span>
+<span id="cb5-24"><a href="#cb5-24" aria-hidden="true" tabindex="-1"></a>        <span class="cf">return</span> protein.molecular_weight()</span>
+<span id="cb5-25"><a href="#cb5-25" aria-hidden="true" tabindex="-1"></a>    <span class="cf">except</span> <span class="pp">Exception</span> <span class="im">as</span> e:</span>
+<span id="cb5-26"><a href="#cb5-26" aria-hidden="true" tabindex="-1"></a>        <span class="co"># Handle peptides with non-standard amino acids</span></span>
+<span id="cb5-27"><a href="#cb5-27" aria-hidden="true" tabindex="-1"></a>        <span class="cf">return</span> <span class="va">None</span></span>
+<span id="cb5-28"><a href="#cb5-28" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-29"><a href="#cb5-29" aria-hidden="true" tabindex="-1"></a><span class="co"># Apply the function to calculate molecular weight for each epitope</span></span>
+<span id="cb5-30"><a href="#cb5-30" aria-hidden="true" tabindex="-1"></a>epitopes[<span class="st">'molecular_weight'</span>] <span class="op">=</span> epitopes[<span class="st">'epitope_name'</span>].<span class="bu">apply</span>(calculate_molecular_weight)</span>
+<span id="cb5-31"><a href="#cb5-31" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> calculate_aromaticity(peptide):</span>
+<span id="cb5-32"><a href="#cb5-32" aria-hidden="true" tabindex="-1"></a>    <span class="co">"""Calculate the aromaticity of a peptide sequence using Biopython."""</span></span>
+<span id="cb5-33"><a href="#cb5-33" aria-hidden="true" tabindex="-1"></a>    <span class="cf">try</span>:</span>
+<span id="cb5-34"><a href="#cb5-34" aria-hidden="true" tabindex="-1"></a>        <span class="co"># ProteinAnalysis only works with standard amino acids</span></span>
+<span id="cb5-35"><a href="#cb5-35" aria-hidden="true" tabindex="-1"></a>        protein <span class="op">=</span> ProteinAnalysis(peptide)</span>
+<span id="cb5-36"><a href="#cb5-36" aria-hidden="true" tabindex="-1"></a>        <span class="cf">return</span> protein.aromaticity()</span>
+<span id="cb5-37"><a href="#cb5-37" aria-hidden="true" tabindex="-1"></a>    <span class="cf">except</span> <span class="pp">Exception</span> <span class="im">as</span> e:</span>
+<span id="cb5-38"><a href="#cb5-38" aria-hidden="true" tabindex="-1"></a>        <span class="co"># Handle peptides with non-standard amino acids</span></span>
+<span id="cb5-39"><a href="#cb5-39" aria-hidden="true" tabindex="-1"></a>        <span class="cf">return</span> <span class="va">None</span></span>
+<span id="cb5-40"><a href="#cb5-40" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-41"><a href="#cb5-41" aria-hidden="true" tabindex="-1"></a><span class="co"># Apply the function to calculate molecular weight for each epitope</span></span>
+<span id="cb5-42"><a href="#cb5-42" aria-hidden="true" tabindex="-1"></a>epitopes[<span class="st">'aromaticity'</span>] <span class="op">=</span> epitopes[<span class="st">'epitope_name'</span>].<span class="bu">apply</span>(calculate_aromaticity)</span>
+<span id="cb5-43"><a href="#cb5-43" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> calculate_isoelectric_point(peptide):</span>
+<span id="cb5-44"><a href="#cb5-44" aria-hidden="true" tabindex="-1"></a>    <span class="co">"""Calculate the isoelectric point of a peptide sequence using Biopython."""</span></span>
+<span id="cb5-45"><a href="#cb5-45" aria-hidden="true" tabindex="-1"></a>    <span class="cf">try</span>:</span>
+<span id="cb5-46"><a href="#cb5-46" aria-hidden="true" tabindex="-1"></a>        <span class="co"># ProteinAnalysis only works with standard amino acids</span></span>
+<span id="cb5-47"><a href="#cb5-47" aria-hidden="true" tabindex="-1"></a>        protein <span class="op">=</span> ProteinAnalysis(peptide)</span>
+<span id="cb5-48"><a href="#cb5-48" aria-hidden="true" tabindex="-1"></a>        <span class="cf">return</span> protein.isoelectric_point()</span>
+<span id="cb5-49"><a href="#cb5-49" aria-hidden="true" tabindex="-1"></a>    <span class="cf">except</span> <span class="pp">Exception</span> <span class="im">as</span> e:</span>
+<span id="cb5-50"><a href="#cb5-50" aria-hidden="true" tabindex="-1"></a>        <span class="co"># Handle peptides with non-standard amino acids</span></span>
+<span id="cb5-51"><a href="#cb5-51" aria-hidden="true" tabindex="-1"></a>        <span class="cf">return</span> <span class="va">None</span></span>
+<span id="cb5-52"><a href="#cb5-52" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-53"><a href="#cb5-53" aria-hidden="true" tabindex="-1"></a><span class="co"># Apply the function to calculate molecular weight for each epitope</span></span>
+<span id="cb5-54"><a href="#cb5-54" aria-hidden="true" tabindex="-1"></a>epitopes[<span class="st">'isoelectric_point'</span>] <span class="op">=</span> epitopes[<span class="st">'epitope_name'</span>].<span class="bu">apply</span>(calculate_isoelectric_point)</span>
+<span id="cb5-55"><a href="#cb5-55" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> calculate_instability(peptide):</span>
+<span id="cb5-56"><a href="#cb5-56" aria-hidden="true" tabindex="-1"></a>    <span class="co">"""Calculate the instability of a peptide sequence using Biopython."""</span></span>
+<span id="cb5-57"><a href="#cb5-57" aria-hidden="true" tabindex="-1"></a>    <span class="cf">try</span>:</span>
+<span id="cb5-58"><a href="#cb5-58" aria-hidden="true" tabindex="-1"></a>        <span class="co"># ProteinAnalysis only works with standard amino acids</span></span>
+<span id="cb5-59"><a href="#cb5-59" aria-hidden="true" tabindex="-1"></a>        protein <span class="op">=</span> ProteinAnalysis(peptide)</span>
+<span id="cb5-60"><a href="#cb5-60" aria-hidden="true" tabindex="-1"></a>        <span class="cf">return</span> protein.instability_index()</span>
+<span id="cb5-61"><a href="#cb5-61" aria-hidden="true" tabindex="-1"></a>    <span class="cf">except</span> <span class="pp">Exception</span> <span class="im">as</span> e:</span>
+<span id="cb5-62"><a href="#cb5-62" aria-hidden="true" tabindex="-1"></a>        <span class="co"># Handle peptides with non-standard amino acids</span></span>
+<span id="cb5-63"><a href="#cb5-63" aria-hidden="true" tabindex="-1"></a>        <span class="cf">return</span> <span class="va">None</span></span>
+<span id="cb5-64"><a href="#cb5-64" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-65"><a href="#cb5-65" aria-hidden="true" tabindex="-1"></a><span class="co"># Apply the function to calculate molecular weight for each epitope</span></span>
+<span id="cb5-66"><a href="#cb5-66" aria-hidden="true" tabindex="-1"></a>epitopes[<span class="st">'instability'</span>] <span class="op">=</span> epitopes[<span class="st">'epitope_name'</span>].<span class="bu">apply</span>(calculate_instability)</span>
+<span id="cb5-67"><a href="#cb5-67" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> calculate_charge_at_pH7(peptide):</span>
+<span id="cb5-68"><a href="#cb5-68" aria-hidden="true" tabindex="-1"></a>    <span class="co">"""Calculate the charge of a peptide sequence at pH 7 using Biopython."""</span></span>
+<span id="cb5-69"><a href="#cb5-69" aria-hidden="true" tabindex="-1"></a>    <span class="cf">try</span>:</span>
+<span id="cb5-70"><a href="#cb5-70" aria-hidden="true" tabindex="-1"></a>        <span class="co"># ProteinAnalysis only works with standard amino acids</span></span>
+<span id="cb5-71"><a href="#cb5-71" aria-hidden="true" tabindex="-1"></a>        protein <span class="op">=</span> ProteinAnalysis(peptide)</span>
+<span id="cb5-72"><a href="#cb5-72" aria-hidden="true" tabindex="-1"></a>        <span class="cf">return</span> protein.charge_at_pH(<span class="dv">7</span>)</span>
+<span id="cb5-73"><a href="#cb5-73" aria-hidden="true" tabindex="-1"></a>    <span class="cf">except</span> <span class="pp">Exception</span> <span class="im">as</span> e:</span>
+<span id="cb5-74"><a href="#cb5-74" aria-hidden="true" tabindex="-1"></a>        <span class="co"># Handle peptides with non-standard amino acids</span></span>
+<span id="cb5-75"><a href="#cb5-75" aria-hidden="true" tabindex="-1"></a>        <span class="cf">return</span> <span class="va">None</span></span>
+<span id="cb5-76"><a href="#cb5-76" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-77"><a href="#cb5-77" aria-hidden="true" tabindex="-1"></a><span class="co"># Apply the function to calculate molecular weight for each epitope</span></span>
+<span id="cb5-78"><a href="#cb5-78" aria-hidden="true" tabindex="-1"></a>epitopes[<span class="st">'charge_at_pH7'</span>] <span class="op">=</span> epitopes[<span class="st">'epitope_name'</span>].<span class="bu">apply</span>(calculate_charge_at_pH7)</span>
+<span id="cb5-79"><a href="#cb5-79" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-80"><a href="#cb5-80" aria-hidden="true" tabindex="-1"></a><span class="co"># Calculate features on the peptide column</span></span>
+<span id="cb5-81"><a href="#cb5-81" aria-hidden="true" tabindex="-1"></a>negatives[<span class="st">'peptide_length'</span>] <span class="op">=</span> negatives[<span class="st">'peptide'</span>].<span class="bu">apply</span>(<span class="bu">len</span>)</span>
+<span id="cb5-82"><a href="#cb5-82" aria-hidden="true" tabindex="-1"></a>negatives[<span class="st">'peptide_avg_hydro'</span>] <span class="op">=</span> negatives[<span class="st">'peptide'</span>].<span class="bu">apply</span>(compute_avg_hydrophobicity)</span>
+<span id="cb5-83"><a href="#cb5-83" aria-hidden="true" tabindex="-1"></a>negatives[<span class="st">'molecular_weight'</span>] <span class="op">=</span> negatives[<span class="st">'peptide'</span>].<span class="bu">apply</span>(calculate_molecular_weight)</span>
+<span id="cb5-84"><a href="#cb5-84" aria-hidden="true" tabindex="-1"></a>negatives[<span class="st">'aromaticity'</span>] <span class="op">=</span> negatives[<span class="st">'peptide'</span>].<span class="bu">apply</span>(calculate_aromaticity)</span>
+<span id="cb5-85"><a href="#cb5-85" aria-hidden="true" tabindex="-1"></a>negatives[<span class="st">'isoelectric_point'</span>] <span class="op">=</span> negatives[<span class="st">'peptide'</span>].<span class="bu">apply</span>(calculate_isoelectric_point)</span>
+<span id="cb5-86"><a href="#cb5-86" aria-hidden="true" tabindex="-1"></a>negatives[<span class="st">'instability'</span>] <span class="op">=</span> negatives[<span class="st">'peptide'</span>].<span class="bu">apply</span>(calculate_instability)</span>
+<span id="cb5-87"><a href="#cb5-87" aria-hidden="true" tabindex="-1"></a>negatives[<span class="st">'charge_at_pH7'</span>] <span class="op">=</span> negatives[<span class="st">'peptide'</span>].<span class="bu">apply</span>(calculate_charge_at_pH7)</span>
+<span id="cb5-88"><a href="#cb5-88" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-89"><a href="#cb5-89" aria-hidden="true" tabindex="-1"></a>negatives.drop(<span class="st">'negatives'</span>, axis<span class="op">=</span><span class="dv">1</span>, inplace<span class="op">=</span><span class="va">True</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+</div>
+<p>The protein analysis tool from the BioPython package allows for some quick feature engineering on most given peptides. For this analysis, the relevant features would be hydrophobicity, molecular weight, aromaticity, isoelectric point, instability, and the charge at pH7. Publications on epitope classification hold binding affinity — the ability for a peptide to bind to the body’s MHC complex — to be a strong preditctor. The BioPython package does not come with any functionality for binding affinity prediction but IEDB database provides a tool called netMHCpan, which is the leading binding affinity prediction algorithm.</p>
+<p>The IEDB website offers a GUI for using netMHCpan to predict binding affinities. However, it is only possible to run predictions on 100 peptides at a time and this analysis is examining many more than that. NetMHCpan can be downloaded and installed as a command line tool allowing more flexibility using python. Given an amino acid sequence and a MHC allele specification, netMHCpan returns a binding affinity score.</p>
+<div id="1426d750" class="cell" data-execution_count="6">
+<details class="code-fold">
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb6"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a>epitopes <span class="op">=</span> pd.read_csv(<span class="st">"/Users/tariq/Documents/capstone/data/ninemer_epitopes.csv"</span>)</span>
+<span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a>epitopes <span class="op">=</span> epitopes.drop(columns<span class="op">=</span>[<span class="st">'fullsequence'</span>, <span class="st">'mhcrestriction_name'</span>, <span class="st">'mhcrestriction_class'</span>, <span class="st">'epitope_length'</span>])</span>
+<span id="cb6-3"><a href="#cb6-3" aria-hidden="true" tabindex="-1"></a>epitopes <span class="op">=</span> epitopes.rename(columns<span class="op">=</span>{<span class="st">'epitope_name'</span>: <span class="st">'peptide'</span>, <span class="st">'epitope_avg_hydro'</span>: <span class="st">'peptide_avg_hydro'</span>})</span>
+<span id="cb6-4"><a href="#cb6-4" aria-hidden="true" tabindex="-1"></a>epitopes_BA_pred <span class="op">=</span> pd.read_csv(<span class="st">"/Users/tariq/Documents/capstone/data/ninemer_epitopes_BA_pred.csv"</span>)</span>
+<span id="cb6-5"><a href="#cb6-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-6"><a href="#cb6-6" aria-hidden="true" tabindex="-1"></a>negatives <span class="op">=</span> pd.read_csv(<span class="st">"/Users/tariq/Documents/capstone/data/ninemer_negatives_trimmed.csv"</span>)</span>
+<span id="cb6-7"><a href="#cb6-7" aria-hidden="true" tabindex="-1"></a>negatives <span class="op">=</span> negatives.drop(columns<span class="op">=</span>[<span class="st">'mhc'</span>, <span class="st">'peptide_length'</span>])</span>
+<span id="cb6-8"><a href="#cb6-8" aria-hidden="true" tabindex="-1"></a>negatives <span class="op">=</span> negatives.rename(columns<span class="op">=</span>{<span class="st">'peptide'</span>: <span class="st">'peptide'</span>})</span>
+<span id="cb6-9"><a href="#cb6-9" aria-hidden="true" tabindex="-1"></a>negatives <span class="op">=</span> negatives.drop_duplicates(subset<span class="op">=</span>[<span class="st">'peptide'</span>])</span>
+<span id="cb6-10"><a href="#cb6-10" aria-hidden="true" tabindex="-1"></a>negatives_BA_pred <span class="op">=</span> pd.read_csv(<span class="st">"/Users/tariq/Documents/capstone/data/ninemer_negatives_trimmed_BA_pred.csv"</span>)</span>
+<span id="cb6-11"><a href="#cb6-11" aria-hidden="true" tabindex="-1"></a>negatives_BA_pred <span class="op">=</span> negatives_BA_pred.drop_duplicates(subset<span class="op">=</span>[<span class="st">'peptide'</span>])</span>
+<span id="cb6-12"><a href="#cb6-12" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-13"><a href="#cb6-13" aria-hidden="true" tabindex="-1"></a><span class="co"># Merge the 'Score_BA' column from epitopes_BA_pred into the epitopes dataframe</span></span>
+<span id="cb6-14"><a href="#cb6-14" aria-hidden="true" tabindex="-1"></a>epitopes <span class="op">=</span> pd.merge(epitopes, epitopes_BA_pred[[<span class="st">'peptide'</span>, <span class="st">'Score_BA'</span>]], on<span class="op">=</span><span class="st">'peptide'</span>, how<span class="op">=</span><span class="st">'left'</span>)</span>
+<span id="cb6-15"><a href="#cb6-15" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-16"><a href="#cb6-16" aria-hidden="true" tabindex="-1"></a>negatives <span class="op">=</span> pd.merge(negatives, negatives_BA_pred[[<span class="st">'peptide'</span>, <span class="st">'Score_BA'</span>]], on<span class="op">=</span><span class="st">'peptide'</span>, how<span class="op">=</span><span class="st">'left'</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+</div>
+<div id="eb7450a4" class="cell" data-execution_count="7">
+<details class="code-fold">
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb7"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a>epitopes.head()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output cell-output-display" data-execution_count="5">
+<div>
 
+
+<table class="dataframe caption-top table table-sm table-striped small" data-quarto-postprocess="true" data-border="1">
+<thead>
+<tr class="header">
+<th data-quarto-table-cell-role="th"></th>
+<th data-quarto-table-cell-role="th">peptide</th>
+<th data-quarto-table-cell-role="th">peptide_avg_hydro</th>
+<th data-quarto-table-cell-role="th">molecular_weight</th>
+<th data-quarto-table-cell-role="th">aromaticity</th>
+<th data-quarto-table-cell-role="th">isoelectric_point</th>
+<th data-quarto-table-cell-role="th">instability</th>
+<th data-quarto-table-cell-role="th">charge_at_pH7</th>
+<th data-quarto-table-cell-role="th">Score_BA</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td data-quarto-table-cell-role="th">0</td>
+<td>AAGIGILTV</td>
+<td>2.122222</td>
+<td>813.9814</td>
+<td>0.000000</td>
+<td>5.570017</td>
+<td>11.422222</td>
+<td>-0.204125</td>
+<td>NaN</td>
+</tr>
+<tr class="even">
+<td data-quarto-table-cell-role="th">1</td>
+<td>ADVEFCLSL</td>
+<td>1.233333</td>
+<td>996.1348</td>
+<td>0.111111</td>
+<td>4.050028</td>
+<td>20.855556</td>
+<td>-2.210095</td>
+<td>0.190368</td>
+</tr>
+<tr class="odd">
+<td data-quarto-table-cell-role="th">2</td>
+<td>AFLPWHRLF</td>
+<td>0.533333</td>
+<td>1186.4061</td>
+<td>0.333333</td>
+<td>9.800371</td>
+<td>53.400000</td>
+<td>0.883039</td>
+<td>0.677877</td>
+</tr>
+<tr class="even">
+<td data-quarto-table-cell-role="th">3</td>
+<td>ALAETSYVK</td>
+<td>0.155556</td>
+<td>981.1004</td>
+<td>0.111111</td>
+<td>6.045191</td>
+<td>5.688889</td>
+<td>-0.203313</td>
+<td>0.652230</td>
+</tr>
+<tr class="odd">
+<td data-quarto-table-cell-role="th">4</td>
+<td>ALDVYNGLL</td>
+<td>0.966667</td>
+<td>977.1115</td>
+<td>0.111111</td>
+<td>4.050028</td>
+<td>-16.188889</td>
+<td>-1.204004</td>
+<td>0.493034</td>
+</tr>
+</tbody>
+</table>
+
+</div>
+</div>
+</div>
+</section>
+</section>
+<section id="exploratory-analysis" class="level1">
+<h1>Exploratory Analysis</h1>
+<div id="35a55988" class="cell" data-execution_count="8">
+<details class="code-fold">
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb8"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Compare numeric features between epitopes and negatives datasets</span></span>
+<span id="cb8-2"><a href="#cb8-2" aria-hidden="true" tabindex="-1"></a>numeric_features <span class="op">=</span> [<span class="st">'peptide_avg_hydro'</span>, <span class="st">'molecular_weight'</span>, <span class="st">'aromaticity'</span>, </span>
+<span id="cb8-3"><a href="#cb8-3" aria-hidden="true" tabindex="-1"></a>                    <span class="st">'isoelectric_point'</span>, <span class="st">'instability'</span>, <span class="st">'charge_at_pH7'</span>, <span class="st">'Score_BA'</span>]</span>
+<span id="cb8-4"><a href="#cb8-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-5"><a href="#cb8-5" aria-hidden="true" tabindex="-1"></a><span class="co"># Create a figure with subplots for each numeric feature</span></span>
+<span id="cb8-6"><a href="#cb8-6" aria-hidden="true" tabindex="-1"></a>fig, axes <span class="op">=</span> plt.subplots(<span class="bu">len</span>(numeric_features), <span class="dv">1</span>, figsize<span class="op">=</span>(<span class="dv">12</span>, <span class="dv">4</span><span class="op">*</span><span class="bu">len</span>(numeric_features)))</span>
+<span id="cb8-7"><a href="#cb8-7" aria-hidden="true" tabindex="-1"></a><span class="co">#fig.tight_layout(pad=5.0)</span></span>
+<span id="cb8-8"><a href="#cb8-8" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-9"><a href="#cb8-9" aria-hidden="true" tabindex="-1"></a><span class="co"># Plot boxplots for each feature</span></span>
+<span id="cb8-10"><a href="#cb8-10" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> i, feature <span class="kw">in</span> <span class="bu">enumerate</span>(numeric_features):</span>
+<span id="cb8-11"><a href="#cb8-11" aria-hidden="true" tabindex="-1"></a>    ax <span class="op">=</span> axes[i]</span>
+<span id="cb8-12"><a href="#cb8-12" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb8-13"><a href="#cb8-13" aria-hidden="true" tabindex="-1"></a>    <span class="co"># Create a temporary dataframe for plotting</span></span>
+<span id="cb8-14"><a href="#cb8-14" aria-hidden="true" tabindex="-1"></a>    plot_data <span class="op">=</span> pd.DataFrame({</span>
+<span id="cb8-15"><a href="#cb8-15" aria-hidden="true" tabindex="-1"></a>        <span class="st">'Epitopes'</span>: epitopes[feature],</span>
+<span id="cb8-16"><a href="#cb8-16" aria-hidden="true" tabindex="-1"></a>        <span class="st">'Negatives'</span>: negatives[feature]</span>
+<span id="cb8-17"><a href="#cb8-17" aria-hidden="true" tabindex="-1"></a>    })</span>
+<span id="cb8-18"><a href="#cb8-18" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb8-19"><a href="#cb8-19" aria-hidden="true" tabindex="-1"></a>    <span class="co"># Create boxplot</span></span>
+<span id="cb8-20"><a href="#cb8-20" aria-hidden="true" tabindex="-1"></a>    sns.boxplot(data<span class="op">=</span>plot_data, ax<span class="op">=</span>ax)</span>
+<span id="cb8-21"><a href="#cb8-21" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb8-22"><a href="#cb8-22" aria-hidden="true" tabindex="-1"></a>    <span class="co"># Add feature statistics</span></span>
+<span id="cb8-23"><a href="#cb8-23" aria-hidden="true" tabindex="-1"></a>    epitope_mean <span class="op">=</span> epitopes[feature].mean()</span>
+<span id="cb8-24"><a href="#cb8-24" aria-hidden="true" tabindex="-1"></a>    negative_mean <span class="op">=</span> negatives[feature].mean()</span>
+<span id="cb8-25"><a href="#cb8-25" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb8-26"><a href="#cb8-26" aria-hidden="true" tabindex="-1"></a>    ax.set_title(<span class="ss">f'</span><span class="sc">{</span>feature<span class="sc">}</span><span class="ss"> Distribution Comparison'</span>)</span>
+<span id="cb8-27"><a href="#cb8-27" aria-hidden="true" tabindex="-1"></a>    ax.text(<span class="fl">0.02</span>, <span class="fl">0.95</span>, <span class="ss">f'Epitopes mean: </span><span class="sc">{</span>epitope_mean<span class="sc">:.4f}</span><span class="ss">'</span>, transform<span class="op">=</span>ax.transAxes)</span>
+<span id="cb8-28"><a href="#cb8-28" aria-hidden="true" tabindex="-1"></a>    ax.text(<span class="fl">0.02</span>, <span class="fl">0.90</span>, <span class="ss">f'Negatives mean: </span><span class="sc">{</span>negative_mean<span class="sc">:.4f}</span><span class="ss">'</span>, transform<span class="op">=</span>ax.transAxes)</span>
+<span id="cb8-29"><a href="#cb8-29" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb8-30"><a href="#cb8-30" aria-hidden="true" tabindex="-1"></a>    <span class="co"># Add p-value from t-test</span></span>
+<span id="cb8-31"><a href="#cb8-31" aria-hidden="true" tabindex="-1"></a>    <span class="im">from</span> scipy <span class="im">import</span> stats</span>
+<span id="cb8-32"><a href="#cb8-32" aria-hidden="true" tabindex="-1"></a>    t_stat, p_value <span class="op">=</span> stats.ttest_ind(</span>
+<span id="cb8-33"><a href="#cb8-33" aria-hidden="true" tabindex="-1"></a>        epitopes[feature].dropna(), </span>
+<span id="cb8-34"><a href="#cb8-34" aria-hidden="true" tabindex="-1"></a>        negatives[feature].dropna(),</span>
+<span id="cb8-35"><a href="#cb8-35" aria-hidden="true" tabindex="-1"></a>        equal_var<span class="op">=</span><span class="va">False</span>  <span class="co"># Welch's t-test (doesn't assume equal variances)</span></span>
+<span id="cb8-36"><a href="#cb8-36" aria-hidden="true" tabindex="-1"></a>    )</span>
+<span id="cb8-37"><a href="#cb8-37" aria-hidden="true" tabindex="-1"></a>    <span class="co">#ax.text(0.02, 0.85, f'p-value: {p_value:.4e}', transform=ax.transAxes)</span></span>
+<span id="cb8-38"><a href="#cb8-38" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-39"><a href="#cb8-39" aria-hidden="true" tabindex="-1"></a><span class="co">#plt.suptitle('Comparison of Numeric Features Between Epitopes and Negatives', fontsize=16)</span></span>
+<span id="cb8-40"><a href="#cb8-40" aria-hidden="true" tabindex="-1"></a>plt.show()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="blog_files/figure-html/cell-9-output-1.png" class="img-fluid figure-img"></p>
+</figure>
+</div>
+</div>
+</div>
+<p>A boxplot comparison of the numerical variables reveals hardly significant differences between the epitope and non-epitope peptides. The clear outlier being the predicted binding affinity score.</p>
+<div id="b56706a1" class="cell" data-execution_count="9">
+<details class="code-fold">
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb9"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a><span class="co"># plot Score_BA for epitopes and negatives overlaid on the same plot</span></span>
+<span id="cb9-2"><a href="#cb9-2" aria-hidden="true" tabindex="-1"></a>plt.figure(figsize<span class="op">=</span>(<span class="dv">10</span>, <span class="dv">6</span>))</span>
+<span id="cb9-3"><a href="#cb9-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-4"><a href="#cb9-4" aria-hidden="true" tabindex="-1"></a><span class="co"># Use density instead of raw counts to normalize the histograms</span></span>
+<span id="cb9-5"><a href="#cb9-5" aria-hidden="true" tabindex="-1"></a>plt.hist(epitopes[<span class="st">'Score_BA'</span>], bins<span class="op">=</span><span class="dv">20</span>, alpha<span class="op">=</span><span class="fl">0.5</span>, color<span class="op">=</span><span class="st">'blue'</span>, edgecolor<span class="op">=</span><span class="st">'black'</span>, </span>
+<span id="cb9-6"><a href="#cb9-6" aria-hidden="true" tabindex="-1"></a>         label<span class="op">=</span><span class="st">'Epitopes'</span>, density<span class="op">=</span><span class="va">True</span>)</span>
+<span id="cb9-7"><a href="#cb9-7" aria-hidden="true" tabindex="-1"></a>plt.hist(negatives[<span class="st">'Score_BA'</span>], bins<span class="op">=</span><span class="dv">20</span>, alpha<span class="op">=</span><span class="fl">0.5</span>, color<span class="op">=</span><span class="st">'red'</span>, edgecolor<span class="op">=</span><span class="st">'black'</span>, </span>
+<span id="cb9-8"><a href="#cb9-8" aria-hidden="true" tabindex="-1"></a>         label<span class="op">=</span><span class="st">'Negatives'</span>, density<span class="op">=</span><span class="va">True</span>)</span>
+<span id="cb9-9"><a href="#cb9-9" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-10"><a href="#cb9-10" aria-hidden="true" tabindex="-1"></a><span class="co"># Alternative approach: use log scale for y-axis</span></span>
+<span id="cb9-11"><a href="#cb9-11" aria-hidden="true" tabindex="-1"></a>plt.yscale(<span class="st">'log'</span>)</span>
+<span id="cb9-12"><a href="#cb9-12" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-13"><a href="#cb9-13" aria-hidden="true" tabindex="-1"></a>plt.xlabel(<span class="st">'Binding Affinity'</span>)</span>
+<span id="cb9-14"><a href="#cb9-14" aria-hidden="true" tabindex="-1"></a>plt.ylabel(<span class="st">'Density (log scale)'</span>)</span>
+<span id="cb9-15"><a href="#cb9-15" aria-hidden="true" tabindex="-1"></a>plt.title(<span class="st">'Normalized Histogram of Binding Affinity for Epitopes vs Negatives'</span>)</span>
+<span id="cb9-16"><a href="#cb9-16" aria-hidden="true" tabindex="-1"></a>plt.legend(prop<span class="op">=</span>{<span class="st">'size'</span>: <span class="dv">14</span>})  <span class="co"># Increased legend font size</span></span>
+<span id="cb9-17"><a href="#cb9-17" aria-hidden="true" tabindex="-1"></a>plt.tight_layout()</span>
+<span id="cb9-18"><a href="#cb9-18" aria-hidden="true" tabindex="-1"></a>plt.show()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="blog_files/figure-html/cell-10-output-1.png" class="img-fluid figure-img"></p>
+</figure>
+</div>
+</div>
+</div>
+<p>Upon further inspection of the difference in predicted binding affinity score, we see the non-epitope peptides exhibit a right-skewed distribution with a mean of 0.07, and the epitopes show a broad, moderate-variance spread with a much higher mean of 0.56.</p>
+</section>
+<section id="modeling" class="level1">
+<h1>Modeling</h1>
+<section id="preprocessing-1" class="level3">
+<h3 class="anchored" data-anchor-id="preprocessing-1">Preprocessing</h3>
+<p>Prior to modeling,</p>
 <!-- -->
 
 
@@ -868,187 +1147,368 @@ window.document.addEventListener("DOMContentLoaded", function (event) {
   }
 });
 </script><div class="modal fade" id="quarto-embedded-source-code-modal" tabindex="-1" aria-labelledby="quarto-embedded-source-code-modal-label" aria-hidden="true"><div class="modal-dialog modal-dialog-scrollable"><div class="modal-content"><div class="modal-header"><h5 class="modal-title" id="quarto-embedded-source-code-modal-label">Source Code</h5><button class="btn-close" data-bs-dismiss="modal"></button></div><div class="modal-body"><div class="">
-<div class="sourceCode" id="cb5" data-shortcodes="false"><pre class="sourceCode markdown code-with-copy"><code class="sourceCode markdown"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="co">---</span></span>
-<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a><span class="an">title:</span><span class="co"> "Cancer T-Cell Epitope Classification"</span></span>
-<span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a><span class="an">subtitle:</span><span class="co"> "Identifying key target antigens for cancer immunotherapy"</span></span>
-<span id="cb5-4"><a href="#cb5-4" aria-hidden="true" tabindex="-1"></a><span class="an">author:</span><span class="co"> "Tariq Alagha"</span></span>
-<span id="cb5-5"><a href="#cb5-5" aria-hidden="true" tabindex="-1"></a><span class="an">bibliography:</span><span class="co"> references.bib</span></span>
-<span id="cb5-6"><a href="#cb5-6" aria-hidden="true" tabindex="-1"></a><span class="an">number-sections:</span><span class="co"> false</span></span>
-<span id="cb5-7"><a href="#cb5-7" aria-hidden="true" tabindex="-1"></a><span class="an">format:</span></span>
-<span id="cb5-8"><a href="#cb5-8" aria-hidden="true" tabindex="-1"></a><span class="co">  html:</span></span>
-<span id="cb5-9"><a href="#cb5-9" aria-hidden="true" tabindex="-1"></a><span class="co">    theme: default</span></span>
-<span id="cb5-10"><a href="#cb5-10" aria-hidden="true" tabindex="-1"></a><span class="co">    rendering: embed-resources</span></span>
-<span id="cb5-11"><a href="#cb5-11" aria-hidden="true" tabindex="-1"></a><span class="co">    code-fold: true</span></span>
-<span id="cb5-12"><a href="#cb5-12" aria-hidden="true" tabindex="-1"></a><span class="co">    code-tools: true</span></span>
-<span id="cb5-13"><a href="#cb5-13" aria-hidden="true" tabindex="-1"></a><span class="co">    toc: true</span></span>
-<span id="cb5-14"><a href="#cb5-14" aria-hidden="true" tabindex="-1"></a><span class="an">editor:</span></span>
-<span id="cb5-15"><a href="#cb5-15" aria-hidden="true" tabindex="-1"></a><span class="co">  render-on-save: false</span></span>
-<span id="cb5-16"><a href="#cb5-16" aria-hidden="true" tabindex="-1"></a><span class="an">jupyter:</span><span class="co"> python3</span></span>
-<span id="cb5-17"><a href="#cb5-17" aria-hidden="true" tabindex="-1"></a><span class="an">nocite:</span><span class="co"> |</span></span>
-<span id="cb5-18"><a href="#cb5-18" aria-hidden="true" tabindex="-1"></a><span class="co">  @*</span></span>
-<span id="cb5-19"><a href="#cb5-19" aria-hidden="true" tabindex="-1"></a><span class="co">---</span></span>
-<span id="cb5-20"><a href="#cb5-20" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb5-21"><a href="#cb5-21" aria-hidden="true" tabindex="-1"></a><span class="al">![@AWAD20221010](https://www.cell.com/cms/10.1016/j.ccell.2022.08.003/asset/eb36c8cd-3880-4d48-8a8b-f10accd01fba/main.assets/fx1_lrg.jpg)</span>{width=50% fig-align="center" fig-alt="End to end personalized peptide vaccine cancer treatment"}</span>
-<span id="cb5-22"><a href="#cb5-22" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb5-23"><a href="#cb5-23" aria-hidden="true" tabindex="-1"></a>Epitope classification is a critical area of immunology and vaccine development that focuses on identifying and characterizing specific regions of antigens that are recognized by the immune system. Epitopes serve as the molecular interface between pathogens and the host immune response, making their accurate identification essential for understanding immune responses and developing targeted therapeutics.</span>
-<span id="cb5-24"><a href="#cb5-24" aria-hidden="true" tabindex="-1"></a>As shown in Figure 2, standard chemotherapy treatment targets rapidly dividing cells which can include the hosts immune system, making them counterproductive. However, effective fabrication of personalized antigens would make treatment much less physically devastating.</span>
-<span id="cb5-25"><a href="#cb5-25" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb5-26"><a href="#cb5-26" aria-hidden="true" tabindex="-1"></a><span class="fu"># Data</span></span>
-<span id="cb5-27"><a href="#cb5-27" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb5-28"><a href="#cb5-28" aria-hidden="true" tabindex="-1"></a><span class="fu">### Dataset</span></span>
-<span id="cb5-29"><a href="#cb5-29" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb5-30"><a href="#cb5-30" aria-hidden="true" tabindex="-1"></a>The dataset utilized for this analysis is sourced from <span class="co">[</span><span class="ot">The Immune Epitope Database (IEDB)</span><span class="co">](https://www.iedb.org/)</span>, a publicly available database of manually extracted data from published scientific research on antibody and T-cell epitopes. It was created to aggregate and centralize data on how the immune system recognizes specific molecular features, known as epitopes, on antigens.</span>
-<span id="cb5-31"><a href="#cb5-31" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb5-32"><a href="#cb5-32" aria-hidden="true" tabindex="-1"></a>The database can be queried for known epitopes, returning a list of assays — commonly known as tests or experiments — that have been performed on the antigen and their results. These tests can include whether or not a particular epitope binds to the MHC complex or is capable of triggering a cytokine release to kill living cells.</span>
-<span id="cb5-33"><a href="#cb5-33" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb5-34"><a href="#cb5-34" aria-hidden="true" tabindex="-1"></a>The scope of my analysis will be limited to epitopes sourced from human cancer T-cells that were tested and found to produce an autoimmune response. While the database has a wide range of information about each antigen, I will only be utilizing the epitopes' amino acid sequence and the MHC allele it was tested against.</span>
-<span id="cb5-35"><a href="#cb5-35" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb5-36"><a href="#cb5-36" aria-hidden="true" tabindex="-1"></a>Along with these features, each epitope entry also contains a link to the antigen's full amino acid sequence. These full sequences come from the <span class="co">[</span><span class="ot">UniProt</span><span class="co">](https://www.uniprot.org/)</span> database, which contains a collection of protein sequences and their associated information. These full sequences will be used to generate negative samples for the model.</span>
-<span id="cb5-37"><a href="#cb5-37" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb5-38"><a href="#cb5-38" aria-hidden="true" tabindex="-1"></a>::: {.callout-note title="Libraries and packages" collapse="false"}</span>
-<span id="cb5-39"><a href="#cb5-39" aria-hidden="true" tabindex="-1"></a><span class="in">```{python q-collapse}</span></span>
-<span id="cb5-40"><a href="#cb5-40" aria-hidden="true" tabindex="-1"></a><span class="in"># Importing libraries</span></span>
-<span id="cb5-41"><a href="#cb5-41" aria-hidden="true" tabindex="-1"></a><span class="in">import pandas as pd</span></span>
-<span id="cb5-42"><a href="#cb5-42" aria-hidden="true" tabindex="-1"></a><span class="in">from collections import Counter</span></span>
-<span id="cb5-43"><a href="#cb5-43" aria-hidden="true" tabindex="-1"></a><span class="in">import matplotlib.pyplot as plt</span></span>
-<span id="cb5-44"><a href="#cb5-44" aria-hidden="true" tabindex="-1"></a><span class="in">import seaborn as sns</span></span>
-<span id="cb5-45"><a href="#cb5-45" aria-hidden="true" tabindex="-1"></a><span class="in">import numpy as np</span></span>
-<span id="cb5-46"><a href="#cb5-46" aria-hidden="true" tabindex="-1"></a><span class="in">import Bio</span></span>
-<span id="cb5-47"><a href="#cb5-47" aria-hidden="true" tabindex="-1"></a><span class="in">from sklearn.ensemble import RandomForestClassifier</span></span>
-<span id="cb5-48"><a href="#cb5-48" aria-hidden="true" tabindex="-1"></a><span class="in">from sklearn.metrics import classification_report, accuracy_score, confusion_matrix, roc_auc_score, roc_curve</span></span>
-<span id="cb5-49"><a href="#cb5-49" aria-hidden="true" tabindex="-1"></a><span class="in">from Bio.SeqUtils.ProtParam import ProteinAnalysis</span></span>
-<span id="cb5-50"><a href="#cb5-50" aria-hidden="true" tabindex="-1"></a><span class="in">import requests</span></span>
-<span id="cb5-51"><a href="#cb5-51" aria-hidden="true" tabindex="-1"></a><span class="in">from io import StringIO</span></span>
-<span id="cb5-52"><a href="#cb5-52" aria-hidden="true" tabindex="-1"></a><span class="in">from Bio import SeqIO</span></span>
-<span id="cb5-53"><a href="#cb5-53" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
-<span id="cb5-54"><a href="#cb5-54" aria-hidden="true" tabindex="-1"></a>:::</span>
-<span id="cb5-55"><a href="#cb5-55" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb5-56"><a href="#cb5-56" aria-hidden="true" tabindex="-1"></a><span class="fu">### Preprocessing</span></span>
-<span id="cb5-57"><a href="#cb5-57" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb5-60"><a href="#cb5-60" aria-hidden="true" tabindex="-1"></a><span class="in">```{python}</span></span>
-<span id="cb5-61"><a href="#cb5-61" aria-hidden="true" tabindex="-1"></a><span class="co">#| warning: false</span></span>
-<span id="cb5-62"><a href="#cb5-62" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb5-63"><a href="#cb5-63" aria-hidden="true" tabindex="-1"></a>epitopes <span class="op">=</span> pd.read_csv(<span class="vs">r'/Users/tariq/Documents/capstone/data/epitope_table_export_1740279588.csv'</span>)</span>
-<span id="cb5-64"><a href="#cb5-64" aria-hidden="true" tabindex="-1"></a>assays <span class="op">=</span> pd.read_csv(<span class="vs">r'/Users/tariq/Documents/capstone/data/tcell_table_export_1740279970.csv'</span>)</span>
-<span id="cb5-65"><a href="#cb5-65" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb5-66"><a href="#cb5-66" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> fetch_full_sequence(url):</span>
-<span id="cb5-67"><a href="#cb5-67" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span> pd.notna(url):  <span class="co"># Check if the URL is not NaN</span></span>
-<span id="cb5-68"><a href="#cb5-68" aria-hidden="true" tabindex="-1"></a>        url <span class="op">=</span> <span class="ss">f'</span><span class="sc">{</span>url<span class="sc">}</span><span class="ss">.fasta'</span></span>
-<span id="cb5-69"><a href="#cb5-69" aria-hidden="true" tabindex="-1"></a>        <span class="cf">try</span>:</span>
-<span id="cb5-70"><a href="#cb5-70" aria-hidden="true" tabindex="-1"></a>            response <span class="op">=</span> requests.get(url)</span>
-<span id="cb5-71"><a href="#cb5-71" aria-hidden="true" tabindex="-1"></a>            <span class="cf">if</span> response.status_code <span class="op">==</span> <span class="dv">200</span>:</span>
-<span id="cb5-72"><a href="#cb5-72" aria-hidden="true" tabindex="-1"></a>                fasta_io <span class="op">=</span> StringIO(response.text)</span>
-<span id="cb5-73"><a href="#cb5-73" aria-hidden="true" tabindex="-1"></a>                records <span class="op">=</span> <span class="bu">list</span>(SeqIO.parse(fasta_io, <span class="st">"fasta"</span>))</span>
-<span id="cb5-74"><a href="#cb5-74" aria-hidden="true" tabindex="-1"></a>                <span class="cf">if</span> records:  <span class="co"># Check if there are any records</span></span>
-<span id="cb5-75"><a href="#cb5-75" aria-hidden="true" tabindex="-1"></a>                    <span class="cf">return</span> <span class="bu">str</span>(records[<span class="dv">0</span>].seq)</span>
-<span id="cb5-76"><a href="#cb5-76" aria-hidden="true" tabindex="-1"></a>                <span class="cf">else</span>:</span>
-<span id="cb5-77"><a href="#cb5-77" aria-hidden="true" tabindex="-1"></a>                    <span class="bu">print</span>(<span class="st">"No records found in the FASTA file."</span>)</span>
-<span id="cb5-78"><a href="#cb5-78" aria-hidden="true" tabindex="-1"></a>        <span class="cf">except</span> requests.exceptions.RequestException <span class="im">as</span> e:</span>
-<span id="cb5-79"><a href="#cb5-79" aria-hidden="true" tabindex="-1"></a>            <span class="bu">print</span>(<span class="ss">f"Request failed: </span><span class="sc">{</span>e<span class="sc">}</span><span class="ss">"</span>)</span>
-<span id="cb5-80"><a href="#cb5-80" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> <span class="va">None</span></span>
-<span id="cb5-81"><a href="#cb5-81" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb5-82"><a href="#cb5-82" aria-hidden="true" tabindex="-1"></a><span class="co">#epitopes['Full Sequence'] = epitopes['Epitope - Molecule Parent IRI'].apply(fetch_full_sequence)</span></span>
-<span id="cb5-83"><a href="#cb5-83" aria-hidden="true" tabindex="-1"></a>epitopes <span class="op">=</span> pd.read_csv(<span class="vs">r'/Users/tariq/Documents/capstone/data/epitope_full_seq.csv'</span>)</span>
-<span id="cb5-84"><a href="#cb5-84" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb5-85"><a href="#cb5-85" aria-hidden="true" tabindex="-1"></a><span class="co"># make all the column names snake case</span></span>
-<span id="cb5-86"><a href="#cb5-86" aria-hidden="true" tabindex="-1"></a>epitopes.columns <span class="op">=</span> epitopes.columns.<span class="bu">str</span>.lower()</span>
-<span id="cb5-87"><a href="#cb5-87" aria-hidden="true" tabindex="-1"></a>assays.columns <span class="op">=</span> assays.columns.<span class="bu">str</span>.lower()</span>
-<span id="cb5-88"><a href="#cb5-88" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb5-89"><a href="#cb5-89" aria-hidden="true" tabindex="-1"></a><span class="co"># remove spaces from column names</span></span>
-<span id="cb5-90"><a href="#cb5-90" aria-hidden="true" tabindex="-1"></a>epitopes.columns <span class="op">=</span> epitopes.columns.<span class="bu">str</span>.replace(<span class="st">' '</span>, <span class="st">''</span>)</span>
-<span id="cb5-91"><a href="#cb5-91" aria-hidden="true" tabindex="-1"></a>epitopes.columns <span class="op">=</span> epitopes.columns.<span class="bu">str</span>.replace(<span class="st">'-'</span>, <span class="st">' '</span>)</span>
-<span id="cb5-92"><a href="#cb5-92" aria-hidden="true" tabindex="-1"></a>epitopes.columns <span class="op">=</span> epitopes.columns.<span class="bu">str</span>.replace(<span class="st">' '</span>, <span class="st">'_'</span>)</span>
-<span id="cb5-93"><a href="#cb5-93" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb5-94"><a href="#cb5-94" aria-hidden="true" tabindex="-1"></a>assays.columns <span class="op">=</span> assays.columns.<span class="bu">str</span>.replace(<span class="st">' '</span>, <span class="st">''</span>)</span>
-<span id="cb5-95"><a href="#cb5-95" aria-hidden="true" tabindex="-1"></a>assays.columns <span class="op">=</span> assays.columns.<span class="bu">str</span>.replace(<span class="st">'-'</span>, <span class="st">' '</span>)</span>
-<span id="cb5-96"><a href="#cb5-96" aria-hidden="true" tabindex="-1"></a>assays.columns <span class="op">=</span> assays.columns.<span class="bu">str</span>.replace(<span class="st">' '</span>, <span class="st">'_'</span>)</span>
-<span id="cb5-97"><a href="#cb5-97" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb5-98"><a href="#cb5-98" aria-hidden="true" tabindex="-1"></a>epitopes <span class="op">=</span> epitopes.<span class="bu">filter</span>([<span class="st">'epitope_name'</span>, <span class="st">'fullsequence'</span>])</span>
-<span id="cb5-99"><a href="#cb5-99" aria-hidden="true" tabindex="-1"></a>assays <span class="op">=</span> assays.<span class="bu">filter</span>([<span class="st">'epitope_name'</span>, <span class="st">'epitope_moluculeparent'</span>, <span class="st">'host_name'</span>, <span class="st">'host_mhcpresent'</span>, <span class="st">'assay_method'</span>,<span class="st">'assay_responsemeasured'</span>, <span class="st">'assay_qualitativemeasurement'</span>, <span class="st">'mhcrestriction_name'</span>, <span class="st">'mhcrestriction_class'</span>, <span class="st">'assayantigen_name'</span>])</span>
-<span id="cb5-100"><a href="#cb5-100" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb5-101"><a href="#cb5-101" aria-hidden="true" tabindex="-1"></a><span class="co"># map mhc name and class from the assays dataframe to a new column in the epitopes dataframe based on epitope_name</span></span>
-<span id="cb5-102"><a href="#cb5-102" aria-hidden="true" tabindex="-1"></a>mhc <span class="op">=</span> assays.<span class="bu">filter</span>([<span class="st">'epitope_name'</span>, <span class="st">'mhcrestriction_name'</span>, <span class="st">'mhcrestriction_class'</span>])</span>
-<span id="cb5-103"><a href="#cb5-103" aria-hidden="true" tabindex="-1"></a>mhc <span class="op">=</span> mhc.drop_duplicates(subset<span class="op">=</span>[<span class="st">'epitope_name'</span>])</span>
-<span id="cb5-104"><a href="#cb5-104" aria-hidden="true" tabindex="-1"></a>epitopes <span class="op">=</span> epitopes.merge(mhc, on<span class="op">=</span><span class="st">'epitope_name'</span>, how<span class="op">=</span><span class="st">'left'</span>)</span>
-<span id="cb5-105"><a href="#cb5-105" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
-<span id="cb5-106"><a href="#cb5-106" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb5-107"><a href="#cb5-107" aria-hidden="true" tabindex="-1"></a>Retriving the data from IEDB was as simple as doing a search and clicking exoprt. Two files were exported, one containing 28,681 unique epitopes and another with their corresponding assays and respective results. Roughly 10% of the epitopes in the dataset came with a corresponding <span class="co">[</span><span class="ot">UniProt</span><span class="co">](https://www.uniprot.org/)</span> link. For our purposes this will be enough. Using the requests python library, the full antigen sequence was downloaded and appended to the epitope dataset. Next, simple formatting was done to standardize the column names. Finally, the epitope dataset was merged with the assays dataset on the epitope_name column and filtered to include the following columns:</span>
-<span id="cb5-108"><a href="#cb5-108" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb5-111"><a href="#cb5-111" aria-hidden="true" tabindex="-1"></a><span class="in">```{python}</span></span>
-<span id="cb5-112"><a href="#cb5-112" aria-hidden="true" tabindex="-1"></a>epitopes.head()</span>
-<span id="cb5-113"><a href="#cb5-113" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
-<span id="cb5-114"><a href="#cb5-114" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb5-115"><a href="#cb5-115" aria-hidden="true" tabindex="-1"></a><span class="fu">### Negative Sample Generation</span></span>
-<span id="cb5-116"><a href="#cb5-116" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb5-117"><a href="#cb5-117" aria-hidden="true" tabindex="-1"></a><span class="in">```{python negative_sample_generation}</span></span>
-<span id="cb5-118"><a href="#cb5-118" aria-hidden="true" tabindex="-1"></a><span class="in">#| eval: false</span></span>
-<span id="cb5-119"><a href="#cb5-119" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb5-120"><a href="#cb5-120" aria-hidden="true" tabindex="-1"></a><span class="in">def generate_negatives(row):</span></span>
-<span id="cb5-121"><a href="#cb5-121" aria-hidden="true" tabindex="-1"></a><span class="in">    epitope = row["epitope_name"]</span></span>
-<span id="cb5-122"><a href="#cb5-122" aria-hidden="true" tabindex="-1"></a><span class="in">    full_seq = row["fullsequence"]</span></span>
-<span id="cb5-123"><a href="#cb5-123" aria-hidden="true" tabindex="-1"></a><span class="in">    mhc = row["mhcrestriction_name"]</span></span>
-<span id="cb5-124"><a href="#cb5-124" aria-hidden="true" tabindex="-1"></a><span class="in">    </span></span>
-<span id="cb5-125"><a href="#cb5-125" aria-hidden="true" tabindex="-1"></a><span class="in">    # Handle missing or empty sequences</span></span>
-<span id="cb5-126"><a href="#cb5-126" aria-hidden="true" tabindex="-1"></a><span class="in">    if pd.isnull(full_seq) or full_seq == "":</span></span>
-<span id="cb5-127"><a href="#cb5-127" aria-hidden="true" tabindex="-1"></a><span class="in">        return []</span></span>
-<span id="cb5-128"><a href="#cb5-128" aria-hidden="true" tabindex="-1"></a><span class="in">    </span></span>
-<span id="cb5-129"><a href="#cb5-129" aria-hidden="true" tabindex="-1"></a><span class="in">    epitope = str(epitope)</span></span>
-<span id="cb5-130"><a href="#cb5-130" aria-hidden="true" tabindex="-1"></a><span class="in">    full_seq = str(full_seq)</span></span>
-<span id="cb5-131"><a href="#cb5-131" aria-hidden="true" tabindex="-1"></a><span class="in">    ep_len = len(epitope)</span></span>
-<span id="cb5-132"><a href="#cb5-132" aria-hidden="true" tabindex="-1"></a><span class="in">    </span></span>
-<span id="cb5-133"><a href="#cb5-133" aria-hidden="true" tabindex="-1"></a><span class="in">    negatives = []</span></span>
-<span id="cb5-134"><a href="#cb5-134" aria-hidden="true" tabindex="-1"></a><span class="in">    for i in range(len(full_seq) - ep_len + 1):</span></span>
-<span id="cb5-135"><a href="#cb5-135" aria-hidden="true" tabindex="-1"></a><span class="in">        window = full_seq[i:i+ep_len]</span></span>
-<span id="cb5-136"><a href="#cb5-136" aria-hidden="true" tabindex="-1"></a><span class="in">        if window != epitope:</span></span>
-<span id="cb5-137"><a href="#cb5-137" aria-hidden="true" tabindex="-1"></a><span class="in">            negatives.append({"peptide": window, "mhc": mhc})</span></span>
-<span id="cb5-138"><a href="#cb5-138" aria-hidden="true" tabindex="-1"></a><span class="in">    return negatives</span></span>
-<span id="cb5-139"><a href="#cb5-139" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb5-140"><a href="#cb5-140" aria-hidden="true" tabindex="-1"></a><span class="in"># Apply the function to each row</span></span>
-<span id="cb5-141"><a href="#cb5-141" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb5-142"><a href="#cb5-142" aria-hidden="true" tabindex="-1"></a><span class="in">negatives = pd.DataFrame()</span></span>
-<span id="cb5-143"><a href="#cb5-143" aria-hidden="true" tabindex="-1"></a><span class="in">negatives['negatives'] = epitopes.apply(generate_negatives, axis=1)</span></span>
-<span id="cb5-144"><a href="#cb5-144" aria-hidden="true" tabindex="-1"></a><span class="in">negatives = negatives[["negatives"]].explode("negatives").reset_index(drop=True)</span></span>
-<span id="cb5-145"><a href="#cb5-145" aria-hidden="true" tabindex="-1"></a><span class="in">negatives.dropna(subset=["negatives"], inplace=True)</span></span>
-<span id="cb5-146"><a href="#cb5-146" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb5-147"><a href="#cb5-147" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb5-148"><a href="#cb5-148" aria-hidden="true" tabindex="-1"></a><span class="in"># Remove duplicate peptide-mhc combinations</span></span>
-<span id="cb5-149"><a href="#cb5-149" aria-hidden="true" tabindex="-1"></a><span class="in">print(f"Shape before removing duplicates: {negatives.shape}")</span></span>
-<span id="cb5-150"><a href="#cb5-150" aria-hidden="true" tabindex="-1"></a><span class="in">negatives = negatives.drop_duplicates(subset=['negatives'])</span></span>
-<span id="cb5-151"><a href="#cb5-151" aria-hidden="true" tabindex="-1"></a><span class="in">print(f"Shape after removing duplicates: {negatives.shape}")</span></span>
-<span id="cb5-152"><a href="#cb5-152" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb5-153"><a href="#cb5-153" aria-hidden="true" tabindex="-1"></a><span class="in"># Check for any remaining NaN values</span></span>
-<span id="cb5-154"><a href="#cb5-154" aria-hidden="true" tabindex="-1"></a><span class="in">print(f"Number of NaN values in negatives: {negatives['negatives'].isna().sum()}")</span></span>
-<span id="cb5-155"><a href="#cb5-155" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb5-156"><a href="#cb5-156" aria-hidden="true" tabindex="-1"></a><span class="in"># Extract peptide and mhc into separate columns</span></span>
-<span id="cb5-157"><a href="#cb5-157" aria-hidden="true" tabindex="-1"></a><span class="in">negatives['peptide'] = negatives['negatives'].apply(lambda x: x['peptide'])</span></span>
-<span id="cb5-158"><a href="#cb5-158" aria-hidden="true" tabindex="-1"></a><span class="in">negatives['mhc'] = negatives['negatives'].apply(lambda x: x['mhc'])</span></span>
-<span id="cb5-159"><a href="#cb5-159" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb5-160"><a href="#cb5-160" aria-hidden="true" tabindex="-1"></a><span class="in"># Calculate features on the peptide column</span></span>
-<span id="cb5-161"><a href="#cb5-161" aria-hidden="true" tabindex="-1"></a><span class="in">negatives['peptide_length'] = negatives['peptide'].apply(len)</span></span>
-<span id="cb5-162"><a href="#cb5-162" aria-hidden="true" tabindex="-1"></a><span class="in">negatives['peptide_avg_hydro'] = negatives['peptide'].apply(compute_avg_hydrophobicity)</span></span>
-<span id="cb5-163"><a href="#cb5-163" aria-hidden="true" tabindex="-1"></a><span class="in">negatives['molecular_weight'] = negatives['peptide'].apply(calculate_molecular_weight)</span></span>
-<span id="cb5-164"><a href="#cb5-164" aria-hidden="true" tabindex="-1"></a><span class="in">negatives['aromaticity'] = negatives['peptide'].apply(calculate_aromaticity)</span></span>
-<span id="cb5-165"><a href="#cb5-165" aria-hidden="true" tabindex="-1"></a><span class="in">negatives['isoelectric_point'] = negatives['peptide'].apply(calculate_isoelectric_point)</span></span>
-<span id="cb5-166"><a href="#cb5-166" aria-hidden="true" tabindex="-1"></a><span class="in">negatives['instability'] = negatives['peptide'].apply(calculate_instability)</span></span>
-<span id="cb5-167"><a href="#cb5-167" aria-hidden="true" tabindex="-1"></a><span class="in">negatives['charge_at_pH7'] = negatives['peptide'].apply(calculate_charge_at_pH7)</span></span>
-<span id="cb5-168"><a href="#cb5-168" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb5-169"><a href="#cb5-169" aria-hidden="true" tabindex="-1"></a><span class="in"># Drop the original dictionary column if no longer needed</span></span>
-<span id="cb5-170"><a href="#cb5-170" aria-hidden="true" tabindex="-1"></a><span class="in">negatives.drop('negatives', axis=1, inplace=True)</span></span>
-<span id="cb5-171"><a href="#cb5-171" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
-<span id="cb5-172"><a href="#cb5-172" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb5-173"><a href="#cb5-173" aria-hidden="true" tabindex="-1"></a>Although the IEDB database provided a substantial amount of epitopes, in order draw comparisons and gain insight into what distinguishes an eptitope from any other sequence of amino acids, samples of non-epitope peptides are needed. These were obtained by shuffling and sampling amino acid sequences from the full antigen sequences of the epitopes, ensuring that the sampled sequences did not overlap with the epitope sequences. </span>
-<span id="cb5-174"><a href="#cb5-174" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb5-175"><a href="#cb5-175" aria-hidden="true" tabindex="-1"></a>There are pros and cons to this methodology. As opposed to generating completely random sequences of amino acids — sampling from larger sequences allows for natural patterns and physiochemical motifs to be retained. That is not to say the performance of statistical modeling or qualitative analysis will be better. Random sequences are more likely to be highly irregular, or even biologically implausible. Sampling from the full antigen sequences eliminates this potential bias.</span>
-<span id="cb5-176"><a href="#cb5-176" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb5-177"><a href="#cb5-177" aria-hidden="true" tabindex="-1"></a>Conversely, it is possible for a randomly sampled peptide to be an epitope that has not been tested yet, or simply isn't in the subset of data used for this analysis — resulting in an increase in the number of false negatives.</span>
-<span id="cb5-178"><a href="#cb5-178" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb5-179"><a href="#cb5-179" aria-hidden="true" tabindex="-1"></a><span class="fu">### Feature Engineering</span></span>
-<span id="cb5-180"><a href="#cb5-180" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb5-181"><a href="#cb5-181" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb5-182"><a href="#cb5-182" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb5-183"><a href="#cb5-183" aria-hidden="true" tabindex="-1"></a><span class="fu"># Exploratory Data Analysis</span></span>
-<span id="cb5-184"><a href="#cb5-184" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb5-185"><a href="#cb5-185" aria-hidden="true" tabindex="-1"></a>###</span>
+<div class="sourceCode" id="cb10" data-shortcodes="false"><pre class="sourceCode markdown code-with-copy"><code class="sourceCode markdown"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a><span class="co">---</span></span>
+<span id="cb10-2"><a href="#cb10-2" aria-hidden="true" tabindex="-1"></a><span class="an">title:</span><span class="co"> "Cancer T-Cell Epitope Classification"</span></span>
+<span id="cb10-3"><a href="#cb10-3" aria-hidden="true" tabindex="-1"></a><span class="an">subtitle:</span><span class="co"> "Identifying key target antigens for cancer immunotherapy"</span></span>
+<span id="cb10-4"><a href="#cb10-4" aria-hidden="true" tabindex="-1"></a><span class="an">author:</span><span class="co"> "Tariq Alagha"</span></span>
+<span id="cb10-5"><a href="#cb10-5" aria-hidden="true" tabindex="-1"></a><span class="an">bibliography:</span><span class="co"> references.bib</span></span>
+<span id="cb10-6"><a href="#cb10-6" aria-hidden="true" tabindex="-1"></a><span class="an">number-sections:</span><span class="co"> false</span></span>
+<span id="cb10-7"><a href="#cb10-7" aria-hidden="true" tabindex="-1"></a><span class="an">format:</span></span>
+<span id="cb10-8"><a href="#cb10-8" aria-hidden="true" tabindex="-1"></a><span class="co">  html:</span></span>
+<span id="cb10-9"><a href="#cb10-9" aria-hidden="true" tabindex="-1"></a><span class="co">    theme: default</span></span>
+<span id="cb10-10"><a href="#cb10-10" aria-hidden="true" tabindex="-1"></a><span class="co">    rendering: embed-resources</span></span>
+<span id="cb10-11"><a href="#cb10-11" aria-hidden="true" tabindex="-1"></a><span class="co">    code-fold: true</span></span>
+<span id="cb10-12"><a href="#cb10-12" aria-hidden="true" tabindex="-1"></a><span class="co">    code-tools: true</span></span>
+<span id="cb10-13"><a href="#cb10-13" aria-hidden="true" tabindex="-1"></a><span class="co">    toc: true</span></span>
+<span id="cb10-14"><a href="#cb10-14" aria-hidden="true" tabindex="-1"></a><span class="an">editor:</span></span>
+<span id="cb10-15"><a href="#cb10-15" aria-hidden="true" tabindex="-1"></a><span class="co">  render-on-save: false</span></span>
+<span id="cb10-16"><a href="#cb10-16" aria-hidden="true" tabindex="-1"></a><span class="an">jupyter:</span><span class="co"> python3</span></span>
+<span id="cb10-17"><a href="#cb10-17" aria-hidden="true" tabindex="-1"></a><span class="an">nocite:</span><span class="co"> |</span></span>
+<span id="cb10-18"><a href="#cb10-18" aria-hidden="true" tabindex="-1"></a><span class="co">  @*</span></span>
+<span id="cb10-19"><a href="#cb10-19" aria-hidden="true" tabindex="-1"></a><span class="co">---</span></span>
+<span id="cb10-20"><a href="#cb10-20" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb10-21"><a href="#cb10-21" aria-hidden="true" tabindex="-1"></a><span class="al">![@AWAD20221010](https://www.cell.com/cms/10.1016/j.ccell.2022.08.003/asset/eb36c8cd-3880-4d48-8a8b-f10accd01fba/main.assets/fx1_lrg.jpg)</span>{width=50% fig-align="center" fig-alt="End to end personalized peptide vaccine cancer treatment"}</span>
+<span id="cb10-22"><a href="#cb10-22" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb10-23"><a href="#cb10-23" aria-hidden="true" tabindex="-1"></a>Epitope classification is a critical area of immunology and vaccine development that focuses on identifying and characterizing specific regions of antigens that are recognized by the immune system. Epitopes serve as the molecular interface between pathogens and the host immune response, making their accurate identification essential for understanding immune responses and developing targeted therapeutics.</span>
+<span id="cb10-24"><a href="#cb10-24" aria-hidden="true" tabindex="-1"></a>As shown in Figure 2, standard chemotherapy treatment targets rapidly dividing cells which can include the hosts immune system, making them counterproductive. However, effective fabrication of personalized antigens would make treatment much less physically devastating.</span>
+<span id="cb10-25"><a href="#cb10-25" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb10-26"><a href="#cb10-26" aria-hidden="true" tabindex="-1"></a><span class="fu"># Data</span></span>
+<span id="cb10-27"><a href="#cb10-27" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb10-28"><a href="#cb10-28" aria-hidden="true" tabindex="-1"></a><span class="fu">### Dataset</span></span>
+<span id="cb10-29"><a href="#cb10-29" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb10-30"><a href="#cb10-30" aria-hidden="true" tabindex="-1"></a>The dataset utilized for this analysis is sourced from <span class="co">[</span><span class="ot">The Immune Epitope Database (IEDB)</span><span class="co">](https://www.iedb.org/)</span>, a publicly available database of manually extracted data from published scientific research on antibody and T-cell epitopes. It was created to aggregate and centralize data on how the immune system recognizes specific molecular features, known as epitopes, on antigens.</span>
+<span id="cb10-31"><a href="#cb10-31" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb10-32"><a href="#cb10-32" aria-hidden="true" tabindex="-1"></a>The database can be queried for known epitopes, returning a list of assays — tests or experiments — that have been performed on the antigen and their results. These tests can include whether or not a particular epitope binds to the MHC complex or is capable of triggering a cytokine release to kill living cells.</span>
+<span id="cb10-33"><a href="#cb10-33" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb10-34"><a href="#cb10-34" aria-hidden="true" tabindex="-1"></a>The scope of my analysis will be limited to epitopes sourced from human cancer T-cells that were tested and found to produce an autoimmune response. While the database has a wide range of information about each antigen, I will only be utilizing the epitopes' amino acid sequence and the MHC allele it was tested against.</span>
+<span id="cb10-35"><a href="#cb10-35" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb10-36"><a href="#cb10-36" aria-hidden="true" tabindex="-1"></a>Along with these features, each epitope entry also contains a link to the antigen's full amino acid sequence. These full sequences come from the <span class="co">[</span><span class="ot">UniProt</span><span class="co">](https://www.uniprot.org/)</span> database, which contains a collection of protein sequences and their associated information. These full sequences will be used to generate negative samples for the model.</span>
+<span id="cb10-37"><a href="#cb10-37" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb10-38"><a href="#cb10-38" aria-hidden="true" tabindex="-1"></a>::: {.callout-note title="Libraries and packages" collapse="false"}</span>
+<span id="cb10-39"><a href="#cb10-39" aria-hidden="true" tabindex="-1"></a><span class="in">```{python q-collapse}</span></span>
+<span id="cb10-40"><a href="#cb10-40" aria-hidden="true" tabindex="-1"></a><span class="in"># Importing libraries</span></span>
+<span id="cb10-41"><a href="#cb10-41" aria-hidden="true" tabindex="-1"></a><span class="in">import pandas as pd</span></span>
+<span id="cb10-42"><a href="#cb10-42" aria-hidden="true" tabindex="-1"></a><span class="in">from collections import Counter</span></span>
+<span id="cb10-43"><a href="#cb10-43" aria-hidden="true" tabindex="-1"></a><span class="in">import matplotlib.pyplot as plt</span></span>
+<span id="cb10-44"><a href="#cb10-44" aria-hidden="true" tabindex="-1"></a><span class="in">import seaborn as sns</span></span>
+<span id="cb10-45"><a href="#cb10-45" aria-hidden="true" tabindex="-1"></a><span class="in">import numpy as np</span></span>
+<span id="cb10-46"><a href="#cb10-46" aria-hidden="true" tabindex="-1"></a><span class="in">import Bio</span></span>
+<span id="cb10-47"><a href="#cb10-47" aria-hidden="true" tabindex="-1"></a><span class="in">from sklearn.ensemble import RandomForestClassifier</span></span>
+<span id="cb10-48"><a href="#cb10-48" aria-hidden="true" tabindex="-1"></a><span class="in">from sklearn.metrics import classification_report, accuracy_score, confusion_matrix, roc_auc_score, roc_curve</span></span>
+<span id="cb10-49"><a href="#cb10-49" aria-hidden="true" tabindex="-1"></a><span class="in">from Bio.SeqUtils.ProtParam import ProteinAnalysis</span></span>
+<span id="cb10-50"><a href="#cb10-50" aria-hidden="true" tabindex="-1"></a><span class="in">import requests</span></span>
+<span id="cb10-51"><a href="#cb10-51" aria-hidden="true" tabindex="-1"></a><span class="in">from io import StringIO</span></span>
+<span id="cb10-52"><a href="#cb10-52" aria-hidden="true" tabindex="-1"></a><span class="in">from Bio import SeqIO</span></span>
+<span id="cb10-53"><a href="#cb10-53" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb10-54"><a href="#cb10-54" aria-hidden="true" tabindex="-1"></a>:::</span>
+<span id="cb10-55"><a href="#cb10-55" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb10-56"><a href="#cb10-56" aria-hidden="true" tabindex="-1"></a><span class="fu">### Preprocessing</span></span>
+<span id="cb10-57"><a href="#cb10-57" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb10-60"><a href="#cb10-60" aria-hidden="true" tabindex="-1"></a><span class="in">```{python}</span></span>
+<span id="cb10-61"><a href="#cb10-61" aria-hidden="true" tabindex="-1"></a><span class="co">#| warning: false</span></span>
+<span id="cb10-62"><a href="#cb10-62" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb10-63"><a href="#cb10-63" aria-hidden="true" tabindex="-1"></a>epitopes <span class="op">=</span> pd.read_csv(<span class="vs">r'/Users/tariq/Documents/capstone/data/epitope_table_export_1740279588.csv'</span>)</span>
+<span id="cb10-64"><a href="#cb10-64" aria-hidden="true" tabindex="-1"></a>assays <span class="op">=</span> pd.read_csv(<span class="vs">r'/Users/tariq/Documents/capstone/data/tcell_table_export_1740279970.csv'</span>)</span>
+<span id="cb10-65"><a href="#cb10-65" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb10-66"><a href="#cb10-66" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> fetch_full_sequence(url):</span>
+<span id="cb10-67"><a href="#cb10-67" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span> pd.notna(url):  <span class="co"># Check if the URL is not NaN</span></span>
+<span id="cb10-68"><a href="#cb10-68" aria-hidden="true" tabindex="-1"></a>        url <span class="op">=</span> <span class="ss">f'</span><span class="sc">{</span>url<span class="sc">}</span><span class="ss">.fasta'</span></span>
+<span id="cb10-69"><a href="#cb10-69" aria-hidden="true" tabindex="-1"></a>        <span class="cf">try</span>:</span>
+<span id="cb10-70"><a href="#cb10-70" aria-hidden="true" tabindex="-1"></a>            response <span class="op">=</span> requests.get(url)</span>
+<span id="cb10-71"><a href="#cb10-71" aria-hidden="true" tabindex="-1"></a>            <span class="cf">if</span> response.status_code <span class="op">==</span> <span class="dv">200</span>:</span>
+<span id="cb10-72"><a href="#cb10-72" aria-hidden="true" tabindex="-1"></a>                fasta_io <span class="op">=</span> StringIO(response.text)</span>
+<span id="cb10-73"><a href="#cb10-73" aria-hidden="true" tabindex="-1"></a>                records <span class="op">=</span> <span class="bu">list</span>(SeqIO.parse(fasta_io, <span class="st">"fasta"</span>))</span>
+<span id="cb10-74"><a href="#cb10-74" aria-hidden="true" tabindex="-1"></a>                <span class="cf">if</span> records:  <span class="co"># Check if there are any records</span></span>
+<span id="cb10-75"><a href="#cb10-75" aria-hidden="true" tabindex="-1"></a>                    <span class="cf">return</span> <span class="bu">str</span>(records[<span class="dv">0</span>].seq)</span>
+<span id="cb10-76"><a href="#cb10-76" aria-hidden="true" tabindex="-1"></a>                <span class="cf">else</span>:</span>
+<span id="cb10-77"><a href="#cb10-77" aria-hidden="true" tabindex="-1"></a>                    <span class="bu">print</span>(<span class="st">"No records found in the FASTA file."</span>)</span>
+<span id="cb10-78"><a href="#cb10-78" aria-hidden="true" tabindex="-1"></a>        <span class="cf">except</span> requests.exceptions.RequestException <span class="im">as</span> e:</span>
+<span id="cb10-79"><a href="#cb10-79" aria-hidden="true" tabindex="-1"></a>            <span class="bu">print</span>(<span class="ss">f"Request failed: </span><span class="sc">{</span>e<span class="sc">}</span><span class="ss">"</span>)</span>
+<span id="cb10-80"><a href="#cb10-80" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> <span class="va">None</span></span>
+<span id="cb10-81"><a href="#cb10-81" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb10-82"><a href="#cb10-82" aria-hidden="true" tabindex="-1"></a><span class="co">#epitopes['Full Sequence'] = epitopes['Epitope - Molecule Parent IRI'].apply(fetch_full_sequence)</span></span>
+<span id="cb10-83"><a href="#cb10-83" aria-hidden="true" tabindex="-1"></a>epitopes <span class="op">=</span> pd.read_csv(<span class="vs">r'/Users/tariq/Documents/capstone/data/epitope_full_seq.csv'</span>)</span>
+<span id="cb10-84"><a href="#cb10-84" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb10-85"><a href="#cb10-85" aria-hidden="true" tabindex="-1"></a><span class="co"># make all the column names snake case</span></span>
+<span id="cb10-86"><a href="#cb10-86" aria-hidden="true" tabindex="-1"></a>epitopes.columns <span class="op">=</span> epitopes.columns.<span class="bu">str</span>.lower()</span>
+<span id="cb10-87"><a href="#cb10-87" aria-hidden="true" tabindex="-1"></a>assays.columns <span class="op">=</span> assays.columns.<span class="bu">str</span>.lower()</span>
+<span id="cb10-88"><a href="#cb10-88" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb10-89"><a href="#cb10-89" aria-hidden="true" tabindex="-1"></a><span class="co"># remove spaces from column names</span></span>
+<span id="cb10-90"><a href="#cb10-90" aria-hidden="true" tabindex="-1"></a>epitopes.columns <span class="op">=</span> epitopes.columns.<span class="bu">str</span>.replace(<span class="st">' '</span>, <span class="st">''</span>)</span>
+<span id="cb10-91"><a href="#cb10-91" aria-hidden="true" tabindex="-1"></a>epitopes.columns <span class="op">=</span> epitopes.columns.<span class="bu">str</span>.replace(<span class="st">'-'</span>, <span class="st">' '</span>)</span>
+<span id="cb10-92"><a href="#cb10-92" aria-hidden="true" tabindex="-1"></a>epitopes.columns <span class="op">=</span> epitopes.columns.<span class="bu">str</span>.replace(<span class="st">' '</span>, <span class="st">'_'</span>)</span>
+<span id="cb10-93"><a href="#cb10-93" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb10-94"><a href="#cb10-94" aria-hidden="true" tabindex="-1"></a>assays.columns <span class="op">=</span> assays.columns.<span class="bu">str</span>.replace(<span class="st">' '</span>, <span class="st">''</span>)</span>
+<span id="cb10-95"><a href="#cb10-95" aria-hidden="true" tabindex="-1"></a>assays.columns <span class="op">=</span> assays.columns.<span class="bu">str</span>.replace(<span class="st">'-'</span>, <span class="st">' '</span>)</span>
+<span id="cb10-96"><a href="#cb10-96" aria-hidden="true" tabindex="-1"></a>assays.columns <span class="op">=</span> assays.columns.<span class="bu">str</span>.replace(<span class="st">' '</span>, <span class="st">'_'</span>)</span>
+<span id="cb10-97"><a href="#cb10-97" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb10-98"><a href="#cb10-98" aria-hidden="true" tabindex="-1"></a>epitopes <span class="op">=</span> epitopes.<span class="bu">filter</span>([<span class="st">'epitope_name'</span>, <span class="st">'fullsequence'</span>])</span>
+<span id="cb10-99"><a href="#cb10-99" aria-hidden="true" tabindex="-1"></a>assays <span class="op">=</span> assays.<span class="bu">filter</span>([<span class="st">'epitope_name'</span>, <span class="st">'epitope_moluculeparent'</span>, <span class="st">'host_name'</span>, <span class="st">'host_mhcpresent'</span>, <span class="st">'assay_method'</span>,<span class="st">'assay_responsemeasured'</span>, <span class="st">'assay_qualitativemeasurement'</span>, <span class="st">'mhcrestriction_name'</span>, <span class="st">'mhcrestriction_class'</span>, <span class="st">'assayantigen_name'</span>])</span>
+<span id="cb10-100"><a href="#cb10-100" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb10-101"><a href="#cb10-101" aria-hidden="true" tabindex="-1"></a><span class="co"># map mhc name and class from the assays dataframe to a new column in the epitopes dataframe based on epitope_name</span></span>
+<span id="cb10-102"><a href="#cb10-102" aria-hidden="true" tabindex="-1"></a>mhc <span class="op">=</span> assays.<span class="bu">filter</span>([<span class="st">'epitope_name'</span>, <span class="st">'mhcrestriction_name'</span>, <span class="st">'mhcrestriction_class'</span>])</span>
+<span id="cb10-103"><a href="#cb10-103" aria-hidden="true" tabindex="-1"></a>mhc <span class="op">=</span> mhc.drop_duplicates(subset<span class="op">=</span>[<span class="st">'epitope_name'</span>])</span>
+<span id="cb10-104"><a href="#cb10-104" aria-hidden="true" tabindex="-1"></a>epitopes <span class="op">=</span> epitopes.merge(mhc, on<span class="op">=</span><span class="st">'epitope_name'</span>, how<span class="op">=</span><span class="st">'left'</span>)</span>
+<span id="cb10-105"><a href="#cb10-105" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb10-106"><a href="#cb10-106" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb10-107"><a href="#cb10-107" aria-hidden="true" tabindex="-1"></a>Retriving the data from IEDB was as simple as doing a search and clicking exoprt. Two files were exported, one containing 28,681 unique epitopes and another with their corresponding assays and respective results. Roughly 10% of the epitopes in the dataset came with a corresponding <span class="co">[</span><span class="ot">UniProt</span><span class="co">](https://www.uniprot.org/)</span> link. For our purposes this will be enough. Using the requests python library, the full antigen sequence was downloaded and appended to the epitope dataset. Next, simple formatting was done to standardize the column names. Finally, the epitope dataset was merged with the assays dataset on the epitope_name column and filtered to include the following columns:</span>
+<span id="cb10-108"><a href="#cb10-108" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb10-111"><a href="#cb10-111" aria-hidden="true" tabindex="-1"></a><span class="in">```{python}</span></span>
+<span id="cb10-112"><a href="#cb10-112" aria-hidden="true" tabindex="-1"></a>epitopes.head()</span>
+<span id="cb10-113"><a href="#cb10-113" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb10-114"><a href="#cb10-114" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb10-115"><a href="#cb10-115" aria-hidden="true" tabindex="-1"></a><span class="fu">### Negative Sample Generation</span></span>
+<span id="cb10-116"><a href="#cb10-116" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb10-117"><a href="#cb10-117" aria-hidden="true" tabindex="-1"></a><span class="in">```{python negative_sample_generation}</span></span>
+<span id="cb10-118"><a href="#cb10-118" aria-hidden="true" tabindex="-1"></a><span class="in">#| eval: false</span></span>
+<span id="cb10-119"><a href="#cb10-119" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb10-120"><a href="#cb10-120" aria-hidden="true" tabindex="-1"></a><span class="in">def generate_negatives(row):</span></span>
+<span id="cb10-121"><a href="#cb10-121" aria-hidden="true" tabindex="-1"></a><span class="in">    epitope = row["epitope_name"]</span></span>
+<span id="cb10-122"><a href="#cb10-122" aria-hidden="true" tabindex="-1"></a><span class="in">    full_seq = row["fullsequence"]</span></span>
+<span id="cb10-123"><a href="#cb10-123" aria-hidden="true" tabindex="-1"></a><span class="in">    mhc = row["mhcrestriction_name"]</span></span>
+<span id="cb10-124"><a href="#cb10-124" aria-hidden="true" tabindex="-1"></a><span class="in">    </span></span>
+<span id="cb10-125"><a href="#cb10-125" aria-hidden="true" tabindex="-1"></a><span class="in">    # Handle missing or empty sequences</span></span>
+<span id="cb10-126"><a href="#cb10-126" aria-hidden="true" tabindex="-1"></a><span class="in">    if pd.isnull(full_seq) or full_seq == "":</span></span>
+<span id="cb10-127"><a href="#cb10-127" aria-hidden="true" tabindex="-1"></a><span class="in">        return []</span></span>
+<span id="cb10-128"><a href="#cb10-128" aria-hidden="true" tabindex="-1"></a><span class="in">    </span></span>
+<span id="cb10-129"><a href="#cb10-129" aria-hidden="true" tabindex="-1"></a><span class="in">    epitope = str(epitope)</span></span>
+<span id="cb10-130"><a href="#cb10-130" aria-hidden="true" tabindex="-1"></a><span class="in">    full_seq = str(full_seq)</span></span>
+<span id="cb10-131"><a href="#cb10-131" aria-hidden="true" tabindex="-1"></a><span class="in">    ep_len = len(epitope)</span></span>
+<span id="cb10-132"><a href="#cb10-132" aria-hidden="true" tabindex="-1"></a><span class="in">    </span></span>
+<span id="cb10-133"><a href="#cb10-133" aria-hidden="true" tabindex="-1"></a><span class="in">    negatives = []</span></span>
+<span id="cb10-134"><a href="#cb10-134" aria-hidden="true" tabindex="-1"></a><span class="in">    for i in range(len(full_seq) - ep_len + 1):</span></span>
+<span id="cb10-135"><a href="#cb10-135" aria-hidden="true" tabindex="-1"></a><span class="in">        window = full_seq[i:i+ep_len]</span></span>
+<span id="cb10-136"><a href="#cb10-136" aria-hidden="true" tabindex="-1"></a><span class="in">        if window != epitope:</span></span>
+<span id="cb10-137"><a href="#cb10-137" aria-hidden="true" tabindex="-1"></a><span class="in">            negatives.append({"peptide": window, "mhc": mhc})</span></span>
+<span id="cb10-138"><a href="#cb10-138" aria-hidden="true" tabindex="-1"></a><span class="in">    return negatives</span></span>
+<span id="cb10-139"><a href="#cb10-139" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb10-140"><a href="#cb10-140" aria-hidden="true" tabindex="-1"></a><span class="in"># Apply the function to each row</span></span>
+<span id="cb10-141"><a href="#cb10-141" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb10-142"><a href="#cb10-142" aria-hidden="true" tabindex="-1"></a><span class="in">negatives = pd.DataFrame()</span></span>
+<span id="cb10-143"><a href="#cb10-143" aria-hidden="true" tabindex="-1"></a><span class="in">negatives['negatives'] = epitopes.apply(generate_negatives, axis=1)</span></span>
+<span id="cb10-144"><a href="#cb10-144" aria-hidden="true" tabindex="-1"></a><span class="in">negatives = negatives[["negatives"]].explode("negatives").reset_index(drop=True)</span></span>
+<span id="cb10-145"><a href="#cb10-145" aria-hidden="true" tabindex="-1"></a><span class="in">negatives.dropna(subset=["negatives"], inplace=True)</span></span>
+<span id="cb10-146"><a href="#cb10-146" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb10-147"><a href="#cb10-147" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb10-148"><a href="#cb10-148" aria-hidden="true" tabindex="-1"></a><span class="in"># Remove duplicate peptide-mhc combinations</span></span>
+<span id="cb10-149"><a href="#cb10-149" aria-hidden="true" tabindex="-1"></a><span class="in">print(f"Shape before removing duplicates: {negatives.shape}")</span></span>
+<span id="cb10-150"><a href="#cb10-150" aria-hidden="true" tabindex="-1"></a><span class="in">negatives = negatives.drop_duplicates(subset=['negatives'])</span></span>
+<span id="cb10-151"><a href="#cb10-151" aria-hidden="true" tabindex="-1"></a><span class="in">print(f"Shape after removing duplicates: {negatives.shape}")</span></span>
+<span id="cb10-152"><a href="#cb10-152" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb10-153"><a href="#cb10-153" aria-hidden="true" tabindex="-1"></a><span class="in"># Check for any remaining NaN values</span></span>
+<span id="cb10-154"><a href="#cb10-154" aria-hidden="true" tabindex="-1"></a><span class="in">print(f"Number of NaN values in negatives: {negatives['negatives'].isna().sum()}")</span></span>
+<span id="cb10-155"><a href="#cb10-155" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb10-156"><a href="#cb10-156" aria-hidden="true" tabindex="-1"></a><span class="in"># Extract peptide and mhc into separate columns</span></span>
+<span id="cb10-157"><a href="#cb10-157" aria-hidden="true" tabindex="-1"></a><span class="in">negatives['peptide'] = negatives['negatives'].apply(lambda x: x['peptide'])</span></span>
+<span id="cb10-158"><a href="#cb10-158" aria-hidden="true" tabindex="-1"></a><span class="in">negatives['mhc'] = negatives['negatives'].apply(lambda x: x['mhc'])</span></span>
+<span id="cb10-159"><a href="#cb10-159" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb10-160"><a href="#cb10-160" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb10-161"><a href="#cb10-161" aria-hidden="true" tabindex="-1"></a>Although the IEDB database provided a substantial amount of epitopes, in order draw visual comparisons and create models to classify epitopes, samples of non-epitope peptides are needed. These can be generated by shuffling and sampling amino acid sequences from the full antigen sequences of the epitopes, ensuring that the sampled sequences did not overlap with the epitope sequences. </span>
+<span id="cb10-162"><a href="#cb10-162" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb10-163"><a href="#cb10-163" aria-hidden="true" tabindex="-1"></a>There are pros and cons to this methodology. As opposed to generating completely random sequences of amino acids — sampling from larger sequences allows for natural patterns and physiochemical motifs to be retained. That is not to say the performance of statistical modeling or qualitative analysis will be better. Random sequences are more likely to be highly irregular, or even biologically implausible. Sampling from the full antigen sequences eliminates this potential bias.</span>
+<span id="cb10-164"><a href="#cb10-164" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb10-165"><a href="#cb10-165" aria-hidden="true" tabindex="-1"></a>Conversely, it is possible for a randomly sampled peptide to be an epitope that has not been tested yet, or simply isn't in the subset of data used for this analysis — resulting in an increase in the number of false negatives in our data.</span>
+<span id="cb10-166"><a href="#cb10-166" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb10-167"><a href="#cb10-167" aria-hidden="true" tabindex="-1"></a><span class="fu">### Feature Engineering</span></span>
+<span id="cb10-168"><a href="#cb10-168" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb10-171"><a href="#cb10-171" aria-hidden="true" tabindex="-1"></a><span class="in">```{python}</span></span>
+<span id="cb10-172"><a href="#cb10-172" aria-hidden="true" tabindex="-1"></a><span class="co">#| eval: false</span></span>
+<span id="cb10-173"><a href="#cb10-173" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb10-174"><a href="#cb10-174" aria-hidden="true" tabindex="-1"></a><span class="co"># Kyte-Doolittle hydrophobicity scale</span></span>
+<span id="cb10-175"><a href="#cb10-175" aria-hidden="true" tabindex="-1"></a>kyte_doolittle <span class="op">=</span> {</span>
+<span id="cb10-176"><a href="#cb10-176" aria-hidden="true" tabindex="-1"></a>    <span class="st">'I'</span>: <span class="fl">4.5</span>, <span class="st">'V'</span>: <span class="fl">4.2</span>, <span class="st">'L'</span>: <span class="fl">3.8</span>, <span class="st">'F'</span>: <span class="fl">2.8</span>, <span class="st">'C'</span>: <span class="fl">2.5</span>,</span>
+<span id="cb10-177"><a href="#cb10-177" aria-hidden="true" tabindex="-1"></a>    <span class="st">'M'</span>: <span class="fl">1.9</span>, <span class="st">'A'</span>: <span class="fl">1.8</span>, <span class="st">'G'</span>: <span class="op">-</span><span class="fl">0.4</span>, <span class="st">'T'</span>: <span class="op">-</span><span class="fl">0.7</span>, <span class="st">'S'</span>: <span class="op">-</span><span class="fl">0.8</span>,</span>
+<span id="cb10-178"><a href="#cb10-178" aria-hidden="true" tabindex="-1"></a>    <span class="st">'W'</span>: <span class="op">-</span><span class="fl">0.9</span>, <span class="st">'Y'</span>: <span class="op">-</span><span class="fl">1.3</span>, <span class="st">'P'</span>: <span class="op">-</span><span class="fl">1.6</span>, <span class="st">'H'</span>: <span class="op">-</span><span class="fl">3.2</span>, <span class="st">'E'</span>: <span class="op">-</span><span class="fl">3.5</span>,</span>
+<span id="cb10-179"><a href="#cb10-179" aria-hidden="true" tabindex="-1"></a>    <span class="st">'Q'</span>: <span class="op">-</span><span class="fl">3.5</span>, <span class="st">'D'</span>: <span class="op">-</span><span class="fl">3.5</span>, <span class="st">'N'</span>: <span class="op">-</span><span class="fl">3.5</span>, <span class="st">'K'</span>: <span class="op">-</span><span class="fl">3.9</span>, <span class="st">'R'</span>: <span class="op">-</span><span class="fl">4.5</span></span>
+<span id="cb10-180"><a href="#cb10-180" aria-hidden="true" tabindex="-1"></a>}</span>
+<span id="cb10-181"><a href="#cb10-181" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb10-182"><a href="#cb10-182" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> compute_avg_hydrophobicity(peptide):</span>
+<span id="cb10-183"><a href="#cb10-183" aria-hidden="true" tabindex="-1"></a>    <span class="co"># Get hydrophobicity scores for each amino acid; default to 0 if missing</span></span>
+<span id="cb10-184"><a href="#cb10-184" aria-hidden="true" tabindex="-1"></a>    scores <span class="op">=</span> [kyte_doolittle.get(aa, <span class="dv">0</span>) <span class="cf">for</span> aa <span class="kw">in</span> peptide]</span>
+<span id="cb10-185"><a href="#cb10-185" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> <span class="bu">sum</span>(scores) <span class="op">/</span> <span class="bu">len</span>(scores) <span class="cf">if</span> scores <span class="cf">else</span> <span class="dv">0</span></span>
+<span id="cb10-186"><a href="#cb10-186" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb10-187"><a href="#cb10-187" aria-hidden="true" tabindex="-1"></a><span class="co"># Apply the function to the 'peptide' column to create a new column 'avg_hydro'</span></span>
+<span id="cb10-188"><a href="#cb10-188" aria-hidden="true" tabindex="-1"></a>epitopes[<span class="st">'epitope_avg_hydro'</span>] <span class="op">=</span> epitopes[<span class="st">'epitope_name'</span>].<span class="bu">apply</span>(compute_avg_hydrophobicity)</span>
+<span id="cb10-189"><a href="#cb10-189" aria-hidden="true" tabindex="-1"></a><span class="co"># Import the molecular_weight function from Bio.SeqUtils</span></span>
+<span id="cb10-190"><a href="#cb10-190" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb10-191"><a href="#cb10-191" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb10-192"><a href="#cb10-192" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> calculate_molecular_weight(peptide):</span>
+<span id="cb10-193"><a href="#cb10-193" aria-hidden="true" tabindex="-1"></a>    <span class="co">"""Calculate the molecular weight of a peptide sequence using Biopython."""</span></span>
+<span id="cb10-194"><a href="#cb10-194" aria-hidden="true" tabindex="-1"></a>    <span class="cf">try</span>:</span>
+<span id="cb10-195"><a href="#cb10-195" aria-hidden="true" tabindex="-1"></a>        <span class="co"># ProteinAnalysis only works with standard amino acids</span></span>
+<span id="cb10-196"><a href="#cb10-196" aria-hidden="true" tabindex="-1"></a>        protein <span class="op">=</span> ProteinAnalysis(peptide)</span>
+<span id="cb10-197"><a href="#cb10-197" aria-hidden="true" tabindex="-1"></a>        <span class="cf">return</span> protein.molecular_weight()</span>
+<span id="cb10-198"><a href="#cb10-198" aria-hidden="true" tabindex="-1"></a>    <span class="cf">except</span> <span class="pp">Exception</span> <span class="im">as</span> e:</span>
+<span id="cb10-199"><a href="#cb10-199" aria-hidden="true" tabindex="-1"></a>        <span class="co"># Handle peptides with non-standard amino acids</span></span>
+<span id="cb10-200"><a href="#cb10-200" aria-hidden="true" tabindex="-1"></a>        <span class="cf">return</span> <span class="va">None</span></span>
+<span id="cb10-201"><a href="#cb10-201" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb10-202"><a href="#cb10-202" aria-hidden="true" tabindex="-1"></a><span class="co"># Apply the function to calculate molecular weight for each epitope</span></span>
+<span id="cb10-203"><a href="#cb10-203" aria-hidden="true" tabindex="-1"></a>epitopes[<span class="st">'molecular_weight'</span>] <span class="op">=</span> epitopes[<span class="st">'epitope_name'</span>].<span class="bu">apply</span>(calculate_molecular_weight)</span>
+<span id="cb10-204"><a href="#cb10-204" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> calculate_aromaticity(peptide):</span>
+<span id="cb10-205"><a href="#cb10-205" aria-hidden="true" tabindex="-1"></a>    <span class="co">"""Calculate the aromaticity of a peptide sequence using Biopython."""</span></span>
+<span id="cb10-206"><a href="#cb10-206" aria-hidden="true" tabindex="-1"></a>    <span class="cf">try</span>:</span>
+<span id="cb10-207"><a href="#cb10-207" aria-hidden="true" tabindex="-1"></a>        <span class="co"># ProteinAnalysis only works with standard amino acids</span></span>
+<span id="cb10-208"><a href="#cb10-208" aria-hidden="true" tabindex="-1"></a>        protein <span class="op">=</span> ProteinAnalysis(peptide)</span>
+<span id="cb10-209"><a href="#cb10-209" aria-hidden="true" tabindex="-1"></a>        <span class="cf">return</span> protein.aromaticity()</span>
+<span id="cb10-210"><a href="#cb10-210" aria-hidden="true" tabindex="-1"></a>    <span class="cf">except</span> <span class="pp">Exception</span> <span class="im">as</span> e:</span>
+<span id="cb10-211"><a href="#cb10-211" aria-hidden="true" tabindex="-1"></a>        <span class="co"># Handle peptides with non-standard amino acids</span></span>
+<span id="cb10-212"><a href="#cb10-212" aria-hidden="true" tabindex="-1"></a>        <span class="cf">return</span> <span class="va">None</span></span>
+<span id="cb10-213"><a href="#cb10-213" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb10-214"><a href="#cb10-214" aria-hidden="true" tabindex="-1"></a><span class="co"># Apply the function to calculate molecular weight for each epitope</span></span>
+<span id="cb10-215"><a href="#cb10-215" aria-hidden="true" tabindex="-1"></a>epitopes[<span class="st">'aromaticity'</span>] <span class="op">=</span> epitopes[<span class="st">'epitope_name'</span>].<span class="bu">apply</span>(calculate_aromaticity)</span>
+<span id="cb10-216"><a href="#cb10-216" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> calculate_isoelectric_point(peptide):</span>
+<span id="cb10-217"><a href="#cb10-217" aria-hidden="true" tabindex="-1"></a>    <span class="co">"""Calculate the isoelectric point of a peptide sequence using Biopython."""</span></span>
+<span id="cb10-218"><a href="#cb10-218" aria-hidden="true" tabindex="-1"></a>    <span class="cf">try</span>:</span>
+<span id="cb10-219"><a href="#cb10-219" aria-hidden="true" tabindex="-1"></a>        <span class="co"># ProteinAnalysis only works with standard amino acids</span></span>
+<span id="cb10-220"><a href="#cb10-220" aria-hidden="true" tabindex="-1"></a>        protein <span class="op">=</span> ProteinAnalysis(peptide)</span>
+<span id="cb10-221"><a href="#cb10-221" aria-hidden="true" tabindex="-1"></a>        <span class="cf">return</span> protein.isoelectric_point()</span>
+<span id="cb10-222"><a href="#cb10-222" aria-hidden="true" tabindex="-1"></a>    <span class="cf">except</span> <span class="pp">Exception</span> <span class="im">as</span> e:</span>
+<span id="cb10-223"><a href="#cb10-223" aria-hidden="true" tabindex="-1"></a>        <span class="co"># Handle peptides with non-standard amino acids</span></span>
+<span id="cb10-224"><a href="#cb10-224" aria-hidden="true" tabindex="-1"></a>        <span class="cf">return</span> <span class="va">None</span></span>
+<span id="cb10-225"><a href="#cb10-225" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb10-226"><a href="#cb10-226" aria-hidden="true" tabindex="-1"></a><span class="co"># Apply the function to calculate molecular weight for each epitope</span></span>
+<span id="cb10-227"><a href="#cb10-227" aria-hidden="true" tabindex="-1"></a>epitopes[<span class="st">'isoelectric_point'</span>] <span class="op">=</span> epitopes[<span class="st">'epitope_name'</span>].<span class="bu">apply</span>(calculate_isoelectric_point)</span>
+<span id="cb10-228"><a href="#cb10-228" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> calculate_instability(peptide):</span>
+<span id="cb10-229"><a href="#cb10-229" aria-hidden="true" tabindex="-1"></a>    <span class="co">"""Calculate the instability of a peptide sequence using Biopython."""</span></span>
+<span id="cb10-230"><a href="#cb10-230" aria-hidden="true" tabindex="-1"></a>    <span class="cf">try</span>:</span>
+<span id="cb10-231"><a href="#cb10-231" aria-hidden="true" tabindex="-1"></a>        <span class="co"># ProteinAnalysis only works with standard amino acids</span></span>
+<span id="cb10-232"><a href="#cb10-232" aria-hidden="true" tabindex="-1"></a>        protein <span class="op">=</span> ProteinAnalysis(peptide)</span>
+<span id="cb10-233"><a href="#cb10-233" aria-hidden="true" tabindex="-1"></a>        <span class="cf">return</span> protein.instability_index()</span>
+<span id="cb10-234"><a href="#cb10-234" aria-hidden="true" tabindex="-1"></a>    <span class="cf">except</span> <span class="pp">Exception</span> <span class="im">as</span> e:</span>
+<span id="cb10-235"><a href="#cb10-235" aria-hidden="true" tabindex="-1"></a>        <span class="co"># Handle peptides with non-standard amino acids</span></span>
+<span id="cb10-236"><a href="#cb10-236" aria-hidden="true" tabindex="-1"></a>        <span class="cf">return</span> <span class="va">None</span></span>
+<span id="cb10-237"><a href="#cb10-237" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb10-238"><a href="#cb10-238" aria-hidden="true" tabindex="-1"></a><span class="co"># Apply the function to calculate molecular weight for each epitope</span></span>
+<span id="cb10-239"><a href="#cb10-239" aria-hidden="true" tabindex="-1"></a>epitopes[<span class="st">'instability'</span>] <span class="op">=</span> epitopes[<span class="st">'epitope_name'</span>].<span class="bu">apply</span>(calculate_instability)</span>
+<span id="cb10-240"><a href="#cb10-240" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> calculate_charge_at_pH7(peptide):</span>
+<span id="cb10-241"><a href="#cb10-241" aria-hidden="true" tabindex="-1"></a>    <span class="co">"""Calculate the charge of a peptide sequence at pH 7 using Biopython."""</span></span>
+<span id="cb10-242"><a href="#cb10-242" aria-hidden="true" tabindex="-1"></a>    <span class="cf">try</span>:</span>
+<span id="cb10-243"><a href="#cb10-243" aria-hidden="true" tabindex="-1"></a>        <span class="co"># ProteinAnalysis only works with standard amino acids</span></span>
+<span id="cb10-244"><a href="#cb10-244" aria-hidden="true" tabindex="-1"></a>        protein <span class="op">=</span> ProteinAnalysis(peptide)</span>
+<span id="cb10-245"><a href="#cb10-245" aria-hidden="true" tabindex="-1"></a>        <span class="cf">return</span> protein.charge_at_pH(<span class="dv">7</span>)</span>
+<span id="cb10-246"><a href="#cb10-246" aria-hidden="true" tabindex="-1"></a>    <span class="cf">except</span> <span class="pp">Exception</span> <span class="im">as</span> e:</span>
+<span id="cb10-247"><a href="#cb10-247" aria-hidden="true" tabindex="-1"></a>        <span class="co"># Handle peptides with non-standard amino acids</span></span>
+<span id="cb10-248"><a href="#cb10-248" aria-hidden="true" tabindex="-1"></a>        <span class="cf">return</span> <span class="va">None</span></span>
+<span id="cb10-249"><a href="#cb10-249" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb10-250"><a href="#cb10-250" aria-hidden="true" tabindex="-1"></a><span class="co"># Apply the function to calculate molecular weight for each epitope</span></span>
+<span id="cb10-251"><a href="#cb10-251" aria-hidden="true" tabindex="-1"></a>epitopes[<span class="st">'charge_at_pH7'</span>] <span class="op">=</span> epitopes[<span class="st">'epitope_name'</span>].<span class="bu">apply</span>(calculate_charge_at_pH7)</span>
+<span id="cb10-252"><a href="#cb10-252" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb10-253"><a href="#cb10-253" aria-hidden="true" tabindex="-1"></a><span class="co"># Calculate features on the peptide column</span></span>
+<span id="cb10-254"><a href="#cb10-254" aria-hidden="true" tabindex="-1"></a>negatives[<span class="st">'peptide_length'</span>] <span class="op">=</span> negatives[<span class="st">'peptide'</span>].<span class="bu">apply</span>(<span class="bu">len</span>)</span>
+<span id="cb10-255"><a href="#cb10-255" aria-hidden="true" tabindex="-1"></a>negatives[<span class="st">'peptide_avg_hydro'</span>] <span class="op">=</span> negatives[<span class="st">'peptide'</span>].<span class="bu">apply</span>(compute_avg_hydrophobicity)</span>
+<span id="cb10-256"><a href="#cb10-256" aria-hidden="true" tabindex="-1"></a>negatives[<span class="st">'molecular_weight'</span>] <span class="op">=</span> negatives[<span class="st">'peptide'</span>].<span class="bu">apply</span>(calculate_molecular_weight)</span>
+<span id="cb10-257"><a href="#cb10-257" aria-hidden="true" tabindex="-1"></a>negatives[<span class="st">'aromaticity'</span>] <span class="op">=</span> negatives[<span class="st">'peptide'</span>].<span class="bu">apply</span>(calculate_aromaticity)</span>
+<span id="cb10-258"><a href="#cb10-258" aria-hidden="true" tabindex="-1"></a>negatives[<span class="st">'isoelectric_point'</span>] <span class="op">=</span> negatives[<span class="st">'peptide'</span>].<span class="bu">apply</span>(calculate_isoelectric_point)</span>
+<span id="cb10-259"><a href="#cb10-259" aria-hidden="true" tabindex="-1"></a>negatives[<span class="st">'instability'</span>] <span class="op">=</span> negatives[<span class="st">'peptide'</span>].<span class="bu">apply</span>(calculate_instability)</span>
+<span id="cb10-260"><a href="#cb10-260" aria-hidden="true" tabindex="-1"></a>negatives[<span class="st">'charge_at_pH7'</span>] <span class="op">=</span> negatives[<span class="st">'peptide'</span>].<span class="bu">apply</span>(calculate_charge_at_pH7)</span>
+<span id="cb10-261"><a href="#cb10-261" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb10-262"><a href="#cb10-262" aria-hidden="true" tabindex="-1"></a>negatives.drop(<span class="st">'negatives'</span>, axis<span class="op">=</span><span class="dv">1</span>, inplace<span class="op">=</span><span class="va">True</span>)</span>
+<span id="cb10-263"><a href="#cb10-263" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb10-264"><a href="#cb10-264" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb10-265"><a href="#cb10-265" aria-hidden="true" tabindex="-1"></a>The protein analysis tool from the BioPython package allows for some quick feature engineering on most given peptides. For this analysis, the relevant features would be hydrophobicity, molecular weight, aromaticity, isoelectric point, instability, and the charge at pH7. Publications on epitope classification hold binding affinity — the ability for a peptide to bind to the body's MHC complex — to be a strong preditctor. The BioPython package does not come with any functionality for binding affinity prediction but IEDB database provides a tool called netMHCpan, which is the leading binding affinity prediction algorithm.</span>
+<span id="cb10-266"><a href="#cb10-266" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb10-267"><a href="#cb10-267" aria-hidden="true" tabindex="-1"></a>The IEDB website offers a GUI for using netMHCpan to predict binding affinities. However, it is only possible to run predictions on 100 peptides at a time and this analysis is examining many more than that. NetMHCpan can be downloaded and installed as a command line tool allowing more flexibility using python. Given an amino acid sequence and a MHC allele specification, netMHCpan returns a binding affinity score.</span>
+<span id="cb10-268"><a href="#cb10-268" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb10-271"><a href="#cb10-271" aria-hidden="true" tabindex="-1"></a><span class="in">```{python}</span></span>
+<span id="cb10-272"><a href="#cb10-272" aria-hidden="true" tabindex="-1"></a>epitopes <span class="op">=</span> pd.read_csv(<span class="st">"/Users/tariq/Documents/capstone/data/ninemer_epitopes.csv"</span>)</span>
+<span id="cb10-273"><a href="#cb10-273" aria-hidden="true" tabindex="-1"></a>epitopes <span class="op">=</span> epitopes.drop(columns<span class="op">=</span>[<span class="st">'fullsequence'</span>, <span class="st">'mhcrestriction_name'</span>, <span class="st">'mhcrestriction_class'</span>, <span class="st">'epitope_length'</span>])</span>
+<span id="cb10-274"><a href="#cb10-274" aria-hidden="true" tabindex="-1"></a>epitopes <span class="op">=</span> epitopes.rename(columns<span class="op">=</span>{<span class="st">'epitope_name'</span>: <span class="st">'peptide'</span>, <span class="st">'epitope_avg_hydro'</span>: <span class="st">'peptide_avg_hydro'</span>})</span>
+<span id="cb10-275"><a href="#cb10-275" aria-hidden="true" tabindex="-1"></a>epitopes_BA_pred <span class="op">=</span> pd.read_csv(<span class="st">"/Users/tariq/Documents/capstone/data/ninemer_epitopes_BA_pred.csv"</span>)</span>
+<span id="cb10-276"><a href="#cb10-276" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb10-277"><a href="#cb10-277" aria-hidden="true" tabindex="-1"></a>negatives <span class="op">=</span> pd.read_csv(<span class="st">"/Users/tariq/Documents/capstone/data/ninemer_negatives_trimmed.csv"</span>)</span>
+<span id="cb10-278"><a href="#cb10-278" aria-hidden="true" tabindex="-1"></a>negatives <span class="op">=</span> negatives.drop(columns<span class="op">=</span>[<span class="st">'mhc'</span>, <span class="st">'peptide_length'</span>])</span>
+<span id="cb10-279"><a href="#cb10-279" aria-hidden="true" tabindex="-1"></a>negatives <span class="op">=</span> negatives.rename(columns<span class="op">=</span>{<span class="st">'peptide'</span>: <span class="st">'peptide'</span>})</span>
+<span id="cb10-280"><a href="#cb10-280" aria-hidden="true" tabindex="-1"></a>negatives <span class="op">=</span> negatives.drop_duplicates(subset<span class="op">=</span>[<span class="st">'peptide'</span>])</span>
+<span id="cb10-281"><a href="#cb10-281" aria-hidden="true" tabindex="-1"></a>negatives_BA_pred <span class="op">=</span> pd.read_csv(<span class="st">"/Users/tariq/Documents/capstone/data/ninemer_negatives_trimmed_BA_pred.csv"</span>)</span>
+<span id="cb10-282"><a href="#cb10-282" aria-hidden="true" tabindex="-1"></a>negatives_BA_pred <span class="op">=</span> negatives_BA_pred.drop_duplicates(subset<span class="op">=</span>[<span class="st">'peptide'</span>])</span>
+<span id="cb10-283"><a href="#cb10-283" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb10-284"><a href="#cb10-284" aria-hidden="true" tabindex="-1"></a><span class="co"># Merge the 'Score_BA' column from epitopes_BA_pred into the epitopes dataframe</span></span>
+<span id="cb10-285"><a href="#cb10-285" aria-hidden="true" tabindex="-1"></a>epitopes <span class="op">=</span> pd.merge(epitopes, epitopes_BA_pred[[<span class="st">'peptide'</span>, <span class="st">'Score_BA'</span>]], on<span class="op">=</span><span class="st">'peptide'</span>, how<span class="op">=</span><span class="st">'left'</span>)</span>
+<span id="cb10-286"><a href="#cb10-286" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb10-287"><a href="#cb10-287" aria-hidden="true" tabindex="-1"></a>negatives <span class="op">=</span> pd.merge(negatives, negatives_BA_pred[[<span class="st">'peptide'</span>, <span class="st">'Score_BA'</span>]], on<span class="op">=</span><span class="st">'peptide'</span>, how<span class="op">=</span><span class="st">'left'</span>)</span>
+<span id="cb10-288"><a href="#cb10-288" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb10-289"><a href="#cb10-289" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb10-292"><a href="#cb10-292" aria-hidden="true" tabindex="-1"></a><span class="in">```{python}</span></span>
+<span id="cb10-293"><a href="#cb10-293" aria-hidden="true" tabindex="-1"></a>epitopes.head()</span>
+<span id="cb10-294"><a href="#cb10-294" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb10-295"><a href="#cb10-295" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb10-296"><a href="#cb10-296" aria-hidden="true" tabindex="-1"></a><span class="fu"># Exploratory Analysis</span></span>
+<span id="cb10-297"><a href="#cb10-297" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb10-300"><a href="#cb10-300" aria-hidden="true" tabindex="-1"></a><span class="in">```{python}</span></span>
+<span id="cb10-301"><a href="#cb10-301" aria-hidden="true" tabindex="-1"></a><span class="co"># Compare numeric features between epitopes and negatives datasets</span></span>
+<span id="cb10-302"><a href="#cb10-302" aria-hidden="true" tabindex="-1"></a>numeric_features <span class="op">=</span> [<span class="st">'peptide_avg_hydro'</span>, <span class="st">'molecular_weight'</span>, <span class="st">'aromaticity'</span>, </span>
+<span id="cb10-303"><a href="#cb10-303" aria-hidden="true" tabindex="-1"></a>                    <span class="st">'isoelectric_point'</span>, <span class="st">'instability'</span>, <span class="st">'charge_at_pH7'</span>, <span class="st">'Score_BA'</span>]</span>
+<span id="cb10-304"><a href="#cb10-304" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb10-305"><a href="#cb10-305" aria-hidden="true" tabindex="-1"></a><span class="co"># Create a figure with subplots for each numeric feature</span></span>
+<span id="cb10-306"><a href="#cb10-306" aria-hidden="true" tabindex="-1"></a>fig, axes <span class="op">=</span> plt.subplots(<span class="bu">len</span>(numeric_features), <span class="dv">1</span>, figsize<span class="op">=</span>(<span class="dv">12</span>, <span class="dv">4</span><span class="op">*</span><span class="bu">len</span>(numeric_features)))</span>
+<span id="cb10-307"><a href="#cb10-307" aria-hidden="true" tabindex="-1"></a><span class="co">#fig.tight_layout(pad=5.0)</span></span>
+<span id="cb10-308"><a href="#cb10-308" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb10-309"><a href="#cb10-309" aria-hidden="true" tabindex="-1"></a><span class="co"># Plot boxplots for each feature</span></span>
+<span id="cb10-310"><a href="#cb10-310" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> i, feature <span class="kw">in</span> <span class="bu">enumerate</span>(numeric_features):</span>
+<span id="cb10-311"><a href="#cb10-311" aria-hidden="true" tabindex="-1"></a>    ax <span class="op">=</span> axes[i]</span>
+<span id="cb10-312"><a href="#cb10-312" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb10-313"><a href="#cb10-313" aria-hidden="true" tabindex="-1"></a>    <span class="co"># Create a temporary dataframe for plotting</span></span>
+<span id="cb10-314"><a href="#cb10-314" aria-hidden="true" tabindex="-1"></a>    plot_data <span class="op">=</span> pd.DataFrame({</span>
+<span id="cb10-315"><a href="#cb10-315" aria-hidden="true" tabindex="-1"></a>        <span class="st">'Epitopes'</span>: epitopes[feature],</span>
+<span id="cb10-316"><a href="#cb10-316" aria-hidden="true" tabindex="-1"></a>        <span class="st">'Negatives'</span>: negatives[feature]</span>
+<span id="cb10-317"><a href="#cb10-317" aria-hidden="true" tabindex="-1"></a>    })</span>
+<span id="cb10-318"><a href="#cb10-318" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb10-319"><a href="#cb10-319" aria-hidden="true" tabindex="-1"></a>    <span class="co"># Create boxplot</span></span>
+<span id="cb10-320"><a href="#cb10-320" aria-hidden="true" tabindex="-1"></a>    sns.boxplot(data<span class="op">=</span>plot_data, ax<span class="op">=</span>ax)</span>
+<span id="cb10-321"><a href="#cb10-321" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb10-322"><a href="#cb10-322" aria-hidden="true" tabindex="-1"></a>    <span class="co"># Add feature statistics</span></span>
+<span id="cb10-323"><a href="#cb10-323" aria-hidden="true" tabindex="-1"></a>    epitope_mean <span class="op">=</span> epitopes[feature].mean()</span>
+<span id="cb10-324"><a href="#cb10-324" aria-hidden="true" tabindex="-1"></a>    negative_mean <span class="op">=</span> negatives[feature].mean()</span>
+<span id="cb10-325"><a href="#cb10-325" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb10-326"><a href="#cb10-326" aria-hidden="true" tabindex="-1"></a>    ax.set_title(<span class="ss">f'</span><span class="sc">{</span>feature<span class="sc">}</span><span class="ss"> Distribution Comparison'</span>)</span>
+<span id="cb10-327"><a href="#cb10-327" aria-hidden="true" tabindex="-1"></a>    ax.text(<span class="fl">0.02</span>, <span class="fl">0.95</span>, <span class="ss">f'Epitopes mean: </span><span class="sc">{</span>epitope_mean<span class="sc">:.4f}</span><span class="ss">'</span>, transform<span class="op">=</span>ax.transAxes)</span>
+<span id="cb10-328"><a href="#cb10-328" aria-hidden="true" tabindex="-1"></a>    ax.text(<span class="fl">0.02</span>, <span class="fl">0.90</span>, <span class="ss">f'Negatives mean: </span><span class="sc">{</span>negative_mean<span class="sc">:.4f}</span><span class="ss">'</span>, transform<span class="op">=</span>ax.transAxes)</span>
+<span id="cb10-329"><a href="#cb10-329" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb10-330"><a href="#cb10-330" aria-hidden="true" tabindex="-1"></a>    <span class="co"># Add p-value from t-test</span></span>
+<span id="cb10-331"><a href="#cb10-331" aria-hidden="true" tabindex="-1"></a>    <span class="im">from</span> scipy <span class="im">import</span> stats</span>
+<span id="cb10-332"><a href="#cb10-332" aria-hidden="true" tabindex="-1"></a>    t_stat, p_value <span class="op">=</span> stats.ttest_ind(</span>
+<span id="cb10-333"><a href="#cb10-333" aria-hidden="true" tabindex="-1"></a>        epitopes[feature].dropna(), </span>
+<span id="cb10-334"><a href="#cb10-334" aria-hidden="true" tabindex="-1"></a>        negatives[feature].dropna(),</span>
+<span id="cb10-335"><a href="#cb10-335" aria-hidden="true" tabindex="-1"></a>        equal_var<span class="op">=</span><span class="va">False</span>  <span class="co"># Welch's t-test (doesn't assume equal variances)</span></span>
+<span id="cb10-336"><a href="#cb10-336" aria-hidden="true" tabindex="-1"></a>    )</span>
+<span id="cb10-337"><a href="#cb10-337" aria-hidden="true" tabindex="-1"></a>    <span class="co">#ax.text(0.02, 0.85, f'p-value: {p_value:.4e}', transform=ax.transAxes)</span></span>
+<span id="cb10-338"><a href="#cb10-338" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb10-339"><a href="#cb10-339" aria-hidden="true" tabindex="-1"></a><span class="co">#plt.suptitle('Comparison of Numeric Features Between Epitopes and Negatives', fontsize=16)</span></span>
+<span id="cb10-340"><a href="#cb10-340" aria-hidden="true" tabindex="-1"></a>plt.show()</span>
+<span id="cb10-341"><a href="#cb10-341" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb10-342"><a href="#cb10-342" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb10-343"><a href="#cb10-343" aria-hidden="true" tabindex="-1"></a>A boxplot comparison of the numerical variables reveals hardly significant differences between the epitope and non-epitope peptides. The clear outlier being the predicted binding affinity score.</span>
+<span id="cb10-344"><a href="#cb10-344" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb10-347"><a href="#cb10-347" aria-hidden="true" tabindex="-1"></a><span class="in">```{python}</span></span>
+<span id="cb10-348"><a href="#cb10-348" aria-hidden="true" tabindex="-1"></a><span class="co"># plot Score_BA for epitopes and negatives overlaid on the same plot</span></span>
+<span id="cb10-349"><a href="#cb10-349" aria-hidden="true" tabindex="-1"></a>plt.figure(figsize<span class="op">=</span>(<span class="dv">10</span>, <span class="dv">6</span>))</span>
+<span id="cb10-350"><a href="#cb10-350" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb10-351"><a href="#cb10-351" aria-hidden="true" tabindex="-1"></a><span class="co"># Use density instead of raw counts to normalize the histograms</span></span>
+<span id="cb10-352"><a href="#cb10-352" aria-hidden="true" tabindex="-1"></a>plt.hist(epitopes[<span class="st">'Score_BA'</span>], bins<span class="op">=</span><span class="dv">20</span>, alpha<span class="op">=</span><span class="fl">0.5</span>, color<span class="op">=</span><span class="st">'blue'</span>, edgecolor<span class="op">=</span><span class="st">'black'</span>, </span>
+<span id="cb10-353"><a href="#cb10-353" aria-hidden="true" tabindex="-1"></a>         label<span class="op">=</span><span class="st">'Epitopes'</span>, density<span class="op">=</span><span class="va">True</span>)</span>
+<span id="cb10-354"><a href="#cb10-354" aria-hidden="true" tabindex="-1"></a>plt.hist(negatives[<span class="st">'Score_BA'</span>], bins<span class="op">=</span><span class="dv">20</span>, alpha<span class="op">=</span><span class="fl">0.5</span>, color<span class="op">=</span><span class="st">'red'</span>, edgecolor<span class="op">=</span><span class="st">'black'</span>, </span>
+<span id="cb10-355"><a href="#cb10-355" aria-hidden="true" tabindex="-1"></a>         label<span class="op">=</span><span class="st">'Negatives'</span>, density<span class="op">=</span><span class="va">True</span>)</span>
+<span id="cb10-356"><a href="#cb10-356" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb10-357"><a href="#cb10-357" aria-hidden="true" tabindex="-1"></a><span class="co"># Alternative approach: use log scale for y-axis</span></span>
+<span id="cb10-358"><a href="#cb10-358" aria-hidden="true" tabindex="-1"></a>plt.yscale(<span class="st">'log'</span>)</span>
+<span id="cb10-359"><a href="#cb10-359" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb10-360"><a href="#cb10-360" aria-hidden="true" tabindex="-1"></a>plt.xlabel(<span class="st">'Binding Affinity'</span>)</span>
+<span id="cb10-361"><a href="#cb10-361" aria-hidden="true" tabindex="-1"></a>plt.ylabel(<span class="st">'Density (log scale)'</span>)</span>
+<span id="cb10-362"><a href="#cb10-362" aria-hidden="true" tabindex="-1"></a>plt.title(<span class="st">'Normalized Histogram of Binding Affinity for Epitopes vs Negatives'</span>)</span>
+<span id="cb10-363"><a href="#cb10-363" aria-hidden="true" tabindex="-1"></a>plt.legend(prop<span class="op">=</span>{<span class="st">'size'</span>: <span class="dv">14</span>})  <span class="co"># Increased legend font size</span></span>
+<span id="cb10-364"><a href="#cb10-364" aria-hidden="true" tabindex="-1"></a>plt.tight_layout()</span>
+<span id="cb10-365"><a href="#cb10-365" aria-hidden="true" tabindex="-1"></a>plt.show()</span>
+<span id="cb10-366"><a href="#cb10-366" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb10-367"><a href="#cb10-367" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb10-368"><a href="#cb10-368" aria-hidden="true" tabindex="-1"></a>Upon further inspection of the difference in predicted binding affinity score, we see the non-epitope peptides exhibit a right-skewed distribution with a mean of 0.07, and the epitopes show a broad, moderate-variance spread with a much higher mean of 0.56.</span>
+<span id="cb10-369"><a href="#cb10-369" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb10-370"><a href="#cb10-370" aria-hidden="true" tabindex="-1"></a><span class="fu"># Modeling</span></span>
+<span id="cb10-371"><a href="#cb10-371" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb10-372"><a href="#cb10-372" aria-hidden="true" tabindex="-1"></a><span class="fu">### Preprocessing</span></span>
+<span id="cb10-373"><a href="#cb10-373" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb10-374"><a href="#cb10-374" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb10-375"><a href="#cb10-375" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb10-376"><a href="#cb10-376" aria-hidden="true" tabindex="-1"></a>Prior to modeling,</span>
 </code><button title="Copy to Clipboard" class="code-copy-button" data-in-quarto-modal=""><i class="bi"></i></button></pre></div>
 </div></div></div></div></div>
 </div> <!-- /content -->
