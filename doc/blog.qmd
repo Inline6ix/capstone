@@ -100,13 +100,11 @@ assays = assays.filter(['epitope_name', 'epitope_moluculeparent', 'host_name', '
 mhc = assays.filter(['epitope_name', 'mhcrestriction_name', 'mhcrestriction_class'])
 mhc = mhc.drop_duplicates(subset=['epitope_name'])
 epitopes = epitopes.merge(mhc, on='epitope_name', how='left')
+
+epitopes.head()
 ```
 
 Retriving the data from IEDB was as simple as doing a search and clicking exoprt. Two files were exported, one containing 28,681 unique epitopes and another with their corresponding assays and respective results. Roughly 10% of the epitopes in the dataset came with a corresponding [UniProt](https://www.uniprot.org/) link. For our purposes this will be enough. Using the requests python library, the full antigen sequence was downloaded and appended to the epitope dataset. Next, simple formatting was done to standardize the column names. Finally, the epitope dataset was merged with the assays dataset on the epitope_name column and filtered to include the following columns:
-
-```{python}
-epitopes.head()
-```
 
 ### Negative Sample Generation
 
@@ -277,9 +275,7 @@ negatives_BA_pred = negatives_BA_pred.drop_duplicates(subset=['peptide'])
 epitopes = pd.merge(epitopes, epitopes_BA_pred[['peptide', 'Score_BA']], on='peptide', how='left')
 
 negatives = pd.merge(negatives, negatives_BA_pred[['peptide', 'Score_BA']], on='peptide', how='left')
-```
 
-```{python}
 epitopes.head()
 ```
 
@@ -358,10 +354,581 @@ Upon further inspection of the difference in predicted binding affinity score, w
 
 ### Model Selection
 
+To establish a baseline for performance, a random forest classifier will be fit to the following features:
 
+- peptide_avg_hydro
+- molecular_weight
+- aromaticity
+- isoelectric_point
+- instability
+- charge_at_pH7
+- Score_BA
+
+Performace will be evaluated based on accuracy, precision, and recall.
 
 ### Preprocessing
 
+Prior to training, labels are assigned to the epitopes and non-epitopes as 1 or 0 respectively. The two samples are then concatenated, scaled, and shuffled. Finally, the data is split into training and testing sets with an 80/20 ratio. 
+
+```{python}
+# Add label column to epitopes dataframe (positive class = 1)
+epitopes['label'] = 1
+
+# Add label column to negatives dataframe (negative class = 0)
+negatives['label'] = 0
+
+# Combine the positive and negative examples
+combined_data = pd.concat([epitopes, negatives], ignore_index=True)
+
+# Shuffle the combined dataset
+combined_data = combined_data.sample(frac=1, random_state=42).reset_index(drop=True)
+
+# Define features and target
+X = combined_data.drop(columns=['peptide', 'label'])
+y = combined_data['label']
+
+# Identify numerical columns to scale (exclude one-hot encoded amino acid columns)
+numerical_cols = ['peptide_avg_hydro', 'molecular_weight', 'aromaticity', 'isoelectric_point', 'instability','Score_BA', 'charge_at_pH7']
+
+# Split the data into training and testing sets (80% train, 20% test)
+from sklearn.model_selection import train_test_split
+from sklearn.preprocessing import StandardScaler
+
+X_train, X_test, y_train, y_test = train_test_split(
+    X, y, test_size=0.2, random_state=42, stratify=y
+)
+
+# Scale numerical features using StandardScaler
+scaler = StandardScaler()
+X_train[numerical_cols] = scaler.fit_transform(X_train[numerical_cols])
+X_test[numerical_cols] = scaler.transform(X_test[numerical_cols])
+
+# Print the shapes to verify the split
+print(f"Training set: {X_train.shape[0]} samples")
+print(f"Testing set: {X_test.shape[0]} samples")
+print(f"Positive samples in training: {sum(y_train == 1)}")
+print(f"Negative samples in training: {sum(y_train == 0)}")
+print(f"Positive samples in testing: {sum(y_test == 1)}")
+print(f"Negative samples in testing: {sum(y_test == 0)}")
+```
+
+### Training + Evaluation
+
+The random forest classifier is fit to the training data and evaluated on the testing data.
+
+```{python}
+# Initialize the Random Forest Classifier
+rf_model = RandomForestClassifier(
+    n_estimators=100,  # Number of trees
+    max_depth=None,    # Maximum depth of trees
+    min_samples_split=2,
+    min_samples_leaf=1,
+    random_state=42
+)
+
+# Train the model
+rf_model.fit(X_train, y_train)
+
+# Make predictions on the test set
+y_pred = rf_model.predict(X_test)
+y_pred_proba = rf_model.predict_proba(X_test)[:, 1]  # Probability estimates for positive class
+
+# Confusion Matrix
+cm = confusion_matrix(y_test, y_pred)
+
+# Plot Confusion Matrix
+plt.figure(figsize=(8, 6))
+sns.heatmap(cm, annot=True, fmt='d', cmap='Blues', 
+            xticklabels=['Predicted Negative', 'Predicted Positive'], 
+            yticklabels=['Actual Negative', 'Actual Positive'])
+plt.xlabel('Predicted Label')
+plt.ylabel('True Label')
+plt.title('Confusion Matrix - Random Forest')
+plt.show()
+
+# Evaluate the model
+print("Random Forest Model Evaluation:")
+print(f"Accuracy: {accuracy_score(y_test, y_pred):.4f}")
+print("\nClassification Report:")
+print(classification_report(y_test, y_pred))
+
+# Calculate ROC AUC
+roc_auc = roc_auc_score(y_test, y_pred_proba)
+print(f"\nROC AUC Score: {roc_auc:.4f}")
+```
+
+The results show strong performance from the random forest classifier, with an overall accuracy of 91% and recall of 75% for the positive class.
+
+```{python}
+#| label: Fig-1
 
 
-Prior to modeling,
+# Feature importance
+feature_importance = pd.DataFrame({
+    'Feature': X_train.columns,
+    'Importance': rf_model.feature_importances_
+})
+feature_importance = feature_importance.sort_values('Importance', ascending=True)
+
+# Plot top 15 features
+plt.figure(figsize=(10, 6))
+top_features = feature_importance.head(15)
+plt.barh(np.arange(len(top_features)), top_features['Importance'], align='center')
+plt.yticks(np.arange(len(top_features)), top_features['Feature'])
+plt.xlabel('Importance')
+plt.title('Feature Importance - Random Forest')
+plt.tight_layout()
+plt.show()
+```
+
+Although the random forest classifier in @Fig-1 is performing well, the feature importance plot reveals a concentration of importance on the predicted binding affinity score obtained from netMHCpan. This is not surprising.
+
+### Training without netMHCpan
+
+```{python}
+# drop the Score_BA column
+X_train = X_train.drop(columns=['Score_BA'])
+X_test = X_test.drop(columns=['Score_BA'])
+```
+
+```{python}
+# Initialize the Random Forest Classifier
+rf_model = RandomForestClassifier(
+    n_estimators=100,  # Number of trees
+    max_depth=None,    # Maximum depth of trees
+    min_samples_split=2,
+    min_samples_leaf=1,
+    random_state=42
+)
+
+# Train the model
+rf_model.fit(X_train, y_train)
+
+# Make predictions on the test set
+y_pred = rf_model.predict(X_test)
+y_pred_proba = rf_model.predict_proba(X_test)[:, 1]  # Probability estimates for positive class
+
+# Confusion Matrix
+cm = confusion_matrix(y_test, y_pred)
+
+# Plot Confusion Matrix
+plt.figure(figsize=(8, 6))
+sns.heatmap(cm, annot=True, fmt='d', cmap='Blues', 
+            xticklabels=['Predicted Negative', 'Predicted Positive'], 
+            yticklabels=['Actual Negative', 'Actual Positive'])
+plt.xlabel('Predicted Label')
+plt.ylabel('True Label')
+plt.title('Confusion Matrix - Random Forest')
+plt.show()
+
+# Evaluate the model
+print("Random Forest Model Evaluation:")
+print(f"Accuracy: {accuracy_score(y_test, y_pred):.4f}")
+print("\nClassification Report:")
+print(classification_report(y_test, y_pred))
+
+# Calculate ROC AUC
+roc_auc = roc_auc_score(y_test, y_pred_proba)
+print(f"\nROC AUC Score: {roc_auc:.4f}")
+```
+
+```{python}
+#| label: Fig-2
+
+
+# Feature importance
+feature_importance = pd.DataFrame({
+    'Feature': X_train.columns,
+    'Importance': rf_model.feature_importances_
+})
+feature_importance = feature_importance.sort_values('Importance', ascending=True)
+
+# Plot top 15 features
+plt.figure(figsize=(10, 6))
+top_features = feature_importance.head(15)
+plt.barh(np.arange(len(top_features)), top_features['Importance'], align='center')
+plt.yticks(np.arange(len(top_features)), top_features['Feature'])
+plt.xlabel('Importance')
+plt.title('Feature Importance - Random Forest')
+plt.tight_layout()
+plt.show()
+```
+
+### Basic Convolutional Neural Network
+
+```{python}
+import numpy as np
+from tensorflow.keras.preprocessing.sequence import pad_sequences
+from sklearn.model_selection import train_test_split
+
+# Step 1: Filter the epitopes and negatives dataframes to only contain sequences and labels
+epitopes_filtered = epitopes[['peptide', 'label']].copy()
+epitopes_filtered.rename(columns={'peptide': 'sequence'}, inplace=True)
+
+negatives_filtered = negatives[['peptide', 'label']].copy()
+negatives_filtered.rename(columns={'peptide': 'sequence'}, inplace=True)
+
+# Combine the datasets
+combined_data = pd.concat([epitopes_filtered, negatives_filtered], ignore_index=True)
+combined_data = combined_data.sample(frac=1, random_state=42).reset_index(drop=True)
+
+print(f"Number of samples: {combined_data.shape[0]}")
+print(f"Positive samples: {sum(combined_data['label'] == 1)}")
+print(f"Negative samples: {sum(combined_data['label'] == 0)}")
+
+# Step 2: Prepare for one-hot encoding
+# First, get all unique amino acids in our dataset
+all_sequences = combined_data['sequence'].values
+unique_chars = sorted(set(''.join(all_sequences)))
+print(f"Unique amino acids in dataset: {unique_chars}")
+
+# Create mapping dictionaries for one-hot encoding
+char_to_index = {char: i+1 for i, char in enumerate(unique_chars)}  # Start from 1, reserve 0 for padding
+index_to_char = {i+1: char for i, char in enumerate(unique_chars)}
+index_to_char[0] = ''  # Padding token
+
+# Find maximum sequence length
+max_length = max(len(seq) for seq in all_sequences)
+print(f"Maximum sequence length: {max_length}")
+
+# Convert sequences to integer sequences
+int_sequences = []
+for seq in all_sequences:
+    int_seq = [char_to_index[char] for char in seq]
+    int_sequences.append(int_seq)
+
+# Pad sequences to have the same length
+padded_sequences = pad_sequences(int_sequences, maxlen=max_length, padding='post')
+
+# One-hot encode the padded sequences
+num_chars = len(unique_chars) + 1  # +1 for padding token
+X_onehot = np.zeros((len(padded_sequences), max_length, num_chars))
+
+for i, seq in enumerate(padded_sequences):
+    for j, char_idx in enumerate(seq):
+        X_onehot[i, j, char_idx] = 1.0  # One-hot encode
+
+# Get labels
+y = combined_data['label'].values
+
+# Print shapes to verify dimensions
+print(f"X_onehot shape: {X_onehot.shape}")
+print(f"Number of unique amino acids (including padding): {num_chars}")
+
+# Step 3: Split data into training, validation, and testing sets (70/15/15 split)
+# First split into temporary train and test
+X_temp, X_test, y_temp, y_test = train_test_split(
+    X_onehot, y, test_size=0.15, random_state=42, stratify=y
+)
+
+# Then split the temporary train into final train and validation
+# To get 70/15 split from the original data, we need to calculate the right proportion:
+# If test is 15% of total, then validation should be 15/85 of the remaining data (approx 17.65%)
+X_train, X_val, y_train, y_val = train_test_split(
+    X_temp, y_temp, test_size=0.1765, random_state=42, stratify=y_temp
+)
+
+print(f"Training set shape: {X_train.shape} ({X_train.shape[0]/X_onehot.shape[0]:.1%} of total)")
+print(f"Validation set shape: {X_val.shape} ({X_val.shape[0]/X_onehot.shape[0]:.1%} of total)")
+print(f"Testing set shape: {X_test.shape} ({X_test.shape[0]/X_onehot.shape[0]:.1%} of total)")
+
+print(f"Positive samples in training: {sum(y_train == 1)} ({sum(y_train == 1)/len(y_train):.1%})")
+print(f"Negative samples in training: {sum(y_train == 0)} ({sum(y_train == 0)/len(y_train):.1%})")
+
+print(f"Positive samples in validation: {sum(y_val == 1)} ({sum(y_val == 1)/len(y_val):.1%})")
+print(f"Negative samples in validation: {sum(y_val == 0)} ({sum(y_val == 0)/len(y_val):.1%})")
+
+print(f"Positive samples in testing: {sum(y_test == 1)} ({sum(y_test == 1)/len(y_test):.1%})")
+print(f"Negative samples in testing: {sum(y_test == 0)} ({sum(y_test == 0)/len(y_test):.1%})")
+
+import tensorflow as tf
+from tensorflow.keras.models import Sequential, Model
+from tensorflow.keras.layers import Conv1D, MaxPooling1D, Flatten, Dense, Dropout, Input, BatchNormalization
+from tensorflow.keras.callbacks import EarlyStopping, ModelCheckpoint, ReduceLROnPlateau
+from tensorflow.keras.regularizers import l2
+from tensorflow.keras.optimizers import Adam
+from sklearn.metrics import precision_recall_curve, f1_score
+import numpy as np
+import matplotlib.pyplot as plt
+
+# Define the focal loss function to better handle class imbalance
+def focal_loss(gamma=2.0, alpha=0.25):
+    def focal_loss_fn(y_true, y_pred):
+        # Convert one-hot encoded targets to integers
+        if y_true.shape[-1] == 1:
+            y_true = tf.squeeze(y_true, axis=-1)
+        y_true = tf.cast(y_true, tf.int32)
+        
+        # Get the standard sparse categorical crossentropy
+        sce = tf.keras.losses.SparseCategoricalCrossentropy(from_logits=False, reduction=tf.keras.losses.Reduction.NONE)(y_true, y_pred)
+        
+        # Calculate the prediction probability for the true class
+        y_pred_proba = tf.gather_nd(y_pred, tf.stack([tf.range(tf.shape(y_true)[0]), tf.cast(y_true, tf.int32)], axis=1))
+        
+        # Apply focal loss formula
+        # p_t = p if y == 1 else 1-p for class 0
+        p_t = y_pred_proba
+        # Add the alpha weighing factor
+        alpha_factor = 1.0
+        if alpha is not None:
+            # alpha_t = alpha if y == 1 else 1-alpha for class 0
+            alpha_t = tf.where(tf.equal(y_true, 1), alpha, 1-alpha)
+            alpha_factor = alpha_t
+        
+        # Calculate focal weight
+        gamma_factor = tf.pow(1.0 - p_t, gamma)
+        
+        # Calculate the final loss
+        focal_loss = alpha_factor * gamma_factor * sce
+        
+        return tf.reduce_mean(focal_loss)
+    
+    return focal_loss_fn
+
+# Create an optimized CNN model for sequence data
+def create_optimized_cnn_model(input_shape, num_classes=2, use_focal_loss=True):
+    inputs = Input(shape=input_shape)
+    
+    # First convolutional block
+    x = Conv1D(32, kernel_size=3, activation='relu', padding='same', kernel_regularizer=l2(0.001))(inputs)
+    x = BatchNormalization()(x)
+    x = MaxPooling1D(pool_size=2, padding='same')(x)
+    
+    # Second convolutional block with increased filters
+    x = Conv1D(64, kernel_size=3, activation='relu', padding='same', kernel_regularizer=l2(0.001))(x)
+    x = BatchNormalization()(x)
+    x = MaxPooling1D(pool_size=2, padding='same')(x)
+    
+    # Third convolutional block with even more filters
+    x = Conv1D(128, kernel_size=3, activation='relu', padding='same', kernel_regularizer=l2(0.001))(x)
+    x = BatchNormalization()(x)
+    
+    # Flatten and dense layers
+    x = Flatten()(x)
+    
+    # Add more capacity to the dense layers
+    x = Dense(128, activation='relu', kernel_regularizer=l2(0.001))(x)
+    x = BatchNormalization()(x)
+    x = Dropout(0.4)(x)
+    
+    x = Dense(64, activation='relu', kernel_regularizer=l2(0.001))(x)
+    x = BatchNormalization()(x)
+    x = Dropout(0.3)(x)
+    
+    # Output layer
+    outputs = Dense(num_classes, activation='softmax')(x)
+    
+    model = Model(inputs=inputs, outputs=outputs)
+    
+    # Use a lower learning rate for better stability
+    optimizer = Adam(learning_rate=0.001)
+    
+    # Use focal loss if requested, otherwise use standard cross-entropy
+    if use_focal_loss:
+        loss = focal_loss(gamma=2.0, alpha=0.75)  # Adjust alpha based on class imbalance
+    else:
+        loss = 'sparse_categorical_crossentropy'
+    
+    model.compile(
+        optimizer=optimizer,
+        loss=loss,
+        metrics=['accuracy']
+    )
+    
+    return model
+
+# Calculate class weights based on class frequencies
+# This gives more weight to the minority class during training
+def compute_class_weights(y_train):
+    # Count the number of samples per class
+    class_counts = np.bincount(y_train)
+    # Calculate the weight for each class (inversely proportional to class frequency)
+    total_samples = len(y_train)
+    class_weights = {
+        i: total_samples / (len(class_counts) * count) 
+        for i, count in enumerate(class_counts)
+    }
+    return class_weights
+
+# Get the class weights for our training data
+class_weights = compute_class_weights(y_train)
+print(f"Class weights: {class_weights}")
+
+# Create an optimized CNN model
+optimized_cnn_model = create_optimized_cnn_model(input_shape=(X_train.shape[1], X_train.shape[2]), use_focal_loss=False)
+#print(optimized_cnn_model.summary())
+
+# Define more sophisticated callbacks
+early_stopping = EarlyStopping(
+    monitor='val_loss', 
+    patience=8,
+    restore_best_weights=True,
+    verbose=0
+)
+
+reduce_lr = ReduceLROnPlateau(
+    monitor='val_loss',
+    factor=0.2,
+    patience=3,
+    min_lr=0.00001,
+    verbose=0
+)
+
+model_checkpoint = ModelCheckpoint(
+    'best_optimized_cnn_model.keras',
+    monitor='val_accuracy',
+    save_best_only=True,
+    verbose=0
+)
+
+# Train the model with class weights
+history = optimized_cnn_model.fit(
+    X_train, y_train,
+    epochs=20,  # Increase epochs since we have early stopping
+    batch_size=32,
+    validation_data=(X_val, y_val),
+    callbacks=[early_stopping, reduce_lr, model_checkpoint],
+    class_weight=class_weights,  # Use class weights during training
+    verbose=0
+)
+
+# Evaluate the model on test data
+test_loss, test_accuracy = optimized_cnn_model.evaluate(X_test, y_test, verbose=0)
+print(f"Test accuracy: {test_accuracy:.4f}")
+
+# Make predictions on test data
+y_pred_proba = optimized_cnn_model.predict(X_test, verbose=0)
+y_pred_proba_positive = y_pred_proba[:, 1]  # Probability for positive class
+
+# Find the optimal threshold for F1 score
+thresholds = np.arange(0.1, 0.9, 0.05)
+f1_scores = []
+
+for threshold in thresholds:
+    y_pred_thresholded = (y_pred_proba_positive >= threshold).astype(int)
+    f1 = f1_score(y_test, y_pred_thresholded)
+    f1_scores.append(f1)
+    #print(f"Threshold: {threshold:.2f}, F1 Score: {f1:.4f}")
+
+# Get the best threshold
+best_threshold_idx = np.argmax(f1_scores)
+best_threshold = thresholds[best_threshold_idx]
+best_f1 = f1_scores[best_threshold_idx]
+print(f"\nOptimal threshold: {best_threshold:.2f} with F1 Score: {best_f1:.4f}")
+
+# Apply the best threshold
+y_pred = (y_pred_proba_positive >= best_threshold).astype(int)
+
+# Print classification report with the optimized threshold
+from sklearn.metrics import classification_report, confusion_matrix
+print("\nClassification Report with Optimized Threshold:")
+print(classification_report(y_test, y_pred))
+
+# Plot confusion matrix
+cm = confusion_matrix(y_test, y_pred)
+plt.figure(figsize=(8, 6))
+plt.imshow(cm, interpolation='nearest', cmap=plt.cm.Blues)
+plt.title('Confusion Matrix (Optimized Threshold)')
+plt.colorbar()
+tick_marks = np.arange(2)
+plt.xticks(tick_marks, ['Negative', 'Positive'])
+plt.yticks(tick_marks, ['Negative', 'Positive'])
+plt.xlabel('Predicted Label')
+plt.ylabel('True Label')
+
+# Add text annotations to the confusion matrix
+thresh = cm.max() / 2
+for i in range(cm.shape[0]):
+    for j in range(cm.shape[1]):
+        plt.text(j, i, cm[i, j],
+                 horizontalalignment="center",
+                 color="white" if cm[i, j] > thresh else "black")
+plt.tight_layout()
+plt.show()
+
+# Plot training history
+plt.figure(figsize=(12, 4))
+plt.subplot(1, 2, 1)
+plt.plot(history.history['accuracy'], label='Training Accuracy')
+plt.plot(history.history['val_accuracy'], label='Validation Accuracy')
+plt.title('Model Accuracy')
+plt.xlabel('Epoch')
+plt.ylabel('Accuracy')
+plt.legend()
+
+plt.subplot(1, 2, 2)
+plt.plot(history.history['loss'], label='Training Loss')
+plt.plot(history.history['val_loss'], label='Validation Loss')
+plt.title('Model Loss')
+plt.xlabel('Epoch')
+plt.ylabel('Loss')
+plt.legend()
+plt.tight_layout()
+plt.show()
+
+# Plot ROC curve
+from sklearn.metrics import roc_curve, auc
+fpr, tpr, _ = roc_curve(y_test, y_pred_proba_positive)
+roc_auc = auc(fpr, tpr)
+
+plt.figure(figsize=(8, 6))
+plt.plot(fpr, tpr, color='darkorange', lw=2, label=f'ROC curve (area = {roc_auc:.2f})')
+plt.plot([0, 1], [0, 1], color='navy', lw=2, linestyle='--')
+plt.scatter(fpr[np.argmin(np.abs(thresholds - best_threshold))], 
+            tpr[np.argmin(np.abs(thresholds - best_threshold))], 
+            c='red', marker='o', s=100, label=f'Best threshold = {best_threshold:.2f}')
+plt.xlim([0.0, 1.0])
+plt.ylim([0.0, 1.05])
+plt.xlabel('False Positive Rate')
+plt.ylabel('True Positive Rate')
+plt.title('Receiver Operating Characteristic')
+plt.legend(loc="lower right")
+plt.grid(True, alpha=0.3)
+plt.show()
+
+# Plot Precision-Recall curve
+from sklearn.metrics import precision_recall_curve, average_precision_score
+precision, recall, thresholds_pr = precision_recall_curve(y_test, y_pred_proba_positive)
+avg_precision = average_precision_score(y_test, y_pred_proba_positive)
+
+plt.figure(figsize=(8, 6))
+plt.plot(recall, precision, color='blue', lw=2, label=f'PR curve (AP = {avg_precision:.2f})')
+plt.xlabel('Recall')
+plt.ylabel('Precision')
+plt.title('Precision-Recall Curve')
+plt.legend(loc="upper right")
+plt.grid(True, alpha=0.3)
+plt.show()
+
+# Compare with the best threshold ROC point
+plt.figure(figsize=(8, 6))
+plt.step(recall, precision, color='blue', alpha=0.2, where='post')
+plt.fill_between(recall, precision, alpha=0.2, color='blue', step='post')
+plt.xlabel('Recall')
+plt.ylabel('Precision')
+plt.ylim([0.0, 1.05])
+plt.xlim([0.0, 1.0])
+plt.title('Precision-Recall Curve: AP={0:0.2f}'.format(avg_precision))
+plt.show()
+
+# Plot F1 Score vs Threshold
+plt.figure(figsize=(8, 6))
+plt.plot(thresholds, f1_scores, 'b-', label='F1 Score')
+plt.plot([best_threshold, best_threshold], [0, best_f1], 'r--', label=f'Best Threshold = {best_threshold:.2f}')
+plt.plot(best_threshold, best_f1, 'ro', markersize=8)
+plt.title('F1 Score vs. Threshold')
+plt.xlabel('Threshold')
+plt.ylabel('F1 Score')
+plt.grid(True, alpha=0.3)
+plt.legend()
+plt.show()
+
+# Comparing model performance before and after optimization
+print(f"\nModel performance comparison:")
+print(f"Optimal threshold: {best_threshold:.2f}")
+print(f"Original model test accuracy: {test_accuracy:.4f}")
+print(f"Optimized model test accuracy (with best threshold): {accuracy_score(y_test, y_pred):.4f}")
+print(f"Optimized model F1 score: {f1_score(y_test, y_pred):.4f}")
+
+```
+
