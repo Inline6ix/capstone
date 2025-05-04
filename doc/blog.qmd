@@ -559,381 +559,264 @@ Interestingly, the order of the feature importance changed. Hydrophobicity is no
 
 ### Basic Convolutional Neural Network
 
-
+The performance of the random forest classifier drops off dramatically when netMHCpan's predicted binding affinity is not included as a predictor. A different approach to peptide classification is to use a convolutional neural network (CNN). CNN's have several advantages. In contrast to traditional machine learning models, a CNN does not require specific feature selection or engineering. This eliminates the need for domain expertise in selecting features and allows the model to potentially discover novel, important patterns that weren't explicitly engineered.
 
 ```{python}
 import numpy as np
-from tensorflow.keras.preprocessing.sequence import pad_sequences
+import pandas as pd # Assuming epitopes and negatives are pandas DataFrames
 from sklearn.model_selection import train_test_split
-
-# Step 1: Filter the epitopes and negatives dataframes to only contain sequences and labels
-epitopes_filtered = epitopes[['peptide', 'label']].copy()
-epitopes_filtered.rename(columns={'peptide': 'sequence'}, inplace=True)
-
-negatives_filtered = negatives[['peptide', 'label']].copy()
-negatives_filtered.rename(columns={'peptide': 'sequence'}, inplace=True)
-
-# Combine the datasets
-combined_data = pd.concat([epitopes_filtered, negatives_filtered], ignore_index=True)
-combined_data = combined_data.sample(frac=1, random_state=42).reset_index(drop=True)
-
-print(f"Number of samples: {combined_data.shape[0]}")
-print(f"Positive samples: {sum(combined_data['label'] == 1)}")
-print(f"Negative samples: {sum(combined_data['label'] == 0)}")
-
-# Step 2: Prepare for one-hot encoding
-# First, get all unique amino acids in our dataset
-all_sequences = combined_data['sequence'].values
-unique_chars = sorted(set(''.join(all_sequences)))
-print(f"Unique amino acids in dataset: {unique_chars}")
-
-# Create mapping dictionaries for one-hot encoding
-char_to_index = {char: i+1 for i, char in enumerate(unique_chars)}  # Start from 1, reserve 0 for padding
-index_to_char = {i+1: char for i, char in enumerate(unique_chars)}
-index_to_char[0] = ''  # Padding token
-
-# Find maximum sequence length
-max_length = max(len(seq) for seq in all_sequences)
-print(f"Maximum sequence length: {max_length}")
-
-# Convert sequences to integer sequences
-int_sequences = []
-for seq in all_sequences:
-    int_seq = [char_to_index[char] for char in seq]
-    int_sequences.append(int_seq)
-
-# Pad sequences to have the same length
-padded_sequences = pad_sequences(int_sequences, maxlen=max_length, padding='post')
-
-# One-hot encode the padded sequences
-num_chars = len(unique_chars) + 1  # +1 for padding token
-X_onehot = np.zeros((len(padded_sequences), max_length, num_chars))
-
-for i, seq in enumerate(padded_sequences):
-    for j, char_idx in enumerate(seq):
-        X_onehot[i, j, char_idx] = 1.0  # One-hot encode
-
-# Get labels
-y = combined_data['label'].values
-
-# Print shapes to verify dimensions
-print(f"X_onehot shape: {X_onehot.shape}")
-print(f"Number of unique amino acids (including padding): {num_chars}")
-
-# Step 3: Split data into training, validation, and testing sets (70/15/15 split)
-# First split into temporary train and test
-X_temp, X_test, y_temp, y_test = train_test_split(
-    X_onehot, y, test_size=0.15, random_state=42, stratify=y
-)
-
-# Then split the temporary train into final train and validation
-# To get 70/15 split from the original data, we need to calculate the right proportion:
-# If test is 15% of total, then validation should be 15/85 of the remaining data (approx 17.65%)
-X_train, X_val, y_train, y_val = train_test_split(
-    X_temp, y_temp, test_size=0.1765, random_state=42, stratify=y_temp
-)
-
-print(f"Training set shape: {X_train.shape} ({X_train.shape[0]/X_onehot.shape[0]:.1%} of total)")
-print(f"Validation set shape: {X_val.shape} ({X_val.shape[0]/X_onehot.shape[0]:.1%} of total)")
-print(f"Testing set shape: {X_test.shape} ({X_test.shape[0]/X_onehot.shape[0]:.1%} of total)")
-
-print(f"Positive samples in training: {sum(y_train == 1)} ({sum(y_train == 1)/len(y_train):.1%})")
-print(f"Negative samples in training: {sum(y_train == 0)} ({sum(y_train == 0)/len(y_train):.1%})")
-
-print(f"Positive samples in validation: {sum(y_val == 1)} ({sum(y_val == 1)/len(y_val):.1%})")
-print(f"Negative samples in validation: {sum(y_val == 0)} ({sum(y_val == 0)/len(y_val):.1%})")
-
-print(f"Positive samples in testing: {sum(y_test == 1)} ({sum(y_test == 1)/len(y_test):.1%})")
-print(f"Negative samples in testing: {sum(y_test == 0)} ({sum(y_test == 0)/len(y_test):.1%})")
-
 import tensorflow as tf
-from tensorflow.keras.models import Sequential, Model
-from tensorflow.keras.layers import Conv1D, MaxPooling1D, Flatten, Dense, Dropout, Input, BatchNormalization
+from tensorflow.keras.models import Model
+from tensorflow.keras.layers import (
+    Conv1D, MaxPooling1D, Flatten, Dense, Dropout, Input, BatchNormalization
+)
 from tensorflow.keras.callbacks import EarlyStopping, ModelCheckpoint, ReduceLROnPlateau
 from tensorflow.keras.regularizers import l2
 from tensorflow.keras.optimizers import Adam
-from sklearn.metrics import precision_recall_curve, f1_score
-import numpy as np
+from sklearn.metrics import (
+    classification_report, confusion_matrix, roc_curve, auc,
+    precision_recall_curve, average_precision_score, accuracy_score
+)
 import matplotlib.pyplot as plt
 
-# Define the focal loss function to better handle class imbalance
-def focal_loss(gamma=2.0, alpha=0.25):
-    def focal_loss_fn(y_true, y_pred):
-        # Convert one-hot encoded targets to integers
-        if y_true.shape[-1] == 1:
-            y_true = tf.squeeze(y_true, axis=-1)
-        y_true = tf.cast(y_true, tf.int32)
-        
-        # Get the standard sparse categorical crossentropy
-        sce = tf.keras.losses.SparseCategoricalCrossentropy(from_logits=False, reduction=tf.keras.losses.Reduction.NONE)(y_true, y_pred)
-        
-        # Calculate the prediction probability for the true class
-        y_pred_proba = tf.gather_nd(y_pred, tf.stack([tf.range(tf.shape(y_true)[0]), tf.cast(y_true, tf.int32)], axis=1))
-        
-        # Apply focal loss formula
-        # p_t = p if y == 1 else 1-p for class 0
-        p_t = y_pred_proba
-        # Add the alpha weighing factor
-        alpha_factor = 1.0
-        if alpha is not None:
-            # alpha_t = alpha if y == 1 else 1-alpha for class 0
-            alpha_t = tf.where(tf.equal(y_true, 1), alpha, 1-alpha)
-            alpha_factor = alpha_t
-        
-        # Calculate focal weight
-        gamma_factor = tf.pow(1.0 - p_t, gamma)
-        
-        # Calculate the final loss
-        focal_loss = alpha_factor * gamma_factor * sce
-        
-        return tf.reduce_mean(focal_loss)
-    
-    return focal_loss_fn
+# --- Step 1: Data Preparation ---
+print("--- Step 1: Data Preparation ---")
 
-# Create an optimized CNN model for sequence data
-def create_optimized_cnn_model(input_shape, num_classes=2, use_focal_loss=True):
+# Filter and combine
+epitopes_filtered = epitopes[['peptide', 'label']].copy()
+epitopes_filtered.rename(columns={'peptide': 'sequence'}, inplace=True)
+negatives_filtered = negatives[['peptide', 'label']].copy()
+negatives_filtered.rename(columns={'peptide': 'sequence'}, inplace=True)
+
+combined_data = pd.concat([epitopes_filtered, negatives_filtered], ignore_index=True)
+
+# Shuffle the validated data
+combined_data = combined_data.sample(frac=1, random_state=42).reset_index(drop=True)
+
+# --- Step 2: Sequence Encoding (No Padding Needed) ---
+print(f"--- Step 2: Sequence Encoding ---")
+all_sequences = combined_data['sequence'].values
+unique_chars = sorted(list(set(''.join(all_sequences))))
+print(f"Unique amino acids: {''.join(unique_chars)}")
+
+# Map characters to indices starting from 0 (no padding index needed)
+char_to_index = {char: i for i, char in enumerate(unique_chars)}
+index_to_char = {i: char for i, char in enumerate(unique_chars)}
+
+num_chars = len(unique_chars) # Vocabulary size is just the number of unique chars
+print(f"Vocabulary size: {num_chars}")
+
+# Convert sequences to integer sequences
+int_sequences = []
+for i, seq in enumerate(all_sequences):
+     int_seq = [char_to_index[char] for char in seq]
+     int_sequences.append(int_seq)
+
+# One-hot encode the integer sequences
+# Shape: (num_samples, sequence_length, num_unique_chars)
+X_onehot = np.zeros((len(int_sequences), 9, num_chars), dtype=np.float32)
+
+for i, seq in enumerate(int_sequences):
+    for j, char_idx in enumerate(seq): # j is position (0-8), char_idx is the integer index of the amino acid
+        X_onehot[i, j, char_idx] = 1.0
+
+y = combined_data['label'].values
+
+print(f"X_onehot shape: {X_onehot.shape}") # Should be (num_samples, 9, num_chars)
+print(f"y shape: {y.shape}")
+print("-" * 30)
+
+# --- Step 3: Data Splitting (70/15/15) ---
+print("--- Step 3: Data Splitting ---")
+# Split into temp (85%) and test (15%)
+X_temp, X_test, y_temp, y_test = train_test_split(
+    X_onehot, y, test_size=0.15, random_state=42, stratify=y
+)
+# Split temp into train (70% of total) and validation (15% of total)
+val_split_ratio = 0.15 / 0.85 # Calculate split ratio for validation set
+X_train, X_val, y_train, y_val = train_test_split(
+    X_temp, y_temp, test_size=val_split_ratio, random_state=42, stratify=y_temp
+)
+
+print(f"Training set: {X_train.shape}, {y_train.shape}")
+print(f"Validation set: {X_val.shape}, {y_val.shape}")
+print(f"Testing set: {X_test.shape}, {y_test.shape}")
+print(f"Class distribution in training set: {np.bincount(y_train)}")
+print("-" * 30)
+
+# --- Step 4: Model Definition ---
+print("--- Step 4: Model Definition ---")
+# Model definition remains the same, it accepts input_shape parameter
+def create_cnn_model(input_shape, num_classes=2):
+    """Creates and compiles the CNN model."""
     inputs = Input(shape=input_shape)
-    
-    # First convolutional block
-    x = Conv1D(32, kernel_size=9, activation='relu', padding='same', kernel_regularizer=l2(0.001))(inputs)
+    x = Conv1D(32, kernel_size=3, activation='relu', padding='same', kernel_regularizer=l2(0.001))(inputs)
     x = BatchNormalization()(x)
     x = MaxPooling1D(pool_size=2, padding='same')(x)
-    
-    # Second convolutional block with increased filters
-    x = Conv1D(64, kernel_size=9, activation='relu', padding='same', kernel_regularizer=l2(0.001))(x)
+    x = Conv1D(64, kernel_size=3, activation='relu', padding='same', kernel_regularizer=l2(0.001))(x)
     x = BatchNormalization()(x)
     x = MaxPooling1D(pool_size=2, padding='same')(x)
-    
-    # Third convolutional block with even more filters
-    x = Conv1D(128, kernel_size=9, activation='relu', padding='same', kernel_regularizer=l2(0.001))(x)
+    x = Conv1D(128, kernel_size=3, activation='relu', padding='same', kernel_regularizer=l2(0.001))(x)
     x = BatchNormalization()(x)
-    
-    # Flatten and dense layers
     x = Flatten()(x)
-    
-    # Add more capacity to the dense layers
     x = Dense(128, activation='relu', kernel_regularizer=l2(0.001))(x)
     x = BatchNormalization()(x)
     x = Dropout(0.4)(x)
-    
     x = Dense(64, activation='relu', kernel_regularizer=l2(0.001))(x)
     x = BatchNormalization()(x)
     x = Dropout(0.3)(x)
-    
-    # Output layer
     outputs = Dense(num_classes, activation='softmax')(x)
-    
     model = Model(inputs=inputs, outputs=outputs)
-    
-    # Use a lower learning rate for better stability
     optimizer = Adam(learning_rate=0.001)
-    
-    # Use focal loss if requested, otherwise use standard cross-entropy
-    if use_focal_loss:
-        loss = focal_loss(gamma=2.0, alpha=0.75)  # Adjust alpha based on class imbalance
-    else:
-        loss = 'sparse_categorical_crossentropy'
-    
-    model.compile(
-        optimizer=optimizer,
-        loss=loss,
-        metrics=['accuracy']
-    )
-    
+    model.compile(optimizer=optimizer,
+                  loss='sparse_categorical_crossentropy',
+                  metrics=['accuracy'])
     return model
 
-# Calculate class weights based on class frequencies
-# This gives more weight to the minority class during training
-def compute_class_weights(y_train):
-    # Count the number of samples per class
-    class_counts = np.bincount(y_train)
-    # Calculate the weight for each class (inversely proportional to class frequency)
-    total_samples = len(y_train)
-    class_weights = {
-        i: total_samples / (len(class_counts) * count) 
-        for i, count in enumerate(class_counts)
-    }
-    return class_weights
+# --- Step 5: Class Weights and Model Training ---
+print("--- Step 5: Model Training ---")
+# Calculate class weights (function definition is unchanged)
+def compute_class_weights(y_train_labels):
+    """Computes class weights inversely proportional to class frequency."""
+    counts = np.bincount(y_train_labels)
+    total = np.sum(counts)
+    weights = {i: total / (len(counts) * count) for i, count in enumerate(counts) if count > 0}
+    return weights
 
-# Get the class weights for our training data
 class_weights = compute_class_weights(y_train)
-print(f"Class weights: {class_weights}")
+print(f"Calculated class weights: {class_weights}")
 
-# Create an optimized CNN model
-optimized_cnn_model = create_optimized_cnn_model(input_shape=(X_train.shape[1], X_train.shape[2]), use_focal_loss=True)
-#print(optimized_cnn_model.summary())
+# Create the model with the correct input shape (length 9, num_chars features)
+input_shape = (9, num_chars) # Use EXPECTED_LENGTH and updated num_chars
+model = create_cnn_model(input_shape)
+# print(model.summary()) # Optional: uncomment to see model layers
 
-# Define more sophisticated callbacks
-early_stopping = EarlyStopping(
-    monitor='val_loss', 
-    patience=8,
-    restore_best_weights=True,
-    verbose=0
-)
+# Define callbacks (unchanged)
+early_stopping = EarlyStopping(monitor='val_loss', patience=10, restore_best_weights=True, verbose=0)
+reduce_lr = ReduceLROnPlateau(monitor='val_loss', factor=0.2, patience=5, min_lr=1e-6, verbose=0)
+model_checkpoint = ModelCheckpoint('best_cnn_model_len9.keras', monitor='val_accuracy', save_best_only=True, verbose=0) # Changed filename slightly
 
-reduce_lr = ReduceLROnPlateau(
-    monitor='val_loss',
-    factor=0.2,
-    patience=3,
-    min_lr=0.00001,
-    verbose=0
-)
-
-model_checkpoint = ModelCheckpoint(
-    'best_optimized_cnn_model.keras',
-    monitor='val_accuracy',
-    save_best_only=True,
-    verbose=0
-)
-
-# Train the model with class weights
-history = optimized_cnn_model.fit(
+# Train the model (unchanged)
+history = model.fit(
     X_train, y_train,
-    epochs=50,  # Increase epochs since we have early stopping
+    epochs=50,
     batch_size=32,
     validation_data=(X_val, y_val),
     callbacks=[early_stopping, reduce_lr, model_checkpoint],
-    class_weight=class_weights,  # Use class weights during training
+    class_weight=class_weights,
     verbose=0
 )
+print("Training complete.")
+print("-" * 30)
 
-# Evaluate the model on test data
-test_loss, test_accuracy = optimized_cnn_model.evaluate(X_test, y_test, verbose=0)
-print(f"Test accuracy: {test_accuracy:.4f}")
 
-# Make predictions on test data
-y_pred_proba = optimized_cnn_model.predict(X_test, verbose=0)
-y_pred_proba_positive = y_pred_proba[:, 1]  # Probability for positive class
+# --- Step 6: Evaluation (Fixed Threshold 0.5) ---
+print("--- Step 6: Evaluation ---")
+# Optional: Load the best model saved by ModelCheckpoint
+# model = tf.keras.models.load_model('best_cnn_model_len9.keras')
 
-# Find the optimal threshold for F1 score
-thresholds = np.arange(0.1, 0.9, 0.05)
-f1_scores = []
+# Evaluate on test data (unchanged)
+test_loss, test_accuracy = model.evaluate(X_test, y_test, verbose=0)
+print(f"Test Loss: {test_loss:.4f}")
+print(f"Test Accuracy (default 0.5 threshold): {test_accuracy:.4f}")
 
-for threshold in thresholds:
-    y_pred_thresholded = (y_pred_proba_positive >= threshold).astype(int)
-    f1 = f1_score(y_test, y_pred_thresholded)
-    f1_scores.append(f1)
-    print(f"Threshold: {threshold:.2f}, F1 Score: {f1:.4f}")
+# Get prediction probabilities for the positive class (unchanged)
+y_pred_proba = model.predict(X_test, verbose=0)
+y_pred_proba_positive = y_pred_proba[:, 1]
 
-# Get the best threshold
-best_threshold_idx = np.argmax(f1_scores)
-best_threshold = thresholds[best_threshold_idx]
-best_f1 = f1_scores[best_threshold_idx]
-print(f"\nOptimal threshold: {best_threshold:.2f} with F1 Score: {best_f1:.4f}")
+# Apply fixed threshold of 0.5 (unchanged)
+threshold = 0.5
+y_pred = (y_pred_proba_positive >= threshold).astype(int)
 
-# Apply the best threshold
-y_pred = (y_pred_proba_positive >= best_threshold).astype(int)
-
-# Print classification report with the optimized threshold
-from sklearn.metrics import classification_report, confusion_matrix
-print("\nClassification Report with Optimized Threshold:")
+# Print classification report (unchanged)
+print("\nClassification Report (Threshold = 0.5):")
 print(classification_report(y_test, y_pred))
 
-# Plot confusion matrix
+# Calculate and plot confusion matrix (unchanged)
 cm = confusion_matrix(y_test, y_pred)
-plt.figure(figsize=(8, 6))
+plt.figure(figsize=(6, 5))
 plt.imshow(cm, interpolation='nearest', cmap=plt.cm.Blues)
-plt.title('Confusion Matrix (Optimized Threshold)')
+plt.title(f'Confusion Matrix (Threshold={threshold})')
 plt.colorbar()
 tick_marks = np.arange(2)
 plt.xticks(tick_marks, ['Negative', 'Positive'])
 plt.yticks(tick_marks, ['Negative', 'Positive'])
 plt.xlabel('Predicted Label')
 plt.ylabel('True Label')
-
-# Add text annotations to the confusion matrix
-thresh = cm.max() / 2
+thresh = cm.max() / 2.
 for i in range(cm.shape[0]):
     for j in range(cm.shape[1]):
-        plt.text(j, i, cm[i, j],
+        plt.text(j, i, format(cm[i, j], 'd'),
                  horizontalalignment="center",
                  color="white" if cm[i, j] > thresh else "black")
 plt.tight_layout()
 plt.show()
 
-# Plot training history
-plt.figure(figsize=(12, 4))
+print("-" * 30)
+
+
+# --- Step 7: Plotting ---
+print("--- Step 7: Plotting Results ---")
+
+# Plotting code remains the same as it uses the 'history' object
+# and the final predictions/probabilities (y_test, y_pred_proba_positive)
+
+# Plot training & validation accuracy/loss values
+plt.figure(figsize=(12, 5))
 plt.subplot(1, 2, 1)
-plt.plot(history.history['accuracy'], label='Training Accuracy')
+# ... (accuracy plot code - unchanged)
+plt.plot(history.history['accuracy'], label='Train Accuracy')
 plt.plot(history.history['val_accuracy'], label='Validation Accuracy')
 plt.title('Model Accuracy')
-plt.xlabel('Epoch')
 plt.ylabel('Accuracy')
-plt.legend()
-
+plt.xlabel('Epoch')
+plt.legend(loc='upper left')
 plt.subplot(1, 2, 2)
-plt.plot(history.history['loss'], label='Training Loss')
+# ... (loss plot code - unchanged)
+plt.plot(history.history['loss'], label='Train Loss')
 plt.plot(history.history['val_loss'], label='Validation Loss')
 plt.title('Model Loss')
-plt.xlabel('Epoch')
 plt.ylabel('Loss')
-plt.legend()
+plt.xlabel('Epoch')
+plt.legend(loc='upper left')
 plt.tight_layout()
 plt.show()
 
-# Plot ROC curve
-from sklearn.metrics import roc_curve, auc
+# Plot ROC Curve (unchanged)
 fpr, tpr, _ = roc_curve(y_test, y_pred_proba_positive)
 roc_auc = auc(fpr, tpr)
-
-plt.figure(figsize=(8, 6))
-plt.plot(fpr, tpr, color='darkorange', lw=2, label=f'ROC curve (area = {roc_auc:.2f})')
+plt.figure(figsize=(7, 6))
+# ... (ROC plot code - unchanged)
+plt.plot(fpr, tpr, color='darkorange', lw=2, label=f'ROC curve (AUC = {roc_auc:.2f})')
 plt.plot([0, 1], [0, 1], color='navy', lw=2, linestyle='--')
-plt.scatter(fpr[np.argmin(np.abs(thresholds - best_threshold))], 
-            tpr[np.argmin(np.abs(thresholds - best_threshold))], 
-            c='red', marker='o', s=100, label=f'Best threshold = {best_threshold:.2f}')
 plt.xlim([0.0, 1.0])
 plt.ylim([0.0, 1.05])
 plt.xlabel('False Positive Rate')
 plt.ylabel('True Positive Rate')
-plt.title('Receiver Operating Characteristic')
+plt.title('Receiver Operating Characteristic (ROC)')
 plt.legend(loc="lower right")
 plt.grid(True, alpha=0.3)
 plt.show()
 
-# Plot Precision-Recall curve
-from sklearn.metrics import precision_recall_curve, average_precision_score
-precision, recall, thresholds_pr = precision_recall_curve(y_test, y_pred_proba_positive)
-avg_precision = average_precision_score(y_test, y_pred_proba_positive)
 
-plt.figure(figsize=(8, 6))
-plt.plot(recall, precision, color='blue', lw=2, label=f'PR curve (AP = {avg_precision:.2f})')
+# Plot Precision-Recall Curve (unchanged)
+precision, recall, _ = precision_recall_curve(y_test, y_pred_proba_positive)
+avg_precision = average_precision_score(y_test, y_pred_proba_positive)
+plt.figure(figsize=(7, 6))
+# ... (PR plot code - unchanged)
+plt.step(recall, precision, color='blue', where='post', label=f'PR curve (AP = {avg_precision:.2f})')
+plt.fill_between(recall, precision, step='post', alpha=0.2, color='blue')
 plt.xlabel('Recall')
 plt.ylabel('Precision')
+plt.ylim([0.0, 1.05])
+plt.xlim([0.0, 1.0])
 plt.title('Precision-Recall Curve')
 plt.legend(loc="upper right")
 plt.grid(True, alpha=0.3)
 plt.show()
 
-# Compare with the best threshold ROC point
-plt.figure(figsize=(8, 6))
-plt.step(recall, precision, color='blue', alpha=0.2, where='post')
-plt.fill_between(recall, precision, alpha=0.2, color='blue', step='post')
-plt.xlabel('Recall')
-plt.ylabel('Precision')
-plt.ylim([0.0, 1.05])
-plt.xlim([0.0, 1.0])
-plt.title('Precision-Recall Curve: AP={0:0.2f}'.format(avg_precision))
-plt.show()
 
-# Plot F1 Score vs Threshold
-plt.figure(figsize=(8, 6))
-plt.plot(thresholds, f1_scores, 'b-', label='F1 Score')
-plt.plot([best_threshold, best_threshold], [0, best_f1], 'r--', label=f'Best Threshold = {best_threshold:.2f}')
-plt.plot(best_threshold, best_f1, 'ro', markersize=8)
-plt.title('F1 Score vs. Threshold')
-plt.xlabel('Threshold')
-plt.ylabel('F1 Score')
-plt.grid(True, alpha=0.3)
-plt.legend()
-plt.show()
-
-# Comparing model performance before and after optimization
-print(f"\nModel performance comparison:")
-print(f"Optimal threshold: {best_threshold:.2f}")
-print(f"Original model test accuracy: {test_accuracy:.4f}")
-print(f"Optimized model test accuracy (with best threshold): {accuracy_score(y_test, y_pred):.4f}")
-print(f"Optimized model F1 score: {f1_score(y_test, y_pred):.4f}")
+print("--- Script Finished ---")
 ```
 
 # Conclusion
