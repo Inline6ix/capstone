@@ -649,9 +649,7 @@ print("-" * 30)
 
 A basic CNN model is defined. The model takes one-hot encoded sequences as input and passes them through three blocks of 1D Convolution, BatchNormalization, and MaxPooling1D layers with increasing filter counts (64, 128, 256) and L2 regularization to extract features. After flattening the output, it goes through two fully connected (Dense) blocks, each with BatchNormalization, Dropout (0.5 and 0.4), L2 regularization, and ReLU activation, reducing dimensionality (256 then 128 units). The final Dense layer uses a softmax activation to output probabilities for each class. The model is compiled using the Adam optimizer, sparse_categorical_crossentropy loss, and tracks accuracy as a metric, finally returning the compiled model after being instantiated with the specific input shape.
 
-```{python}
-# --- Model Definition ---
-# Model definition remains the same, it accepts input_shape parameter
+```{python model_definition}
 def create_cnn_model(input_shape, num_classes=2):
     """Creates and compiles the CNN model."""
     inputs = Input(shape=input_shape)
@@ -685,29 +683,26 @@ def create_cnn_model(input_shape, num_classes=2):
                   metrics=['accuracy'])
     return model
 
-# Create the model with the correct input shape (length 9, num_chars features)
-input_shape = (9, num_chars) # Use and updated num_chars
+input_shape = (9, num_chars)
 model = create_cnn_model(input_shape)
-#print(model.summary()) # Optional: uncomment to see model layers
 ```
 
 
 Before training the model, class weights are calculated to handle the data imbalance, effectively telling the model to "pay more attention" to samples from the minority class.
 
-```{python}
-# --- Class Weights and Model Training ---
+```{python class-weights_and_training}
 from sklearn.utils.class_weight import compute_class_weight
 
-# Calculate class weights (function definition is unchanged)
+# Calculate class weights
 class_weights = compute_class_weight('balanced', classes=np.unique(y_train), y=y_train)
 class_weight_dict = dict(enumerate(class_weights))
 
-# Define callbacks (unchanged)
+# Define callbacks
 early_stopping = EarlyStopping(monitor='val_loss', patience=10, restore_best_weights=True, verbose=0)
 reduce_lr = ReduceLROnPlateau(monitor='val_loss', factor=0.2, patience=5, min_lr=1e-6, verbose=0)
-model_checkpoint = ModelCheckpoint('best_cnn_model_len9.keras', monitor='val_accuracy', save_best_only=True, verbose=0) # Changed filename slightly
+model_checkpoint = ModelCheckpoint('best_cnn_model_len9.keras', monitor='val_accuracy', save_best_only=True, verbose=0)
 
-# Train the model (unchanged)
+# Train the model
 history = model.fit(
     X_train, y_train,
     epochs=50,
@@ -718,25 +713,23 @@ history = model.fit(
     verbose=0
 )
 
-# --- Step 6: Evaluation ---
-# Optional: Load the best model saved by ModelCheckpoint
 #model = tf.keras.models.load_model('best_cnn_model_len9.keras')
 
-# Evaluate on test data (unchanged)
+# Evaluate on test data
 test_loss, test_accuracy = model.evaluate(X_test, y_test, verbose=0)
 
-# Get prediction probabilities for the positive class (unchanged)
+# Get prediction probabilities for the positive class
 y_pred_proba = model.predict(X_test, verbose=0)
 y_pred_proba_positive = y_pred_proba[:, 1]
 
-# Apply fixed threshold of 0.5 (unchanged)
+# Apply fixed threshold of 0.5
 y_pred = (y_pred_proba_positive >= 0.5).astype(int)
 
-# Print classification report (unchanged)
+# Print classification report
 print("\nCNN Classification Report:")
 print(classification_report(y_test, y_pred))
 
-# Calculate and plot confusion matrix (unchanged)
+# Calculate and plot confusion matrix
 cm = confusion_matrix(y_test, y_pred)
 plt.figure(figsize=(6, 5))
 plt.imshow(cm, interpolation='nearest', cmap=plt.cm.Blues)
@@ -759,7 +752,7 @@ plt.show()
 
 The Convolutional Neural Network produced a reasonable overall accuracy of 82%, primarily driven by its strong ability to correctly identify the majority, non-epitopes, with high precision and recall. However, its performance on the minority class, epitopes, was mixed; while managing to recall 65% of true epitopes, its precision was significantly lower at 56%, indicating that nearly half of its positive predictions were false positives.
 
-The Convolutional Neural Network significantly outperforms the Random Forest classifier while relying only on the sequence data, and no additional features. The RF struggles immensely with identifying the actual epitopes (very low recall for Class 1), whereas the CNN, while still facing challenges with precision for Class 1, provides a much better balance and significantly higher recall for the positive class, making it the more effective model in this comparison.
+The Convolutional Neural Network significantly outperforms the Random Forest classifier while relying only on the sequence data, and no additional features. The RF struggles with identifying the actual epitopes, shown by the low recall for Class 1, whereas the CNN, while still challenged with precision for Class 1, provides a better balance and significantly higher recall for the positive class, making it the more effective model in this comparison.
 
 # Clustering
 
