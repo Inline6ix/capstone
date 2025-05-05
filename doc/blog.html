@@ -183,7 +183,7 @@ Libraries and packages
 </div>
 <div id="callout-1" class="callout-1-contents callout-collapse collapse show">
 <div class="callout-body-container callout-body">
-<div id="5d1d8200" class="cell" data-execution_count="1">
+<div id="b80f42e9" class="cell" data-execution_count="1">
 <details class="code-fold">
 <summary>Code</summary>
 <div class="sourceCode cell-code" id="cb1"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Importing libraries</span></span>
@@ -207,7 +207,7 @@ Libraries and packages
 </section>
 <section id="preprocessing" class="level3">
 <h3 class="anchored" data-anchor-id="preprocessing">Preprocessing</h3>
-<div id="52a55362" class="cell" data-execution_count="2">
+<div id="bba2f4f3" class="cell" data-execution_count="2">
 <details class="code-fold">
 <summary>Code</summary>
 <div class="sourceCode cell-code" id="cb2"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a>epitopes <span class="op">=</span> pd.read_csv(<span class="vs">r'/Users/tariq/Documents/capstone/data/epitope_table_export_1740279588.csv'</span>)</span>
@@ -315,7 +315,7 @@ Libraries and packages
 </section>
 <section id="negative-sample-generation" class="level3">
 <h3 class="anchored" data-anchor-id="negative-sample-generation">Negative Sample Generation</h3>
-<div id="6d1ee497" class="cell" data-execution_count="3">
+<div id="d66e2d1f" class="cell" data-execution_count="3">
 <details class="code-fold">
 <summary>Code</summary>
 <div class="sourceCode cell-code" id="cb3"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> generate_negatives(row):</span>
@@ -364,7 +364,7 @@ Libraries and packages
 </section>
 <section id="feature-engineering" class="level3">
 <h3 class="anchored" data-anchor-id="feature-engineering">Feature Engineering</h3>
-<div id="18d669e7" class="cell" data-execution_count="4">
+<div id="1ab7c3bd" class="cell" data-execution_count="4">
 <details class="code-fold">
 <summary>Code</summary>
 <div class="sourceCode cell-code" id="cb4"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Kyte-Doolittle hydrophobicity scale</span></span>
@@ -461,7 +461,7 @@ Libraries and packages
 <p>The protein analysis tool from the BioPython package allows for some quick feature engineering on most given peptides. For this analysis, the relevant features would be hydrophobicity, molecular weight, aromaticity, isoelectric point, instability, and the charge at pH7. Publications on epitope classification hold binding affinity — the ability for a peptide to bind to the body’s MHC complex — to be a strong preditctor. The BioPython package does not come with any functionality for binding affinity prediction but IEDB database provides a tool called netMHCpan, which is the leading binding affinity prediction algorithm.</p>
 <p>The IEDB website offers a GUI for using netMHCpan to predict binding affinities. However, it is only possible to run predictions on 100 peptides at a time and this analysis is examining many more than that. NetMHCpan can be downloaded and installed as a command line tool allowing more flexibility using python. Given an amino acid sequence and a MHC allele specification, netMHCpan returns a binding affinity score. NetMHCpan predicts the binding affinity between a peptide and an MHC allele, returning a score. This score ranges from 0 to 1, where higher values indicate a stronger predicted likelihood of binding.</p>
 <p>Subsequent analysis focuses on 9-mer peptides, a common length for MHC Class I epitopes, for which binding prediction tools like netMHCpan are well-suited.</p>
-<div id="1ea67258" class="cell" data-execution_count="5">
+<div id="d8912a1d" class="cell" data-execution_count="5">
 <details class="code-fold">
 <summary>Code</summary>
 <div class="sourceCode cell-code" id="cb5"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a>epitopes <span class="op">=</span> pd.read_csv(<span class="st">"/Users/tariq/Documents/capstone/data/ninemer_epitopes.csv"</span>)</span>
@@ -569,7 +569,7 @@ Libraries and packages
 <h1>Exploratory Analysis</h1>
 <section id="boxplots" class="level3">
 <h3 class="anchored" data-anchor-id="boxplots">Boxplots</h3>
-<div id="c6e1c12b" class="cell" data-execution_count="6">
+<div id="c858c37c" class="cell" data-execution_count="6">
 <details class="code-fold">
 <summary>Code</summary>
 <div class="sourceCode cell-code" id="cb6"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Compare numeric features between epitopes and negatives datasets</span></span>
@@ -622,7 +622,7 @@ Libraries and packages
 </div>
 </div>
 <p>A boxplot comparison of the numerical variables reveals hardly significant differences between the epitope and non-epitope peptides. The clear outlier being the predicted binding affinity score.</p>
-<div id="978cc6b8" class="cell" data-execution_count="7">
+<div id="b686d263" class="cell" data-execution_count="7">
 <details class="code-fold">
 <summary>Code</summary>
 <div class="sourceCode cell-code" id="cb7"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a><span class="co"># plot Score_BA for epitopes and negatives overlaid on the same plot</span></span>
@@ -674,7 +674,7 @@ Libraries and packages
 <section id="preprocessing-1" class="level3">
 <h3 class="anchored" data-anchor-id="preprocessing-1">Preprocessing</h3>
 <p>Prior to training, labels are assigned to the epitopes and non-epitopes as 1 or 0 respectively. The two samples are then concatenated, scaled, and shuffled. Finally, the data is split into training and testing sets with an 80/20 ratio.</p>
-<div id="300f8cf2" class="cell" data-execution_count="8">
+<div id="7d67b573" class="cell" data-execution_count="8">
 <details class="code-fold">
 <summary>Code</summary>
 <div class="sourceCode cell-code" id="cb8"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Add label column to epitopes dataframe (positive class = 1)</span></span>
@@ -730,7 +730,7 @@ Negative samples in testing: 4067</code></pre>
 <section id="training-evaluation" class="level3">
 <h3 class="anchored" data-anchor-id="training-evaluation">Training + Evaluation</h3>
 <p>The random forest classifier is fit to the training data and evaluated on the testing data.</p>
-<div id="c7133ae8" class="cell" data-execution_count="9">
+<div id="1645725f" class="cell" data-execution_count="9">
 <details class="code-fold">
 <summary>Code</summary>
 <div class="sourceCode cell-code" id="cb10"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Initialize the Random Forest Classifier</span></span>
@@ -832,7 +832,7 @@ Figure&nbsp;1
 <section id="training-without-netmhcpan" class="level3">
 <h3 class="anchored" data-anchor-id="training-without-netmhcpan">Training without netMHCpan</h3>
 <p>To better illustrate how the model’s performance changes, the predicted binding affinity column is dropped, and the model is retrained and evaluated.</p>
-<div id="5774df9a" class="cell" data-execution_count="11">
+<div id="251238bd" class="cell" data-execution_count="11">
 <details class="code-fold">
 <summary>Code</summary>
 <div class="sourceCode cell-code" id="cb13"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb13-1"><a href="#cb13-1" aria-hidden="true" tabindex="-1"></a><span class="co"># drop the Score_BA column</span></span>
@@ -936,7 +936,7 @@ Figure&nbsp;2
 <h3 class="anchored" data-anchor-id="basic-convolutional-neural-network">Basic Convolutional Neural Network</h3>
 <p>The performance of the random forest classifier drops off dramatically when netMHCpan’s predicted binding affinity is not included as a predictor. A different approach to peptide classification is to use a convolutional neural network (CNN). CNN’s have several advantages. In contrast to traditional machine learning models, a CNN does not require specific feature selection or engineering. This eliminates the need for domain expertise in selecting features and allows the model to potentially discover novel, important patterns that weren’t explicitly engineered.</p>
 <p>To start, the data will be filtered to only include the amino acid sequence and respective label.</p>
-<div id="63063964" class="cell" data-execution_count="13">
+<div id="45a6e7ac" class="cell" data-execution_count="13">
 <details class="code-fold">
 <summary>Code</summary>
 <div class="sourceCode cell-code" id="cb16"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb16-1"><a href="#cb16-1" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> numpy <span class="im">as</span> np</span>
@@ -1014,7 +1014,7 @@ Figure&nbsp;2
 </div>
 </div>
 <p>To train a neural network, the sequence must be represented in a numerical format. Assigning each amino acid a unique integer value up to 20, the sequences are converted to a list of integers. Then, the resulting integer sequences are one-hot encoded into a 3-dimensional arrary of shape (25628, 9, 20). 25,628 peptides, 9 amino acids in each peptide, 20 unique amino acids. The data is split into training, validation, and testing sets with a 70/15/15 ratio.</p>
-<div id="37d99736" class="cell" data-execution_count="14">
+<div id="b15db9ab" class="cell" data-execution_count="14">
 <details class="code-fold">
 <summary>Code</summary>
 <div class="sourceCode cell-code" id="cb17"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb17-1"><a href="#cb17-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Extract sequences</span></span>
@@ -1077,126 +1077,119 @@ Testing set: (3845, 9, 20)
 </div>
 </div>
 <p>A basic CNN model is defined. The model takes one-hot encoded sequences as input and passes them through three blocks of 1D Convolution, BatchNormalization, and MaxPooling1D layers with increasing filter counts (64, 128, 256) and L2 regularization to extract features. After flattening the output, it goes through two fully connected (Dense) blocks, each with BatchNormalization, Dropout (0.5 and 0.4), L2 regularization, and ReLU activation, reducing dimensionality (256 then 128 units). The final Dense layer uses a softmax activation to output probabilities for each class. The model is compiled using the Adam optimizer, sparse_categorical_crossentropy loss, and tracks accuracy as a metric, finally returning the compiled model after being instantiated with the specific input shape.</p>
-<div id="0b095820" class="cell" data-execution_count="15">
+<div id="4d7ced5e" class="cell" data-execution_count="15">
 <details class="code-fold">
 <summary>Code</summary>
-<div class="sourceCode cell-code" id="cb19"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb19-1"><a href="#cb19-1" aria-hidden="true" tabindex="-1"></a><span class="co"># --- Model Definition ---</span></span>
-<span id="cb19-2"><a href="#cb19-2" aria-hidden="true" tabindex="-1"></a><span class="co"># Model definition remains the same, it accepts input_shape parameter</span></span>
-<span id="cb19-3"><a href="#cb19-3" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> create_cnn_model(input_shape, num_classes<span class="op">=</span><span class="dv">2</span>):</span>
-<span id="cb19-4"><a href="#cb19-4" aria-hidden="true" tabindex="-1"></a>    <span class="co">"""Creates and compiles the CNN model."""</span></span>
-<span id="cb19-5"><a href="#cb19-5" aria-hidden="true" tabindex="-1"></a>    inputs <span class="op">=</span> Input(shape<span class="op">=</span>input_shape)</span>
-<span id="cb19-6"><a href="#cb19-6" aria-hidden="true" tabindex="-1"></a>    x <span class="op">=</span> Conv1D(<span class="dv">64</span>, kernel_size<span class="op">=</span><span class="dv">8</span>, activation<span class="op">=</span><span class="st">'relu'</span>, padding<span class="op">=</span><span class="st">'same'</span>, kernel_regularizer<span class="op">=</span>l2(<span class="fl">0.001</span>))(inputs)</span>
-<span id="cb19-7"><a href="#cb19-7" aria-hidden="true" tabindex="-1"></a>    x <span class="op">=</span> BatchNormalization()(x)</span>
-<span id="cb19-8"><a href="#cb19-8" aria-hidden="true" tabindex="-1"></a>    x <span class="op">=</span> MaxPooling1D(pool_size<span class="op">=</span><span class="dv">2</span>, padding<span class="op">=</span><span class="st">'same'</span>)(x)</span>
-<span id="cb19-9"><a href="#cb19-9" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb19-10"><a href="#cb19-10" aria-hidden="true" tabindex="-1"></a>    x <span class="op">=</span> Conv1D(<span class="dv">128</span>, kernel_size<span class="op">=</span><span class="dv">8</span>, activation<span class="op">=</span><span class="st">'relu'</span>, padding<span class="op">=</span><span class="st">'same'</span>, kernel_regularizer<span class="op">=</span>l2(<span class="fl">0.001</span>))(x)</span>
-<span id="cb19-11"><a href="#cb19-11" aria-hidden="true" tabindex="-1"></a>    x <span class="op">=</span> BatchNormalization()(x)</span>
-<span id="cb19-12"><a href="#cb19-12" aria-hidden="true" tabindex="-1"></a>    x <span class="op">=</span> MaxPooling1D(pool_size<span class="op">=</span><span class="dv">2</span>, padding<span class="op">=</span><span class="st">'same'</span>)(x)</span>
-<span id="cb19-13"><a href="#cb19-13" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb19-14"><a href="#cb19-14" aria-hidden="true" tabindex="-1"></a>    x <span class="op">=</span> Conv1D(<span class="dv">256</span>, kernel_size<span class="op">=</span><span class="dv">8</span>, activation<span class="op">=</span><span class="st">'relu'</span>, padding<span class="op">=</span><span class="st">'same'</span>, kernel_regularizer<span class="op">=</span>l2(<span class="fl">0.001</span>))(x)</span>
-<span id="cb19-15"><a href="#cb19-15" aria-hidden="true" tabindex="-1"></a>    x <span class="op">=</span> BatchNormalization()(x)</span>
+<div class="sourceCode cell-code" id="cb19"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb19-1"><a href="#cb19-1" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> create_cnn_model(input_shape, num_classes<span class="op">=</span><span class="dv">2</span>):</span>
+<span id="cb19-2"><a href="#cb19-2" aria-hidden="true" tabindex="-1"></a>    <span class="co">"""Creates and compiles the CNN model."""</span></span>
+<span id="cb19-3"><a href="#cb19-3" aria-hidden="true" tabindex="-1"></a>    inputs <span class="op">=</span> Input(shape<span class="op">=</span>input_shape)</span>
+<span id="cb19-4"><a href="#cb19-4" aria-hidden="true" tabindex="-1"></a>    x <span class="op">=</span> Conv1D(<span class="dv">64</span>, kernel_size<span class="op">=</span><span class="dv">8</span>, activation<span class="op">=</span><span class="st">'relu'</span>, padding<span class="op">=</span><span class="st">'same'</span>, kernel_regularizer<span class="op">=</span>l2(<span class="fl">0.001</span>))(inputs)</span>
+<span id="cb19-5"><a href="#cb19-5" aria-hidden="true" tabindex="-1"></a>    x <span class="op">=</span> BatchNormalization()(x)</span>
+<span id="cb19-6"><a href="#cb19-6" aria-hidden="true" tabindex="-1"></a>    x <span class="op">=</span> MaxPooling1D(pool_size<span class="op">=</span><span class="dv">2</span>, padding<span class="op">=</span><span class="st">'same'</span>)(x)</span>
+<span id="cb19-7"><a href="#cb19-7" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb19-8"><a href="#cb19-8" aria-hidden="true" tabindex="-1"></a>    x <span class="op">=</span> Conv1D(<span class="dv">128</span>, kernel_size<span class="op">=</span><span class="dv">8</span>, activation<span class="op">=</span><span class="st">'relu'</span>, padding<span class="op">=</span><span class="st">'same'</span>, kernel_regularizer<span class="op">=</span>l2(<span class="fl">0.001</span>))(x)</span>
+<span id="cb19-9"><a href="#cb19-9" aria-hidden="true" tabindex="-1"></a>    x <span class="op">=</span> BatchNormalization()(x)</span>
+<span id="cb19-10"><a href="#cb19-10" aria-hidden="true" tabindex="-1"></a>    x <span class="op">=</span> MaxPooling1D(pool_size<span class="op">=</span><span class="dv">2</span>, padding<span class="op">=</span><span class="st">'same'</span>)(x)</span>
+<span id="cb19-11"><a href="#cb19-11" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb19-12"><a href="#cb19-12" aria-hidden="true" tabindex="-1"></a>    x <span class="op">=</span> Conv1D(<span class="dv">256</span>, kernel_size<span class="op">=</span><span class="dv">8</span>, activation<span class="op">=</span><span class="st">'relu'</span>, padding<span class="op">=</span><span class="st">'same'</span>, kernel_regularizer<span class="op">=</span>l2(<span class="fl">0.001</span>))(x)</span>
+<span id="cb19-13"><a href="#cb19-13" aria-hidden="true" tabindex="-1"></a>    x <span class="op">=</span> BatchNormalization()(x)</span>
+<span id="cb19-14"><a href="#cb19-14" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb19-15"><a href="#cb19-15" aria-hidden="true" tabindex="-1"></a>    x <span class="op">=</span> Flatten()(x)</span>
 <span id="cb19-16"><a href="#cb19-16" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb19-17"><a href="#cb19-17" aria-hidden="true" tabindex="-1"></a>    x <span class="op">=</span> Flatten()(x)</span>
-<span id="cb19-18"><a href="#cb19-18" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb19-19"><a href="#cb19-19" aria-hidden="true" tabindex="-1"></a>    x <span class="op">=</span> Dense(<span class="dv">256</span>, activation<span class="op">=</span><span class="st">'relu'</span>, kernel_regularizer<span class="op">=</span>l2(<span class="fl">0.001</span>))(x)</span>
-<span id="cb19-20"><a href="#cb19-20" aria-hidden="true" tabindex="-1"></a>    x <span class="op">=</span> BatchNormalization()(x)</span>
-<span id="cb19-21"><a href="#cb19-21" aria-hidden="true" tabindex="-1"></a>    x <span class="op">=</span> Dropout(<span class="fl">0.5</span>)(x)</span>
-<span id="cb19-22"><a href="#cb19-22" aria-hidden="true" tabindex="-1"></a>    x <span class="op">=</span> Dense(<span class="dv">128</span>, activation<span class="op">=</span><span class="st">'relu'</span>, kernel_regularizer<span class="op">=</span>l2(<span class="fl">0.001</span>))(x)</span>
-<span id="cb19-23"><a href="#cb19-23" aria-hidden="true" tabindex="-1"></a>    x <span class="op">=</span> BatchNormalization()(x)</span>
-<span id="cb19-24"><a href="#cb19-24" aria-hidden="true" tabindex="-1"></a>    x <span class="op">=</span> Dropout(<span class="fl">0.4</span>)(x)</span>
+<span id="cb19-17"><a href="#cb19-17" aria-hidden="true" tabindex="-1"></a>    x <span class="op">=</span> Dense(<span class="dv">256</span>, activation<span class="op">=</span><span class="st">'relu'</span>, kernel_regularizer<span class="op">=</span>l2(<span class="fl">0.001</span>))(x)</span>
+<span id="cb19-18"><a href="#cb19-18" aria-hidden="true" tabindex="-1"></a>    x <span class="op">=</span> BatchNormalization()(x)</span>
+<span id="cb19-19"><a href="#cb19-19" aria-hidden="true" tabindex="-1"></a>    x <span class="op">=</span> Dropout(<span class="fl">0.5</span>)(x)</span>
+<span id="cb19-20"><a href="#cb19-20" aria-hidden="true" tabindex="-1"></a>    x <span class="op">=</span> Dense(<span class="dv">128</span>, activation<span class="op">=</span><span class="st">'relu'</span>, kernel_regularizer<span class="op">=</span>l2(<span class="fl">0.001</span>))(x)</span>
+<span id="cb19-21"><a href="#cb19-21" aria-hidden="true" tabindex="-1"></a>    x <span class="op">=</span> BatchNormalization()(x)</span>
+<span id="cb19-22"><a href="#cb19-22" aria-hidden="true" tabindex="-1"></a>    x <span class="op">=</span> Dropout(<span class="fl">0.4</span>)(x)</span>
+<span id="cb19-23"><a href="#cb19-23" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb19-24"><a href="#cb19-24" aria-hidden="true" tabindex="-1"></a>    outputs <span class="op">=</span> Dense(num_classes, activation<span class="op">=</span><span class="st">'softmax'</span>)(x)</span>
 <span id="cb19-25"><a href="#cb19-25" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb19-26"><a href="#cb19-26" aria-hidden="true" tabindex="-1"></a>    outputs <span class="op">=</span> Dense(num_classes, activation<span class="op">=</span><span class="st">'softmax'</span>)(x)</span>
+<span id="cb19-26"><a href="#cb19-26" aria-hidden="true" tabindex="-1"></a>    model <span class="op">=</span> Model(inputs<span class="op">=</span>inputs, outputs<span class="op">=</span>outputs)</span>
 <span id="cb19-27"><a href="#cb19-27" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb19-28"><a href="#cb19-28" aria-hidden="true" tabindex="-1"></a>    model <span class="op">=</span> Model(inputs<span class="op">=</span>inputs, outputs<span class="op">=</span>outputs)</span>
-<span id="cb19-29"><a href="#cb19-29" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb19-30"><a href="#cb19-30" aria-hidden="true" tabindex="-1"></a>    optimizer <span class="op">=</span> Adam(learning_rate<span class="op">=</span><span class="fl">0.001</span>)</span>
-<span id="cb19-31"><a href="#cb19-31" aria-hidden="true" tabindex="-1"></a>    model.<span class="bu">compile</span>(optimizer<span class="op">=</span>optimizer,</span>
-<span id="cb19-32"><a href="#cb19-32" aria-hidden="true" tabindex="-1"></a>                  loss<span class="op">=</span><span class="st">'sparse_categorical_crossentropy'</span>,</span>
-<span id="cb19-33"><a href="#cb19-33" aria-hidden="true" tabindex="-1"></a>                  metrics<span class="op">=</span>[<span class="st">'accuracy'</span>])</span>
-<span id="cb19-34"><a href="#cb19-34" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> model</span>
-<span id="cb19-35"><a href="#cb19-35" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb19-36"><a href="#cb19-36" aria-hidden="true" tabindex="-1"></a><span class="co"># Create the model with the correct input shape (length 9, num_chars features)</span></span>
-<span id="cb19-37"><a href="#cb19-37" aria-hidden="true" tabindex="-1"></a>input_shape <span class="op">=</span> (<span class="dv">9</span>, num_chars) <span class="co"># Use and updated num_chars</span></span>
-<span id="cb19-38"><a href="#cb19-38" aria-hidden="true" tabindex="-1"></a>model <span class="op">=</span> create_cnn_model(input_shape)</span>
-<span id="cb19-39"><a href="#cb19-39" aria-hidden="true" tabindex="-1"></a><span class="co">#print(model.summary()) # Optional: uncomment to see model layers</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb19-28"><a href="#cb19-28" aria-hidden="true" tabindex="-1"></a>    optimizer <span class="op">=</span> Adam(learning_rate<span class="op">=</span><span class="fl">0.001</span>)</span>
+<span id="cb19-29"><a href="#cb19-29" aria-hidden="true" tabindex="-1"></a>    model.<span class="bu">compile</span>(optimizer<span class="op">=</span>optimizer,</span>
+<span id="cb19-30"><a href="#cb19-30" aria-hidden="true" tabindex="-1"></a>                  loss<span class="op">=</span><span class="st">'sparse_categorical_crossentropy'</span>,</span>
+<span id="cb19-31"><a href="#cb19-31" aria-hidden="true" tabindex="-1"></a>                  metrics<span class="op">=</span>[<span class="st">'accuracy'</span>])</span>
+<span id="cb19-32"><a href="#cb19-32" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> model</span>
+<span id="cb19-33"><a href="#cb19-33" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb19-34"><a href="#cb19-34" aria-hidden="true" tabindex="-1"></a>input_shape <span class="op">=</span> (<span class="dv">9</span>, num_chars)</span>
+<span id="cb19-35"><a href="#cb19-35" aria-hidden="true" tabindex="-1"></a>model <span class="op">=</span> create_cnn_model(input_shape)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </details>
 </div>
 <p>Before training the model, class weights are calculated to handle the data imbalance, effectively telling the model to “pay more attention” to samples from the minority class.</p>
-<div id="d4b1ff8a" class="cell" data-execution_count="16">
+<div id="180a9364" class="cell" data-execution_count="16">
 <details class="code-fold">
 <summary>Code</summary>
-<div class="sourceCode cell-code" id="cb20"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb20-1"><a href="#cb20-1" aria-hidden="true" tabindex="-1"></a><span class="co"># --- Class Weights and Model Training ---</span></span>
-<span id="cb20-2"><a href="#cb20-2" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> sklearn.utils.class_weight <span class="im">import</span> compute_class_weight</span>
-<span id="cb20-3"><a href="#cb20-3" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb20-4"><a href="#cb20-4" aria-hidden="true" tabindex="-1"></a><span class="co"># Calculate class weights (function definition is unchanged)</span></span>
-<span id="cb20-5"><a href="#cb20-5" aria-hidden="true" tabindex="-1"></a>class_weights <span class="op">=</span> compute_class_weight(<span class="st">'balanced'</span>, classes<span class="op">=</span>np.unique(y_train), y<span class="op">=</span>y_train)</span>
-<span id="cb20-6"><a href="#cb20-6" aria-hidden="true" tabindex="-1"></a>class_weight_dict <span class="op">=</span> <span class="bu">dict</span>(<span class="bu">enumerate</span>(class_weights))</span>
-<span id="cb20-7"><a href="#cb20-7" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb20-8"><a href="#cb20-8" aria-hidden="true" tabindex="-1"></a><span class="co"># Define callbacks (unchanged)</span></span>
-<span id="cb20-9"><a href="#cb20-9" aria-hidden="true" tabindex="-1"></a>early_stopping <span class="op">=</span> EarlyStopping(monitor<span class="op">=</span><span class="st">'val_loss'</span>, patience<span class="op">=</span><span class="dv">10</span>, restore_best_weights<span class="op">=</span><span class="va">True</span>, verbose<span class="op">=</span><span class="dv">0</span>)</span>
-<span id="cb20-10"><a href="#cb20-10" aria-hidden="true" tabindex="-1"></a>reduce_lr <span class="op">=</span> ReduceLROnPlateau(monitor<span class="op">=</span><span class="st">'val_loss'</span>, factor<span class="op">=</span><span class="fl">0.2</span>, patience<span class="op">=</span><span class="dv">5</span>, min_lr<span class="op">=</span><span class="fl">1e-6</span>, verbose<span class="op">=</span><span class="dv">0</span>)</span>
-<span id="cb20-11"><a href="#cb20-11" aria-hidden="true" tabindex="-1"></a>model_checkpoint <span class="op">=</span> ModelCheckpoint(<span class="st">'best_cnn_model_len9.keras'</span>, monitor<span class="op">=</span><span class="st">'val_accuracy'</span>, save_best_only<span class="op">=</span><span class="va">True</span>, verbose<span class="op">=</span><span class="dv">0</span>) <span class="co"># Changed filename slightly</span></span>
-<span id="cb20-12"><a href="#cb20-12" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb20-13"><a href="#cb20-13" aria-hidden="true" tabindex="-1"></a><span class="co"># Train the model (unchanged)</span></span>
-<span id="cb20-14"><a href="#cb20-14" aria-hidden="true" tabindex="-1"></a>history <span class="op">=</span> model.fit(</span>
-<span id="cb20-15"><a href="#cb20-15" aria-hidden="true" tabindex="-1"></a>    X_train, y_train,</span>
-<span id="cb20-16"><a href="#cb20-16" aria-hidden="true" tabindex="-1"></a>    epochs<span class="op">=</span><span class="dv">50</span>,</span>
-<span id="cb20-17"><a href="#cb20-17" aria-hidden="true" tabindex="-1"></a>    batch_size<span class="op">=</span><span class="dv">32</span>,</span>
-<span id="cb20-18"><a href="#cb20-18" aria-hidden="true" tabindex="-1"></a>    validation_data<span class="op">=</span>(X_val, y_val),</span>
-<span id="cb20-19"><a href="#cb20-19" aria-hidden="true" tabindex="-1"></a>    callbacks<span class="op">=</span>[early_stopping, reduce_lr, model_checkpoint],</span>
-<span id="cb20-20"><a href="#cb20-20" aria-hidden="true" tabindex="-1"></a>    class_weight<span class="op">=</span>class_weight_dict,</span>
-<span id="cb20-21"><a href="#cb20-21" aria-hidden="true" tabindex="-1"></a>    verbose<span class="op">=</span><span class="dv">0</span></span>
-<span id="cb20-22"><a href="#cb20-22" aria-hidden="true" tabindex="-1"></a>)</span>
-<span id="cb20-23"><a href="#cb20-23" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb20-24"><a href="#cb20-24" aria-hidden="true" tabindex="-1"></a><span class="co"># --- Step 6: Evaluation ---</span></span>
-<span id="cb20-25"><a href="#cb20-25" aria-hidden="true" tabindex="-1"></a><span class="co"># Optional: Load the best model saved by ModelCheckpoint</span></span>
-<span id="cb20-26"><a href="#cb20-26" aria-hidden="true" tabindex="-1"></a><span class="co">#model = tf.keras.models.load_model('best_cnn_model_len9.keras')</span></span>
+<div class="sourceCode cell-code" id="cb20"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb20-1"><a href="#cb20-1" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> sklearn.utils.class_weight <span class="im">import</span> compute_class_weight</span>
+<span id="cb20-2"><a href="#cb20-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb20-3"><a href="#cb20-3" aria-hidden="true" tabindex="-1"></a><span class="co"># Calculate class weights</span></span>
+<span id="cb20-4"><a href="#cb20-4" aria-hidden="true" tabindex="-1"></a>class_weights <span class="op">=</span> compute_class_weight(<span class="st">'balanced'</span>, classes<span class="op">=</span>np.unique(y_train), y<span class="op">=</span>y_train)</span>
+<span id="cb20-5"><a href="#cb20-5" aria-hidden="true" tabindex="-1"></a>class_weight_dict <span class="op">=</span> <span class="bu">dict</span>(<span class="bu">enumerate</span>(class_weights))</span>
+<span id="cb20-6"><a href="#cb20-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb20-7"><a href="#cb20-7" aria-hidden="true" tabindex="-1"></a><span class="co"># Define callbacks</span></span>
+<span id="cb20-8"><a href="#cb20-8" aria-hidden="true" tabindex="-1"></a>early_stopping <span class="op">=</span> EarlyStopping(monitor<span class="op">=</span><span class="st">'val_loss'</span>, patience<span class="op">=</span><span class="dv">10</span>, restore_best_weights<span class="op">=</span><span class="va">True</span>, verbose<span class="op">=</span><span class="dv">0</span>)</span>
+<span id="cb20-9"><a href="#cb20-9" aria-hidden="true" tabindex="-1"></a>reduce_lr <span class="op">=</span> ReduceLROnPlateau(monitor<span class="op">=</span><span class="st">'val_loss'</span>, factor<span class="op">=</span><span class="fl">0.2</span>, patience<span class="op">=</span><span class="dv">5</span>, min_lr<span class="op">=</span><span class="fl">1e-6</span>, verbose<span class="op">=</span><span class="dv">0</span>)</span>
+<span id="cb20-10"><a href="#cb20-10" aria-hidden="true" tabindex="-1"></a>model_checkpoint <span class="op">=</span> ModelCheckpoint(<span class="st">'best_cnn_model_len9.keras'</span>, monitor<span class="op">=</span><span class="st">'val_accuracy'</span>, save_best_only<span class="op">=</span><span class="va">True</span>, verbose<span class="op">=</span><span class="dv">0</span>)</span>
+<span id="cb20-11"><a href="#cb20-11" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb20-12"><a href="#cb20-12" aria-hidden="true" tabindex="-1"></a><span class="co"># Train the model</span></span>
+<span id="cb20-13"><a href="#cb20-13" aria-hidden="true" tabindex="-1"></a>history <span class="op">=</span> model.fit(</span>
+<span id="cb20-14"><a href="#cb20-14" aria-hidden="true" tabindex="-1"></a>    X_train, y_train,</span>
+<span id="cb20-15"><a href="#cb20-15" aria-hidden="true" tabindex="-1"></a>    epochs<span class="op">=</span><span class="dv">50</span>,</span>
+<span id="cb20-16"><a href="#cb20-16" aria-hidden="true" tabindex="-1"></a>    batch_size<span class="op">=</span><span class="dv">32</span>,</span>
+<span id="cb20-17"><a href="#cb20-17" aria-hidden="true" tabindex="-1"></a>    validation_data<span class="op">=</span>(X_val, y_val),</span>
+<span id="cb20-18"><a href="#cb20-18" aria-hidden="true" tabindex="-1"></a>    callbacks<span class="op">=</span>[early_stopping, reduce_lr, model_checkpoint],</span>
+<span id="cb20-19"><a href="#cb20-19" aria-hidden="true" tabindex="-1"></a>    class_weight<span class="op">=</span>class_weight_dict,</span>
+<span id="cb20-20"><a href="#cb20-20" aria-hidden="true" tabindex="-1"></a>    verbose<span class="op">=</span><span class="dv">0</span></span>
+<span id="cb20-21"><a href="#cb20-21" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb20-22"><a href="#cb20-22" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb20-23"><a href="#cb20-23" aria-hidden="true" tabindex="-1"></a><span class="co">#model = tf.keras.models.load_model('best_cnn_model_len9.keras')</span></span>
+<span id="cb20-24"><a href="#cb20-24" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb20-25"><a href="#cb20-25" aria-hidden="true" tabindex="-1"></a><span class="co"># Evaluate on test data</span></span>
+<span id="cb20-26"><a href="#cb20-26" aria-hidden="true" tabindex="-1"></a>test_loss, test_accuracy <span class="op">=</span> model.evaluate(X_test, y_test, verbose<span class="op">=</span><span class="dv">0</span>)</span>
 <span id="cb20-27"><a href="#cb20-27" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb20-28"><a href="#cb20-28" aria-hidden="true" tabindex="-1"></a><span class="co"># Evaluate on test data (unchanged)</span></span>
-<span id="cb20-29"><a href="#cb20-29" aria-hidden="true" tabindex="-1"></a>test_loss, test_accuracy <span class="op">=</span> model.evaluate(X_test, y_test, verbose<span class="op">=</span><span class="dv">0</span>)</span>
-<span id="cb20-30"><a href="#cb20-30" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb20-31"><a href="#cb20-31" aria-hidden="true" tabindex="-1"></a><span class="co"># Get prediction probabilities for the positive class (unchanged)</span></span>
-<span id="cb20-32"><a href="#cb20-32" aria-hidden="true" tabindex="-1"></a>y_pred_proba <span class="op">=</span> model.predict(X_test, verbose<span class="op">=</span><span class="dv">0</span>)</span>
-<span id="cb20-33"><a href="#cb20-33" aria-hidden="true" tabindex="-1"></a>y_pred_proba_positive <span class="op">=</span> y_pred_proba[:, <span class="dv">1</span>]</span>
+<span id="cb20-28"><a href="#cb20-28" aria-hidden="true" tabindex="-1"></a><span class="co"># Get prediction probabilities for the positive class</span></span>
+<span id="cb20-29"><a href="#cb20-29" aria-hidden="true" tabindex="-1"></a>y_pred_proba <span class="op">=</span> model.predict(X_test, verbose<span class="op">=</span><span class="dv">0</span>)</span>
+<span id="cb20-30"><a href="#cb20-30" aria-hidden="true" tabindex="-1"></a>y_pred_proba_positive <span class="op">=</span> y_pred_proba[:, <span class="dv">1</span>]</span>
+<span id="cb20-31"><a href="#cb20-31" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb20-32"><a href="#cb20-32" aria-hidden="true" tabindex="-1"></a><span class="co"># Apply fixed threshold of 0.5</span></span>
+<span id="cb20-33"><a href="#cb20-33" aria-hidden="true" tabindex="-1"></a>y_pred <span class="op">=</span> (y_pred_proba_positive <span class="op">&gt;=</span> <span class="fl">0.5</span>).astype(<span class="bu">int</span>)</span>
 <span id="cb20-34"><a href="#cb20-34" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb20-35"><a href="#cb20-35" aria-hidden="true" tabindex="-1"></a><span class="co"># Apply fixed threshold of 0.5 (unchanged)</span></span>
-<span id="cb20-36"><a href="#cb20-36" aria-hidden="true" tabindex="-1"></a>y_pred <span class="op">=</span> (y_pred_proba_positive <span class="op">&gt;=</span> <span class="fl">0.5</span>).astype(<span class="bu">int</span>)</span>
-<span id="cb20-37"><a href="#cb20-37" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb20-38"><a href="#cb20-38" aria-hidden="true" tabindex="-1"></a><span class="co"># Print classification report (unchanged)</span></span>
-<span id="cb20-39"><a href="#cb20-39" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="st">"</span><span class="ch">\n</span><span class="st">CNN Classification Report:"</span>)</span>
-<span id="cb20-40"><a href="#cb20-40" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(classification_report(y_test, y_pred))</span>
-<span id="cb20-41"><a href="#cb20-41" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb20-42"><a href="#cb20-42" aria-hidden="true" tabindex="-1"></a><span class="co"># Calculate and plot confusion matrix (unchanged)</span></span>
-<span id="cb20-43"><a href="#cb20-43" aria-hidden="true" tabindex="-1"></a>cm <span class="op">=</span> confusion_matrix(y_test, y_pred)</span>
-<span id="cb20-44"><a href="#cb20-44" aria-hidden="true" tabindex="-1"></a>plt.figure(figsize<span class="op">=</span>(<span class="dv">6</span>, <span class="dv">5</span>))</span>
-<span id="cb20-45"><a href="#cb20-45" aria-hidden="true" tabindex="-1"></a>plt.imshow(cm, interpolation<span class="op">=</span><span class="st">'nearest'</span>, cmap<span class="op">=</span>plt.cm.Blues)</span>
-<span id="cb20-46"><a href="#cb20-46" aria-hidden="true" tabindex="-1"></a>plt.title(<span class="ss">f'Confusion Matrix'</span>)</span>
-<span id="cb20-47"><a href="#cb20-47" aria-hidden="true" tabindex="-1"></a>plt.colorbar()</span>
-<span id="cb20-48"><a href="#cb20-48" aria-hidden="true" tabindex="-1"></a>tick_marks <span class="op">=</span> np.arange(<span class="dv">2</span>)</span>
-<span id="cb20-49"><a href="#cb20-49" aria-hidden="true" tabindex="-1"></a>plt.xticks(tick_marks, [<span class="st">'Negative'</span>, <span class="st">'Positive'</span>])</span>
-<span id="cb20-50"><a href="#cb20-50" aria-hidden="true" tabindex="-1"></a>plt.yticks(tick_marks, [<span class="st">'Negative'</span>, <span class="st">'Positive'</span>])</span>
-<span id="cb20-51"><a href="#cb20-51" aria-hidden="true" tabindex="-1"></a>plt.xlabel(<span class="st">'Predicted Label'</span>)</span>
-<span id="cb20-52"><a href="#cb20-52" aria-hidden="true" tabindex="-1"></a>plt.ylabel(<span class="st">'True Label'</span>)</span>
-<span id="cb20-53"><a href="#cb20-53" aria-hidden="true" tabindex="-1"></a>thresh <span class="op">=</span> cm.<span class="bu">max</span>() <span class="op">/</span> <span class="fl">2.</span></span>
-<span id="cb20-54"><a href="#cb20-54" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> i <span class="kw">in</span> <span class="bu">range</span>(cm.shape[<span class="dv">0</span>]):</span>
-<span id="cb20-55"><a href="#cb20-55" aria-hidden="true" tabindex="-1"></a>    <span class="cf">for</span> j <span class="kw">in</span> <span class="bu">range</span>(cm.shape[<span class="dv">1</span>]):</span>
-<span id="cb20-56"><a href="#cb20-56" aria-hidden="true" tabindex="-1"></a>        plt.text(j, i, <span class="bu">format</span>(cm[i, j], <span class="st">'d'</span>),</span>
-<span id="cb20-57"><a href="#cb20-57" aria-hidden="true" tabindex="-1"></a>                 horizontalalignment<span class="op">=</span><span class="st">"center"</span>,</span>
-<span id="cb20-58"><a href="#cb20-58" aria-hidden="true" tabindex="-1"></a>                 color<span class="op">=</span><span class="st">"white"</span> <span class="cf">if</span> cm[i, j] <span class="op">&gt;</span> thresh <span class="cf">else</span> <span class="st">"black"</span>)</span>
-<span id="cb20-59"><a href="#cb20-59" aria-hidden="true" tabindex="-1"></a>plt.tight_layout()</span>
-<span id="cb20-60"><a href="#cb20-60" aria-hidden="true" tabindex="-1"></a>plt.show()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb20-35"><a href="#cb20-35" aria-hidden="true" tabindex="-1"></a><span class="co"># Print classification report</span></span>
+<span id="cb20-36"><a href="#cb20-36" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="st">"</span><span class="ch">\n</span><span class="st">CNN Classification Report:"</span>)</span>
+<span id="cb20-37"><a href="#cb20-37" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(classification_report(y_test, y_pred))</span>
+<span id="cb20-38"><a href="#cb20-38" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb20-39"><a href="#cb20-39" aria-hidden="true" tabindex="-1"></a><span class="co"># Calculate and plot confusion matrix</span></span>
+<span id="cb20-40"><a href="#cb20-40" aria-hidden="true" tabindex="-1"></a>cm <span class="op">=</span> confusion_matrix(y_test, y_pred)</span>
+<span id="cb20-41"><a href="#cb20-41" aria-hidden="true" tabindex="-1"></a>plt.figure(figsize<span class="op">=</span>(<span class="dv">6</span>, <span class="dv">5</span>))</span>
+<span id="cb20-42"><a href="#cb20-42" aria-hidden="true" tabindex="-1"></a>plt.imshow(cm, interpolation<span class="op">=</span><span class="st">'nearest'</span>, cmap<span class="op">=</span>plt.cm.Blues)</span>
+<span id="cb20-43"><a href="#cb20-43" aria-hidden="true" tabindex="-1"></a>plt.title(<span class="ss">f'Confusion Matrix'</span>)</span>
+<span id="cb20-44"><a href="#cb20-44" aria-hidden="true" tabindex="-1"></a>plt.colorbar()</span>
+<span id="cb20-45"><a href="#cb20-45" aria-hidden="true" tabindex="-1"></a>tick_marks <span class="op">=</span> np.arange(<span class="dv">2</span>)</span>
+<span id="cb20-46"><a href="#cb20-46" aria-hidden="true" tabindex="-1"></a>plt.xticks(tick_marks, [<span class="st">'Negative'</span>, <span class="st">'Positive'</span>])</span>
+<span id="cb20-47"><a href="#cb20-47" aria-hidden="true" tabindex="-1"></a>plt.yticks(tick_marks, [<span class="st">'Negative'</span>, <span class="st">'Positive'</span>])</span>
+<span id="cb20-48"><a href="#cb20-48" aria-hidden="true" tabindex="-1"></a>plt.xlabel(<span class="st">'Predicted Label'</span>)</span>
+<span id="cb20-49"><a href="#cb20-49" aria-hidden="true" tabindex="-1"></a>plt.ylabel(<span class="st">'True Label'</span>)</span>
+<span id="cb20-50"><a href="#cb20-50" aria-hidden="true" tabindex="-1"></a>thresh <span class="op">=</span> cm.<span class="bu">max</span>() <span class="op">/</span> <span class="fl">2.</span></span>
+<span id="cb20-51"><a href="#cb20-51" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> i <span class="kw">in</span> <span class="bu">range</span>(cm.shape[<span class="dv">0</span>]):</span>
+<span id="cb20-52"><a href="#cb20-52" aria-hidden="true" tabindex="-1"></a>    <span class="cf">for</span> j <span class="kw">in</span> <span class="bu">range</span>(cm.shape[<span class="dv">1</span>]):</span>
+<span id="cb20-53"><a href="#cb20-53" aria-hidden="true" tabindex="-1"></a>        plt.text(j, i, <span class="bu">format</span>(cm[i, j], <span class="st">'d'</span>),</span>
+<span id="cb20-54"><a href="#cb20-54" aria-hidden="true" tabindex="-1"></a>                 horizontalalignment<span class="op">=</span><span class="st">"center"</span>,</span>
+<span id="cb20-55"><a href="#cb20-55" aria-hidden="true" tabindex="-1"></a>                 color<span class="op">=</span><span class="st">"white"</span> <span class="cf">if</span> cm[i, j] <span class="op">&gt;</span> thresh <span class="cf">else</span> <span class="st">"black"</span>)</span>
+<span id="cb20-56"><a href="#cb20-56" aria-hidden="true" tabindex="-1"></a>plt.tight_layout()</span>
+<span id="cb20-57"><a href="#cb20-57" aria-hidden="true" tabindex="-1"></a>plt.show()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </details>
 <div class="cell-output cell-output-stdout">
 <pre><code>
 CNN Classification Report:
               precision    recall  f1-score   support
 
-           0       0.91      0.83      0.87      3051
-           1       0.52      0.69      0.59       794
+           0       0.93      0.82      0.87      3051
+           1       0.53      0.76      0.62       794
 
-    accuracy                           0.80      3845
-   macro avg       0.72      0.76      0.73      3845
-weighted avg       0.83      0.80      0.81      3845
+    accuracy                           0.81      3845
+   macro avg       0.73      0.79      0.75      3845
+weighted avg       0.85      0.81      0.82      3845
 </code></pre>
 </div>
 <div class="cell-output cell-output-display">
@@ -1208,7 +1201,7 @@ weighted avg       0.83      0.80      0.81      3845
 </div>
 </div>
 <p>The Convolutional Neural Network produced a reasonable overall accuracy of 82%, primarily driven by its strong ability to correctly identify the majority, non-epitopes, with high precision and recall. However, its performance on the minority class, epitopes, was mixed; while managing to recall 65% of true epitopes, its precision was significantly lower at 56%, indicating that nearly half of its positive predictions were false positives.</p>
-<p>The Convolutional Neural Network significantly outperforms the Random Forest classifier while relying only on the sequence data, and no additional features. The RF struggles immensely with identifying the actual epitopes (very low recall for Class 1), whereas the CNN, while still facing challenges with precision for Class 1, provides a much better balance and significantly higher recall for the positive class, making it the more effective model in this comparison.</p>
+<p>The Convolutional Neural Network significantly outperforms the Random Forest classifier while relying only on the sequence data, and no additional features. The RF struggles with identifying the actual epitopes, shown by the low recall for Class 1, whereas the CNN, while still challenged with precision for Class 1, provides a better balance and significantly higher recall for the positive class, making it the more effective model in this comparison.</p>
 </section>
 </section>
 <section id="clustering" class="level1">
@@ -1227,18 +1220,6 @@ weighted avg       0.83      0.80      0.81      3845
 <div id="quarto-appendix" class="default"><section class="quarto-appendix-contents" role="doc-bibliography" id="quarto-bibliography"><h2 class="anchored quarto-appendix-heading">References</h2><div id="refs" class="references csl-bib-body hanging-indent" data-entry-spacing="0" role="list">
 <div id="ref-AWAD20221010" class="csl-entry" role="listitem">
 Awad, Mark M., Ramaswamy Govindan, Kristen N. Balogh, David R. Spigel, Edward B. Garon, Meghan E. Bushway, Asaf Poran, et al. 2022. <span>“Personalized Neoantigen Vaccine NEO-PV-01 with Chemotherapy and Anti-PD-1 as First-Line Treatment for Non-Squamous Non-Small Cell Lung Cancer.”</span> <em>Cancer Cell</em> 40 (9): 1010–1026.e11. <a href="https://doi.org/10.1016/j.ccell.2022.08.003">https://doi.org/10.1016/j.ccell.2022.08.003</a>.
-</div>
-<div id="ref-colu92" class="csl-entry" role="listitem">
-Columbus, Christopher. 1492. <em>How <span>I</span> Discovered <span>America</span></em>. Barcelona: Hispanic Press.
-</div>
-<div id="ref-gree00" class="csl-entry" role="listitem">
-Green, R. J., U. P. Fred, and W. P. Norbert. 1900. <span>“Things That Go Bump in the Night.”</span> <em>Psych. Today</em> 46: 345–678.
-</div>
-<div id="ref-phil99" class="csl-entry" role="listitem">
-Phillips, T. P. 1999. <span>“Possible Influence of the Magnetosphere on <span>American</span> History.”</span> <em>J. Oddball Res.</em> 98: 1000–1003.
-</div>
-<div id="ref-smit54" class="csl-entry" role="listitem">
-Smith, J. G., and H. K. Weston. 1954. <span>“Nothing Particular in This Year’s History.”</span> <em>J. Geophys. Res.</em> 2: 14–15.
 </div>
 </div></section></div></main>
 <!-- /main column -->
@@ -2360,123 +2341,116 @@ window.document.addEventListener("DOMContentLoaded", function (event) {
 <span id="cb22-668"><a href="#cb22-668" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb22-669"><a href="#cb22-669" aria-hidden="true" tabindex="-1"></a>A basic CNN model is defined. The model takes one-hot encoded sequences as input and passes them through three blocks of 1D Convolution, BatchNormalization, and MaxPooling1D layers with increasing filter counts (64, 128, 256) and L2 regularization to extract features. After flattening the output, it goes through two fully connected (Dense) blocks, each with BatchNormalization, Dropout (0.5 and 0.4), L2 regularization, and ReLU activation, reducing dimensionality (256 then 128 units). The final Dense layer uses a softmax activation to output probabilities for each class. The model is compiled using the Adam optimizer, sparse_categorical_crossentropy loss, and tracks accuracy as a metric, finally returning the compiled model after being instantiated with the specific input shape.</span>
 <span id="cb22-670"><a href="#cb22-670" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb22-673"><a href="#cb22-673" aria-hidden="true" tabindex="-1"></a><span class="in">```{python}</span></span>
-<span id="cb22-674"><a href="#cb22-674" aria-hidden="true" tabindex="-1"></a><span class="co"># --- Model Definition ---</span></span>
-<span id="cb22-675"><a href="#cb22-675" aria-hidden="true" tabindex="-1"></a><span class="co"># Model definition remains the same, it accepts input_shape parameter</span></span>
-<span id="cb22-676"><a href="#cb22-676" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> create_cnn_model(input_shape, num_classes<span class="op">=</span><span class="dv">2</span>):</span>
-<span id="cb22-677"><a href="#cb22-677" aria-hidden="true" tabindex="-1"></a>    <span class="co">"""Creates and compiles the CNN model."""</span></span>
-<span id="cb22-678"><a href="#cb22-678" aria-hidden="true" tabindex="-1"></a>    inputs <span class="op">=</span> Input(shape<span class="op">=</span>input_shape)</span>
-<span id="cb22-679"><a href="#cb22-679" aria-hidden="true" tabindex="-1"></a>    x <span class="op">=</span> Conv1D(<span class="dv">64</span>, kernel_size<span class="op">=</span><span class="dv">8</span>, activation<span class="op">=</span><span class="st">'relu'</span>, padding<span class="op">=</span><span class="st">'same'</span>, kernel_regularizer<span class="op">=</span>l2(<span class="fl">0.001</span>))(inputs)</span>
-<span id="cb22-680"><a href="#cb22-680" aria-hidden="true" tabindex="-1"></a>    x <span class="op">=</span> BatchNormalization()(x)</span>
-<span id="cb22-681"><a href="#cb22-681" aria-hidden="true" tabindex="-1"></a>    x <span class="op">=</span> MaxPooling1D(pool_size<span class="op">=</span><span class="dv">2</span>, padding<span class="op">=</span><span class="st">'same'</span>)(x)</span>
+<span id="cb22-671"><a href="#cb22-671" aria-hidden="true" tabindex="-1"></a><span class="in">```{python model_definition}</span></span>
+<span id="cb22-672"><a href="#cb22-672" aria-hidden="true" tabindex="-1"></a><span class="in">def create_cnn_model(input_shape, num_classes=2):</span></span>
+<span id="cb22-673"><a href="#cb22-673" aria-hidden="true" tabindex="-1"></a><span class="in">    """Creates and compiles the CNN model."""</span></span>
+<span id="cb22-674"><a href="#cb22-674" aria-hidden="true" tabindex="-1"></a><span class="in">    inputs = Input(shape=input_shape)</span></span>
+<span id="cb22-675"><a href="#cb22-675" aria-hidden="true" tabindex="-1"></a><span class="in">    x = Conv1D(64, kernel_size=8, activation='relu', padding='same', kernel_regularizer=l2(0.001))(inputs)</span></span>
+<span id="cb22-676"><a href="#cb22-676" aria-hidden="true" tabindex="-1"></a><span class="in">    x = BatchNormalization()(x)</span></span>
+<span id="cb22-677"><a href="#cb22-677" aria-hidden="true" tabindex="-1"></a><span class="in">    x = MaxPooling1D(pool_size=2, padding='same')(x)</span></span>
+<span id="cb22-678"><a href="#cb22-678" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb22-679"><a href="#cb22-679" aria-hidden="true" tabindex="-1"></a><span class="in">    x = Conv1D(128, kernel_size=8, activation='relu', padding='same', kernel_regularizer=l2(0.001))(x)</span></span>
+<span id="cb22-680"><a href="#cb22-680" aria-hidden="true" tabindex="-1"></a><span class="in">    x = BatchNormalization()(x)</span></span>
+<span id="cb22-681"><a href="#cb22-681" aria-hidden="true" tabindex="-1"></a><span class="in">    x = MaxPooling1D(pool_size=2, padding='same')(x)</span></span>
 <span id="cb22-682"><a href="#cb22-682" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb22-683"><a href="#cb22-683" aria-hidden="true" tabindex="-1"></a>    x <span class="op">=</span> Conv1D(<span class="dv">128</span>, kernel_size<span class="op">=</span><span class="dv">8</span>, activation<span class="op">=</span><span class="st">'relu'</span>, padding<span class="op">=</span><span class="st">'same'</span>, kernel_regularizer<span class="op">=</span>l2(<span class="fl">0.001</span>))(x)</span>
-<span id="cb22-684"><a href="#cb22-684" aria-hidden="true" tabindex="-1"></a>    x <span class="op">=</span> BatchNormalization()(x)</span>
-<span id="cb22-685"><a href="#cb22-685" aria-hidden="true" tabindex="-1"></a>    x <span class="op">=</span> MaxPooling1D(pool_size<span class="op">=</span><span class="dv">2</span>, padding<span class="op">=</span><span class="st">'same'</span>)(x)</span>
-<span id="cb22-686"><a href="#cb22-686" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb22-687"><a href="#cb22-687" aria-hidden="true" tabindex="-1"></a>    x <span class="op">=</span> Conv1D(<span class="dv">256</span>, kernel_size<span class="op">=</span><span class="dv">8</span>, activation<span class="op">=</span><span class="st">'relu'</span>, padding<span class="op">=</span><span class="st">'same'</span>, kernel_regularizer<span class="op">=</span>l2(<span class="fl">0.001</span>))(x)</span>
-<span id="cb22-688"><a href="#cb22-688" aria-hidden="true" tabindex="-1"></a>    x <span class="op">=</span> BatchNormalization()(x)</span>
-<span id="cb22-689"><a href="#cb22-689" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb22-690"><a href="#cb22-690" aria-hidden="true" tabindex="-1"></a>    x <span class="op">=</span> Flatten()(x)</span>
-<span id="cb22-691"><a href="#cb22-691" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb22-692"><a href="#cb22-692" aria-hidden="true" tabindex="-1"></a>    x <span class="op">=</span> Dense(<span class="dv">256</span>, activation<span class="op">=</span><span class="st">'relu'</span>, kernel_regularizer<span class="op">=</span>l2(<span class="fl">0.001</span>))(x)</span>
-<span id="cb22-693"><a href="#cb22-693" aria-hidden="true" tabindex="-1"></a>    x <span class="op">=</span> BatchNormalization()(x)</span>
-<span id="cb22-694"><a href="#cb22-694" aria-hidden="true" tabindex="-1"></a>    x <span class="op">=</span> Dropout(<span class="fl">0.5</span>)(x)</span>
-<span id="cb22-695"><a href="#cb22-695" aria-hidden="true" tabindex="-1"></a>    x <span class="op">=</span> Dense(<span class="dv">128</span>, activation<span class="op">=</span><span class="st">'relu'</span>, kernel_regularizer<span class="op">=</span>l2(<span class="fl">0.001</span>))(x)</span>
-<span id="cb22-696"><a href="#cb22-696" aria-hidden="true" tabindex="-1"></a>    x <span class="op">=</span> BatchNormalization()(x)</span>
-<span id="cb22-697"><a href="#cb22-697" aria-hidden="true" tabindex="-1"></a>    x <span class="op">=</span> Dropout(<span class="fl">0.4</span>)(x)</span>
+<span id="cb22-683"><a href="#cb22-683" aria-hidden="true" tabindex="-1"></a><span class="in">    x = Conv1D(256, kernel_size=8, activation='relu', padding='same', kernel_regularizer=l2(0.001))(x)</span></span>
+<span id="cb22-684"><a href="#cb22-684" aria-hidden="true" tabindex="-1"></a><span class="in">    x = BatchNormalization()(x)</span></span>
+<span id="cb22-685"><a href="#cb22-685" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb22-686"><a href="#cb22-686" aria-hidden="true" tabindex="-1"></a><span class="in">    x = Flatten()(x)</span></span>
+<span id="cb22-687"><a href="#cb22-687" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb22-688"><a href="#cb22-688" aria-hidden="true" tabindex="-1"></a><span class="in">    x = Dense(256, activation='relu', kernel_regularizer=l2(0.001))(x)</span></span>
+<span id="cb22-689"><a href="#cb22-689" aria-hidden="true" tabindex="-1"></a><span class="in">    x = BatchNormalization()(x)</span></span>
+<span id="cb22-690"><a href="#cb22-690" aria-hidden="true" tabindex="-1"></a><span class="in">    x = Dropout(0.5)(x)</span></span>
+<span id="cb22-691"><a href="#cb22-691" aria-hidden="true" tabindex="-1"></a><span class="in">    x = Dense(128, activation='relu', kernel_regularizer=l2(0.001))(x)</span></span>
+<span id="cb22-692"><a href="#cb22-692" aria-hidden="true" tabindex="-1"></a><span class="in">    x = BatchNormalization()(x)</span></span>
+<span id="cb22-693"><a href="#cb22-693" aria-hidden="true" tabindex="-1"></a><span class="in">    x = Dropout(0.4)(x)</span></span>
+<span id="cb22-694"><a href="#cb22-694" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb22-695"><a href="#cb22-695" aria-hidden="true" tabindex="-1"></a><span class="in">    outputs = Dense(num_classes, activation='softmax')(x)</span></span>
+<span id="cb22-696"><a href="#cb22-696" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb22-697"><a href="#cb22-697" aria-hidden="true" tabindex="-1"></a><span class="in">    model = Model(inputs=inputs, outputs=outputs)</span></span>
 <span id="cb22-698"><a href="#cb22-698" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb22-699"><a href="#cb22-699" aria-hidden="true" tabindex="-1"></a>    outputs <span class="op">=</span> Dense(num_classes, activation<span class="op">=</span><span class="st">'softmax'</span>)(x)</span>
-<span id="cb22-700"><a href="#cb22-700" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb22-701"><a href="#cb22-701" aria-hidden="true" tabindex="-1"></a>    model <span class="op">=</span> Model(inputs<span class="op">=</span>inputs, outputs<span class="op">=</span>outputs)</span>
-<span id="cb22-702"><a href="#cb22-702" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb22-703"><a href="#cb22-703" aria-hidden="true" tabindex="-1"></a>    optimizer <span class="op">=</span> Adam(learning_rate<span class="op">=</span><span class="fl">0.001</span>)</span>
-<span id="cb22-704"><a href="#cb22-704" aria-hidden="true" tabindex="-1"></a>    model.<span class="bu">compile</span>(optimizer<span class="op">=</span>optimizer,</span>
-<span id="cb22-705"><a href="#cb22-705" aria-hidden="true" tabindex="-1"></a>                  loss<span class="op">=</span><span class="st">'sparse_categorical_crossentropy'</span>,</span>
-<span id="cb22-706"><a href="#cb22-706" aria-hidden="true" tabindex="-1"></a>                  metrics<span class="op">=</span>[<span class="st">'accuracy'</span>])</span>
-<span id="cb22-707"><a href="#cb22-707" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> model</span>
+<span id="cb22-699"><a href="#cb22-699" aria-hidden="true" tabindex="-1"></a><span class="in">    optimizer = Adam(learning_rate=0.001)</span></span>
+<span id="cb22-700"><a href="#cb22-700" aria-hidden="true" tabindex="-1"></a><span class="in">    model.compile(optimizer=optimizer,</span></span>
+<span id="cb22-701"><a href="#cb22-701" aria-hidden="true" tabindex="-1"></a><span class="in">                  loss='sparse_categorical_crossentropy',</span></span>
+<span id="cb22-702"><a href="#cb22-702" aria-hidden="true" tabindex="-1"></a><span class="in">                  metrics=['accuracy'])</span></span>
+<span id="cb22-703"><a href="#cb22-703" aria-hidden="true" tabindex="-1"></a><span class="in">    return model</span></span>
+<span id="cb22-704"><a href="#cb22-704" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb22-705"><a href="#cb22-705" aria-hidden="true" tabindex="-1"></a><span class="in">input_shape = (9, num_chars)</span></span>
+<span id="cb22-706"><a href="#cb22-706" aria-hidden="true" tabindex="-1"></a><span class="in">model = create_cnn_model(input_shape)</span></span>
+<span id="cb22-707"><a href="#cb22-707" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
 <span id="cb22-708"><a href="#cb22-708" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb22-709"><a href="#cb22-709" aria-hidden="true" tabindex="-1"></a><span class="co"># Create the model with the correct input shape (length 9, num_chars features)</span></span>
-<span id="cb22-710"><a href="#cb22-710" aria-hidden="true" tabindex="-1"></a>input_shape <span class="op">=</span> (<span class="dv">9</span>, num_chars) <span class="co"># Use and updated num_chars</span></span>
-<span id="cb22-711"><a href="#cb22-711" aria-hidden="true" tabindex="-1"></a>model <span class="op">=</span> create_cnn_model(input_shape)</span>
-<span id="cb22-712"><a href="#cb22-712" aria-hidden="true" tabindex="-1"></a><span class="co">#print(model.summary()) # Optional: uncomment to see model layers</span></span>
-<span id="cb22-713"><a href="#cb22-713" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb22-709"><a href="#cb22-709" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb22-710"><a href="#cb22-710" aria-hidden="true" tabindex="-1"></a>Before training the model, class weights are calculated to handle the data imbalance, effectively telling the model to "pay more attention" to samples from the minority class.</span>
+<span id="cb22-711"><a href="#cb22-711" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb22-712"><a href="#cb22-712" aria-hidden="true" tabindex="-1"></a><span class="in">```{python class-weights_and_training}</span></span>
+<span id="cb22-713"><a href="#cb22-713" aria-hidden="true" tabindex="-1"></a><span class="in">from sklearn.utils.class_weight import compute_class_weight</span></span>
 <span id="cb22-714"><a href="#cb22-714" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb22-715"><a href="#cb22-715" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb22-716"><a href="#cb22-716" aria-hidden="true" tabindex="-1"></a>Before training the model, class weights are calculated to handle the data imbalance, effectively telling the model to "pay more attention" to samples from the minority class.</span>
-<span id="cb22-717"><a href="#cb22-717" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb22-720"><a href="#cb22-720" aria-hidden="true" tabindex="-1"></a><span class="in">```{python}</span></span>
-<span id="cb22-721"><a href="#cb22-721" aria-hidden="true" tabindex="-1"></a><span class="co"># --- Class Weights and Model Training ---</span></span>
-<span id="cb22-722"><a href="#cb22-722" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> sklearn.utils.class_weight <span class="im">import</span> compute_class_weight</span>
+<span id="cb22-715"><a href="#cb22-715" aria-hidden="true" tabindex="-1"></a><span class="in"># Calculate class weights</span></span>
+<span id="cb22-716"><a href="#cb22-716" aria-hidden="true" tabindex="-1"></a><span class="in">class_weights = compute_class_weight('balanced', classes=np.unique(y_train), y=y_train)</span></span>
+<span id="cb22-717"><a href="#cb22-717" aria-hidden="true" tabindex="-1"></a><span class="in">class_weight_dict = dict(enumerate(class_weights))</span></span>
+<span id="cb22-718"><a href="#cb22-718" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb22-719"><a href="#cb22-719" aria-hidden="true" tabindex="-1"></a><span class="in"># Define callbacks</span></span>
+<span id="cb22-720"><a href="#cb22-720" aria-hidden="true" tabindex="-1"></a><span class="in">early_stopping = EarlyStopping(monitor='val_loss', patience=10, restore_best_weights=True, verbose=0)</span></span>
+<span id="cb22-721"><a href="#cb22-721" aria-hidden="true" tabindex="-1"></a><span class="in">reduce_lr = ReduceLROnPlateau(monitor='val_loss', factor=0.2, patience=5, min_lr=1e-6, verbose=0)</span></span>
+<span id="cb22-722"><a href="#cb22-722" aria-hidden="true" tabindex="-1"></a><span class="in">model_checkpoint = ModelCheckpoint('best_cnn_model_len9.keras', monitor='val_accuracy', save_best_only=True, verbose=0)</span></span>
 <span id="cb22-723"><a href="#cb22-723" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb22-724"><a href="#cb22-724" aria-hidden="true" tabindex="-1"></a><span class="co"># Calculate class weights (function definition is unchanged)</span></span>
-<span id="cb22-725"><a href="#cb22-725" aria-hidden="true" tabindex="-1"></a>class_weights <span class="op">=</span> compute_class_weight(<span class="st">'balanced'</span>, classes<span class="op">=</span>np.unique(y_train), y<span class="op">=</span>y_train)</span>
-<span id="cb22-726"><a href="#cb22-726" aria-hidden="true" tabindex="-1"></a>class_weight_dict <span class="op">=</span> <span class="bu">dict</span>(<span class="bu">enumerate</span>(class_weights))</span>
-<span id="cb22-727"><a href="#cb22-727" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb22-728"><a href="#cb22-728" aria-hidden="true" tabindex="-1"></a><span class="co"># Define callbacks (unchanged)</span></span>
-<span id="cb22-729"><a href="#cb22-729" aria-hidden="true" tabindex="-1"></a>early_stopping <span class="op">=</span> EarlyStopping(monitor<span class="op">=</span><span class="st">'val_loss'</span>, patience<span class="op">=</span><span class="dv">10</span>, restore_best_weights<span class="op">=</span><span class="va">True</span>, verbose<span class="op">=</span><span class="dv">0</span>)</span>
-<span id="cb22-730"><a href="#cb22-730" aria-hidden="true" tabindex="-1"></a>reduce_lr <span class="op">=</span> ReduceLROnPlateau(monitor<span class="op">=</span><span class="st">'val_loss'</span>, factor<span class="op">=</span><span class="fl">0.2</span>, patience<span class="op">=</span><span class="dv">5</span>, min_lr<span class="op">=</span><span class="fl">1e-6</span>, verbose<span class="op">=</span><span class="dv">0</span>)</span>
-<span id="cb22-731"><a href="#cb22-731" aria-hidden="true" tabindex="-1"></a>model_checkpoint <span class="op">=</span> ModelCheckpoint(<span class="st">'best_cnn_model_len9.keras'</span>, monitor<span class="op">=</span><span class="st">'val_accuracy'</span>, save_best_only<span class="op">=</span><span class="va">True</span>, verbose<span class="op">=</span><span class="dv">0</span>) <span class="co"># Changed filename slightly</span></span>
-<span id="cb22-732"><a href="#cb22-732" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb22-733"><a href="#cb22-733" aria-hidden="true" tabindex="-1"></a><span class="co"># Train the model (unchanged)</span></span>
-<span id="cb22-734"><a href="#cb22-734" aria-hidden="true" tabindex="-1"></a>history <span class="op">=</span> model.fit(</span>
-<span id="cb22-735"><a href="#cb22-735" aria-hidden="true" tabindex="-1"></a>    X_train, y_train,</span>
-<span id="cb22-736"><a href="#cb22-736" aria-hidden="true" tabindex="-1"></a>    epochs<span class="op">=</span><span class="dv">50</span>,</span>
-<span id="cb22-737"><a href="#cb22-737" aria-hidden="true" tabindex="-1"></a>    batch_size<span class="op">=</span><span class="dv">32</span>,</span>
-<span id="cb22-738"><a href="#cb22-738" aria-hidden="true" tabindex="-1"></a>    validation_data<span class="op">=</span>(X_val, y_val),</span>
-<span id="cb22-739"><a href="#cb22-739" aria-hidden="true" tabindex="-1"></a>    callbacks<span class="op">=</span>[early_stopping, reduce_lr, model_checkpoint],</span>
-<span id="cb22-740"><a href="#cb22-740" aria-hidden="true" tabindex="-1"></a>    class_weight<span class="op">=</span>class_weight_dict,</span>
-<span id="cb22-741"><a href="#cb22-741" aria-hidden="true" tabindex="-1"></a>    verbose<span class="op">=</span><span class="dv">0</span></span>
-<span id="cb22-742"><a href="#cb22-742" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb22-724"><a href="#cb22-724" aria-hidden="true" tabindex="-1"></a><span class="in"># Train the model</span></span>
+<span id="cb22-725"><a href="#cb22-725" aria-hidden="true" tabindex="-1"></a><span class="in">history = model.fit(</span></span>
+<span id="cb22-726"><a href="#cb22-726" aria-hidden="true" tabindex="-1"></a><span class="in">    X_train, y_train,</span></span>
+<span id="cb22-727"><a href="#cb22-727" aria-hidden="true" tabindex="-1"></a><span class="in">    epochs=50,</span></span>
+<span id="cb22-728"><a href="#cb22-728" aria-hidden="true" tabindex="-1"></a><span class="in">    batch_size=32,</span></span>
+<span id="cb22-729"><a href="#cb22-729" aria-hidden="true" tabindex="-1"></a><span class="in">    validation_data=(X_val, y_val),</span></span>
+<span id="cb22-730"><a href="#cb22-730" aria-hidden="true" tabindex="-1"></a><span class="in">    callbacks=[early_stopping, reduce_lr, model_checkpoint],</span></span>
+<span id="cb22-731"><a href="#cb22-731" aria-hidden="true" tabindex="-1"></a><span class="in">    class_weight=class_weight_dict,</span></span>
+<span id="cb22-732"><a href="#cb22-732" aria-hidden="true" tabindex="-1"></a><span class="in">    verbose=0</span></span>
+<span id="cb22-733"><a href="#cb22-733" aria-hidden="true" tabindex="-1"></a><span class="in">)</span></span>
+<span id="cb22-734"><a href="#cb22-734" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb22-735"><a href="#cb22-735" aria-hidden="true" tabindex="-1"></a><span class="in">#model = tf.keras.models.load_model('best_cnn_model_len9.keras')</span></span>
+<span id="cb22-736"><a href="#cb22-736" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb22-737"><a href="#cb22-737" aria-hidden="true" tabindex="-1"></a><span class="in"># Evaluate on test data</span></span>
+<span id="cb22-738"><a href="#cb22-738" aria-hidden="true" tabindex="-1"></a><span class="in">test_loss, test_accuracy = model.evaluate(X_test, y_test, verbose=0)</span></span>
+<span id="cb22-739"><a href="#cb22-739" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb22-740"><a href="#cb22-740" aria-hidden="true" tabindex="-1"></a><span class="in"># Get prediction probabilities for the positive class</span></span>
+<span id="cb22-741"><a href="#cb22-741" aria-hidden="true" tabindex="-1"></a><span class="in">y_pred_proba = model.predict(X_test, verbose=0)</span></span>
+<span id="cb22-742"><a href="#cb22-742" aria-hidden="true" tabindex="-1"></a><span class="in">y_pred_proba_positive = y_pred_proba[:, 1]</span></span>
 <span id="cb22-743"><a href="#cb22-743" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb22-744"><a href="#cb22-744" aria-hidden="true" tabindex="-1"></a><span class="co"># --- Step 6: Evaluation ---</span></span>
-<span id="cb22-745"><a href="#cb22-745" aria-hidden="true" tabindex="-1"></a><span class="co"># Optional: Load the best model saved by ModelCheckpoint</span></span>
-<span id="cb22-746"><a href="#cb22-746" aria-hidden="true" tabindex="-1"></a><span class="co">#model = tf.keras.models.load_model('best_cnn_model_len9.keras')</span></span>
-<span id="cb22-747"><a href="#cb22-747" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb22-748"><a href="#cb22-748" aria-hidden="true" tabindex="-1"></a><span class="co"># Evaluate on test data (unchanged)</span></span>
-<span id="cb22-749"><a href="#cb22-749" aria-hidden="true" tabindex="-1"></a>test_loss, test_accuracy <span class="op">=</span> model.evaluate(X_test, y_test, verbose<span class="op">=</span><span class="dv">0</span>)</span>
+<span id="cb22-744"><a href="#cb22-744" aria-hidden="true" tabindex="-1"></a><span class="in"># Apply fixed threshold of 0.5</span></span>
+<span id="cb22-745"><a href="#cb22-745" aria-hidden="true" tabindex="-1"></a><span class="in">y_pred = (y_pred_proba_positive &gt;= 0.5).astype(int)</span></span>
+<span id="cb22-746"><a href="#cb22-746" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb22-747"><a href="#cb22-747" aria-hidden="true" tabindex="-1"></a><span class="in"># Print classification report</span></span>
+<span id="cb22-748"><a href="#cb22-748" aria-hidden="true" tabindex="-1"></a><span class="in">print("\nCNN Classification Report:")</span></span>
+<span id="cb22-749"><a href="#cb22-749" aria-hidden="true" tabindex="-1"></a><span class="in">print(classification_report(y_test, y_pred))</span></span>
 <span id="cb22-750"><a href="#cb22-750" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb22-751"><a href="#cb22-751" aria-hidden="true" tabindex="-1"></a><span class="co"># Get prediction probabilities for the positive class (unchanged)</span></span>
-<span id="cb22-752"><a href="#cb22-752" aria-hidden="true" tabindex="-1"></a>y_pred_proba <span class="op">=</span> model.predict(X_test, verbose<span class="op">=</span><span class="dv">0</span>)</span>
-<span id="cb22-753"><a href="#cb22-753" aria-hidden="true" tabindex="-1"></a>y_pred_proba_positive <span class="op">=</span> y_pred_proba[:, <span class="dv">1</span>]</span>
-<span id="cb22-754"><a href="#cb22-754" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb22-755"><a href="#cb22-755" aria-hidden="true" tabindex="-1"></a><span class="co"># Apply fixed threshold of 0.5 (unchanged)</span></span>
-<span id="cb22-756"><a href="#cb22-756" aria-hidden="true" tabindex="-1"></a>y_pred <span class="op">=</span> (y_pred_proba_positive <span class="op">&gt;=</span> <span class="fl">0.5</span>).astype(<span class="bu">int</span>)</span>
-<span id="cb22-757"><a href="#cb22-757" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb22-758"><a href="#cb22-758" aria-hidden="true" tabindex="-1"></a><span class="co"># Print classification report (unchanged)</span></span>
-<span id="cb22-759"><a href="#cb22-759" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="st">"</span><span class="ch">\n</span><span class="st">CNN Classification Report:"</span>)</span>
-<span id="cb22-760"><a href="#cb22-760" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(classification_report(y_test, y_pred))</span>
-<span id="cb22-761"><a href="#cb22-761" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb22-762"><a href="#cb22-762" aria-hidden="true" tabindex="-1"></a><span class="co"># Calculate and plot confusion matrix (unchanged)</span></span>
-<span id="cb22-763"><a href="#cb22-763" aria-hidden="true" tabindex="-1"></a>cm <span class="op">=</span> confusion_matrix(y_test, y_pred)</span>
-<span id="cb22-764"><a href="#cb22-764" aria-hidden="true" tabindex="-1"></a>plt.figure(figsize<span class="op">=</span>(<span class="dv">6</span>, <span class="dv">5</span>))</span>
-<span id="cb22-765"><a href="#cb22-765" aria-hidden="true" tabindex="-1"></a>plt.imshow(cm, interpolation<span class="op">=</span><span class="st">'nearest'</span>, cmap<span class="op">=</span>plt.cm.Blues)</span>
-<span id="cb22-766"><a href="#cb22-766" aria-hidden="true" tabindex="-1"></a>plt.title(<span class="ss">f'Confusion Matrix'</span>)</span>
-<span id="cb22-767"><a href="#cb22-767" aria-hidden="true" tabindex="-1"></a>plt.colorbar()</span>
-<span id="cb22-768"><a href="#cb22-768" aria-hidden="true" tabindex="-1"></a>tick_marks <span class="op">=</span> np.arange(<span class="dv">2</span>)</span>
-<span id="cb22-769"><a href="#cb22-769" aria-hidden="true" tabindex="-1"></a>plt.xticks(tick_marks, [<span class="st">'Negative'</span>, <span class="st">'Positive'</span>])</span>
-<span id="cb22-770"><a href="#cb22-770" aria-hidden="true" tabindex="-1"></a>plt.yticks(tick_marks, [<span class="st">'Negative'</span>, <span class="st">'Positive'</span>])</span>
-<span id="cb22-771"><a href="#cb22-771" aria-hidden="true" tabindex="-1"></a>plt.xlabel(<span class="st">'Predicted Label'</span>)</span>
-<span id="cb22-772"><a href="#cb22-772" aria-hidden="true" tabindex="-1"></a>plt.ylabel(<span class="st">'True Label'</span>)</span>
-<span id="cb22-773"><a href="#cb22-773" aria-hidden="true" tabindex="-1"></a>thresh <span class="op">=</span> cm.<span class="bu">max</span>() <span class="op">/</span> <span class="fl">2.</span></span>
-<span id="cb22-774"><a href="#cb22-774" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> i <span class="kw">in</span> <span class="bu">range</span>(cm.shape[<span class="dv">0</span>]):</span>
-<span id="cb22-775"><a href="#cb22-775" aria-hidden="true" tabindex="-1"></a>    <span class="cf">for</span> j <span class="kw">in</span> <span class="bu">range</span>(cm.shape[<span class="dv">1</span>]):</span>
-<span id="cb22-776"><a href="#cb22-776" aria-hidden="true" tabindex="-1"></a>        plt.text(j, i, <span class="bu">format</span>(cm[i, j], <span class="st">'d'</span>),</span>
-<span id="cb22-777"><a href="#cb22-777" aria-hidden="true" tabindex="-1"></a>                 horizontalalignment<span class="op">=</span><span class="st">"center"</span>,</span>
-<span id="cb22-778"><a href="#cb22-778" aria-hidden="true" tabindex="-1"></a>                 color<span class="op">=</span><span class="st">"white"</span> <span class="cf">if</span> cm[i, j] <span class="op">&gt;</span> thresh <span class="cf">else</span> <span class="st">"black"</span>)</span>
-<span id="cb22-779"><a href="#cb22-779" aria-hidden="true" tabindex="-1"></a>plt.tight_layout()</span>
-<span id="cb22-780"><a href="#cb22-780" aria-hidden="true" tabindex="-1"></a>plt.show()</span>
-<span id="cb22-781"><a href="#cb22-781" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
-<span id="cb22-782"><a href="#cb22-782" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb22-783"><a href="#cb22-783" aria-hidden="true" tabindex="-1"></a>The Convolutional Neural Network produced a reasonable overall accuracy of 82%, primarily driven by its strong ability to correctly identify the majority, non-epitopes, with high precision and recall. However, its performance on the minority class, epitopes, was mixed; while managing to recall 65% of true epitopes, its precision was significantly lower at 56%, indicating that nearly half of its positive predictions were false positives.</span>
-<span id="cb22-784"><a href="#cb22-784" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb22-785"><a href="#cb22-785" aria-hidden="true" tabindex="-1"></a>The Convolutional Neural Network significantly outperforms the Random Forest classifier while relying only on the sequence data, and no additional features. The RF struggles immensely with identifying the actual epitopes (very low recall for Class 1), whereas the CNN, while still facing challenges with precision for Class 1, provides a much better balance and significantly higher recall for the positive class, making it the more effective model in this comparison.</span>
-<span id="cb22-786"><a href="#cb22-786" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb22-787"><a href="#cb22-787" aria-hidden="true" tabindex="-1"></a><span class="fu"># Clustering</span></span>
-<span id="cb22-788"><a href="#cb22-788" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb22-789"><a href="#cb22-789" aria-hidden="true" tabindex="-1"></a><span class="fu"># Conclusion</span></span>
-<span id="cb22-790"><a href="#cb22-790" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb22-791"><a href="#cb22-791" aria-hidden="true" tabindex="-1"></a><span class="fu"># References</span></span>
+<span id="cb22-751"><a href="#cb22-751" aria-hidden="true" tabindex="-1"></a><span class="in"># Calculate and plot confusion matrix</span></span>
+<span id="cb22-752"><a href="#cb22-752" aria-hidden="true" tabindex="-1"></a><span class="in">cm = confusion_matrix(y_test, y_pred)</span></span>
+<span id="cb22-753"><a href="#cb22-753" aria-hidden="true" tabindex="-1"></a><span class="in">plt.figure(figsize=(6, 5))</span></span>
+<span id="cb22-754"><a href="#cb22-754" aria-hidden="true" tabindex="-1"></a><span class="in">plt.imshow(cm, interpolation='nearest', cmap=plt.cm.Blues)</span></span>
+<span id="cb22-755"><a href="#cb22-755" aria-hidden="true" tabindex="-1"></a><span class="in">plt.title(f'Confusion Matrix')</span></span>
+<span id="cb22-756"><a href="#cb22-756" aria-hidden="true" tabindex="-1"></a><span class="in">plt.colorbar()</span></span>
+<span id="cb22-757"><a href="#cb22-757" aria-hidden="true" tabindex="-1"></a><span class="in">tick_marks = np.arange(2)</span></span>
+<span id="cb22-758"><a href="#cb22-758" aria-hidden="true" tabindex="-1"></a><span class="in">plt.xticks(tick_marks, ['Negative', 'Positive'])</span></span>
+<span id="cb22-759"><a href="#cb22-759" aria-hidden="true" tabindex="-1"></a><span class="in">plt.yticks(tick_marks, ['Negative', 'Positive'])</span></span>
+<span id="cb22-760"><a href="#cb22-760" aria-hidden="true" tabindex="-1"></a><span class="in">plt.xlabel('Predicted Label')</span></span>
+<span id="cb22-761"><a href="#cb22-761" aria-hidden="true" tabindex="-1"></a><span class="in">plt.ylabel('True Label')</span></span>
+<span id="cb22-762"><a href="#cb22-762" aria-hidden="true" tabindex="-1"></a><span class="in">thresh = cm.max() / 2.</span></span>
+<span id="cb22-763"><a href="#cb22-763" aria-hidden="true" tabindex="-1"></a><span class="in">for i in range(cm.shape[0]):</span></span>
+<span id="cb22-764"><a href="#cb22-764" aria-hidden="true" tabindex="-1"></a><span class="in">    for j in range(cm.shape[1]):</span></span>
+<span id="cb22-765"><a href="#cb22-765" aria-hidden="true" tabindex="-1"></a><span class="in">        plt.text(j, i, format(cm[i, j], 'd'),</span></span>
+<span id="cb22-766"><a href="#cb22-766" aria-hidden="true" tabindex="-1"></a><span class="in">                 horizontalalignment="center",</span></span>
+<span id="cb22-767"><a href="#cb22-767" aria-hidden="true" tabindex="-1"></a><span class="in">                 color="white" if cm[i, j] &gt; thresh else "black")</span></span>
+<span id="cb22-768"><a href="#cb22-768" aria-hidden="true" tabindex="-1"></a><span class="in">plt.tight_layout()</span></span>
+<span id="cb22-769"><a href="#cb22-769" aria-hidden="true" tabindex="-1"></a><span class="in">plt.show()</span></span>
+<span id="cb22-770"><a href="#cb22-770" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb22-771"><a href="#cb22-771" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb22-772"><a href="#cb22-772" aria-hidden="true" tabindex="-1"></a>The Convolutional Neural Network produced a reasonable overall accuracy of 82%, primarily driven by its strong ability to correctly identify the majority, non-epitopes, with high precision and recall. However, its performance on the minority class, epitopes, was mixed; while managing to recall 65% of true epitopes, its precision was significantly lower at 56%, indicating that nearly half of its positive predictions were false positives.</span>
+<span id="cb22-773"><a href="#cb22-773" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb22-774"><a href="#cb22-774" aria-hidden="true" tabindex="-1"></a>The Convolutional Neural Network significantly outperforms the Random Forest classifier while relying only on the sequence data, and no additional features. The RF struggles with identifying the actual epitopes, shown by the low recall for Class 1, whereas the CNN, while still challenged with precision for Class 1, provides a better balance and significantly higher recall for the positive class, making it the more effective model in this comparison.</span>
+<span id="cb22-775"><a href="#cb22-775" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb22-776"><a href="#cb22-776" aria-hidden="true" tabindex="-1"></a><span class="fu"># Clustering</span></span>
+<span id="cb22-777"><a href="#cb22-777" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb22-778"><a href="#cb22-778" aria-hidden="true" tabindex="-1"></a><span class="fu"># Conclusion</span></span>
+<span id="cb22-779"><a href="#cb22-779" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb22-780"><a href="#cb22-780" aria-hidden="true" tabindex="-1"></a><span class="fu"># References</span></span>
 </code><button title="Copy to Clipboard" class="code-copy-button" data-in-quarto-modal=""><i class="bi"></i></button></pre></div>
 </div></div></div></div></div>
 </div> <!-- /content -->

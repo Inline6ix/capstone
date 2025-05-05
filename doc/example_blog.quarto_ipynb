@@ -42,7 +42,7 @@
         "\n",
         "::: {.callout-note title=\"Libraries and packages\" collapse=\"false\"}"
       ],
-      "id": "ad289bbf"
+      "id": "c1106fe4"
     },
     {
       "cell_type": "code",
@@ -60,7 +60,7 @@
         "import warnings\n",
         "warnings.filterwarnings(\"ignore\")"
       ],
-      "id": "5b033c61",
+      "id": "dc4f4e68",
       "execution_count": null,
       "outputs": []
     },
@@ -72,7 +72,7 @@
         "\n",
         "### Preprocessing\n"
       ],
-      "id": "8f5c625f"
+      "id": "255f9804"
     },
     {
       "cell_type": "code",
@@ -97,7 +97,7 @@
         "vehicle_nj_selected = vehicle_nj[['ST_CASE', 'HARM_EVNAME', 'MAKENAME', 'MOD_YEAR']]\n",
         "weather_nj_selected = weather_nj[['ST_CASE', 'WEATHER', 'WEATHERNAME']]"
       ],
-      "id": "47418cb0",
+      "id": "ca62893c",
       "execution_count": null,
       "outputs": []
     },
@@ -109,7 +109,7 @@
         "\n",
         "The accidents.csv is my main data set that I will be using which includes variables like pedestrians involved, rural/urban area, county, functional system, month, day, week, hour, longitude, latitude, and number of fatals.\n"
       ],
-      "id": "f684868c"
+      "id": "7b8d5a09"
     },
     {
       "cell_type": "code",
@@ -117,7 +117,7 @@
       "source": [
         "accident_nj_selected.head(5)"
       ],
-      "id": "d3f06da1",
+      "id": "a092bd76",
       "execution_count": null,
       "outputs": []
     },
@@ -127,7 +127,7 @@
       "source": [
         "The drimpair.csv data set has variables consisting driver impairment when they got in an accident. This variable is a self report of the drivers after the accidents.\n"
       ],
-      "id": "a8061e22"
+      "id": "fa751efe"
     },
     {
       "cell_type": "code",
@@ -135,7 +135,7 @@
       "source": [
         "drimpair_nj_selected.head(5)"
       ],
-      "id": "c6ff1763",
+      "id": "cc1f9717",
       "execution_count": null,
       "outputs": []
     },
@@ -145,7 +145,7 @@
       "source": [
         "The person.csv data set has demographic variables such as the age and sex of the drivers involved in accidents.\n"
       ],
-      "id": "f12813f7"
+      "id": "98273a0d"
     },
     {
       "cell_type": "code",
@@ -153,7 +153,7 @@
       "source": [
         "person_nj_selected.head(5)"
       ],
-      "id": "d6b9c0d0",
+      "id": "c29f70d1",
       "execution_count": null,
       "outputs": []
     },
@@ -163,7 +163,7 @@
       "source": [
         "The vehicle.csv data set consists of variables such as make name and model year of the vehicles involved in accidents.\n"
       ],
-      "id": "4fb29e16"
+      "id": "a2c865d6"
     },
     {
       "cell_type": "code",
@@ -171,7 +171,7 @@
       "source": [
         "vehicle_nj_selected.head(5)"
       ],
-      "id": "edcdb619",
+      "id": "d98f6687",
       "execution_count": null,
       "outputs": []
     },
@@ -181,7 +181,7 @@
       "source": [
         "The weather.csv has data on the weather at the time of the accident.\n"
       ],
-      "id": "68d9559b"
+      "id": "da0449a2"
     },
     {
       "cell_type": "code",
@@ -189,7 +189,7 @@
       "source": [
         "weather_nj_selected.head(5)"
       ],
-      "id": "8b3e9bae",
+      "id": "e7ea50f9",
       "execution_count": null,
       "outputs": []
     },
@@ -203,7 +203,7 @@
         "\n",
         "I wanted to examine all the counties in NJ and analyze which of them have the highest number of pedestrian accidents. Understanding the distribution of pedestrian accidents across counties is crucial for identifying areas with higher risk levels and potential hotspots. This insight could aid in implementing targeted road safety strategies and plans to mitigate pedestrian accidents. To visualize the high-risk areas for pedestrian accidents, I created a choropleth heatmap.\n"
       ],
-      "id": "6d84da51"
+      "id": "ddd0b6c5"
     },
     {
       "cell_type": "code",
@@ -260,7 +260,7 @@
         "\n",
         "plt.show()"
       ],
-      "id": "05859ca6",
+      "id": "8b3b4113",
       "execution_count": null,
       "outputs": []
     },
@@ -280,7 +280,7 @@
         "\n",
         "Examining fatal accidents at a county level is crucial because it enables us to visualize areas with high and low accident rates, providing insights into which counties should implement stricter policing measures for drivers exhibiting dangerous behaviors, including speeding, impaired driving, distracted driving, and failure to follow traffic rules. I created a choropleth heatmap to visualize the total fatal accidents by counties. This heatmap provides a clear overview of the distribution of fatal accidents across New Jersey, highlighting areas with higher concentrations of accidents.\n"
       ],
-      "id": "21a8a58d"
+      "id": "fb744726"
     },
     {
       "cell_type": "code",
@@ -316,7 +316,7 @@
         "\n",
         "plt.show()"
       ],
-      "id": "59d74779",
+      "id": "2b83b9fa",
       "execution_count": null,
       "outputs": []
     },
@@ -332,7 +332,7 @@
         "\n",
         "When shopping for a car, one important factor people consider is the safety and reputation of the vehicle. For many, the brand name carries significant weight and influences their purchasing decisions. Understanding how different vehicle brands perform in terms of fatal accidents is crucial in helping consumers make informed choices. I've created a bar graph to visualize the performance of various vehicle brands in fatal accidents. This information could have a significant impact on the decisions of individuals looking to buy a car, as it provides insight into the safety records of different brands.\n"
       ],
-      "id": "e3cbf745"
+      "id": "dae6b96c"
     },
     {
       "cell_type": "code",
@@ -358,7 +358,7 @@
         "plt.tight_layout()\n",
         "plt.show()"
       ],
-      "id": "a9f33bc2",
+      "id": "0b1f508a",
       "execution_count": null,
       "outputs": []
     },
@@ -372,7 +372,7 @@
         "\n",
         "I also wanted to explore the impact of vehicle model year on fatal accidents, as I had a hunch that newer cars might be safer due to advancements in technology and safety features. By analyzing fatal accident data by model year, I wanted to see if there is a correlation between the age of a vehicle and its involvement in fatal accidents. If newer model years are associated with fewer fatal accidents, it suggests that investing in a newer vehicle with updated safety features may contribute to enhanced road safety.\n"
       ],
-      "id": "d7eedad6"
+      "id": "842ed9fa"
     },
     {
       "cell_type": "code",
@@ -393,7 +393,7 @@
         "                  xaxis_tickangle=-45)\n",
         "fig.show()"
       ],
-      "id": "75b06511",
+      "id": "7660156e",
       "execution_count": null,
       "outputs": []
     },
@@ -411,7 +411,7 @@
         "\n",
         "Building upon the insights gained from the county analysis, which revealed higher fatal accident rates in counties with more urbanized areas, I wanted to explore whether urban areas indeed experience more accidents compared to rural areas. Additionally, I wanted to investigate how road types contribute to these differences in accident rates across urban and rural settings. I created a grouped bar chart comparing the number of fatal accidents across different road types in both urban and rural areas to examine the relationship.\n"
       ],
-      "id": "3b36aa4f"
+      "id": "4000222c"
     },
     {
       "cell_type": "code",
@@ -452,7 +452,7 @@
         "\n",
         "fig.show()"
       ],
-      "id": "6d61268c",
+      "id": "0fdd5b04",
       "execution_count": null,
       "outputs": []
     },
@@ -468,7 +468,7 @@
         "\n",
         "It is crucial to look at demographics such as age and sex of the people involved in accidents. Age plays a significant role in determining whether targeted interventions are needed for drivers within certain age groups or for passengers involved in accidents. By identifying which age groups have the highest number of accidents, public health officials can focus more on programs aimed at preventing injuries, providing emergency medical assistance, and offering trauma care. I created a histogram displaying the frequencies of age groups present in the dataset.\n"
       ],
-      "id": "d8b11709"
+      "id": "78eae0c2"
     },
     {
       "cell_type": "code",
@@ -485,7 +485,7 @@
         "plt.ylabel('Number of Accidents')\n",
         "plt.show()"
       ],
-      "id": "a6381ba5",
+      "id": "ccba0cb8",
       "execution_count": null,
       "outputs": []
     },
@@ -509,7 +509,7 @@
         "\n",
         "Before beginning the analysis of driving impairment and its correlation with the number of fatal accidents, I decided to examine the distribution of both male and female drivers involved in these accidents.\n"
       ],
-      "id": "2acef3eb"
+      "id": "65a49b5b"
     },
     {
       "cell_type": "code",
@@ -543,7 +543,7 @@
         "plt.axis('equal')\n",
         "plt.show()"
       ],
-      "id": "bf21f615",
+      "id": "313e53cf",
       "execution_count": null,
       "outputs": []
     },
@@ -553,7 +553,7 @@
       "source": [
         "Male drivers were involved in 67.8% of the fatal accidents and female drivers were involved in 32.2%. This gender disparity in fatal accidents could help policymakers make more targetted driving policies/regulations. I want to further examine sex with the driving impairments of the drivers who were involved in fatal car accidents.\n"
       ],
-      "id": "950f9066"
+      "id": "d46a44b5"
     },
     {
       "cell_type": "code",
@@ -586,7 +586,7 @@
         "# Show the interactive plot\n",
         "fig.show()"
       ],
-      "id": "c1bab56a",
+      "id": "bfbc3862",
       "execution_count": null,
       "outputs": []
     },
@@ -635,7 +635,7 @@
         "[@Cecchini] [@Clark] [@NHTSA] [@Solano] [@Fallon] [@Finz] [@NCEI] [@github]\n",
         ":::"
       ],
-      "id": "baa314ec"
+      "id": "07d9bd8a"
     }
   ],
   "metadata": {
