@@ -20,19 +20,25 @@ nocite: |
 
 ![@AWAD20221010](https://www.cell.com/cms/10.1016/j.ccell.2022.08.003/asset/eb36c8cd-3880-4d48-8a8b-f10accd01fba/main.assets/fx1_lrg.jpg){width="50%" fig-align="center" fig-alt="End to end personalized peptide vaccine cancer treatment"}
 
-Epitope classification is a critical area of immunology and vaccine development that focuses on identifying and characterizing specific regions of antigens that are recognized by the immune system. Epitopes serve as the molecular interface between pathogens and the host immune response, making their accurate identification essential for understanding immune responses and developing targeted therapeutics. As shown in Figure 2, standard chemotherapy treatment targets rapidly dividing cells which can include the hosts immune system, making them counterproductive. However, effective fabrication of personalized antigens would make treatment much less physically devastating.
+# Introduction
+
+Epitopes, short amino acid sequences (typically 8-11 residues) like "ADVEFCLSL," are critical recognition sites for the immune system. Embedded within larger protein antigens, these peptide "flags" are scanned by immune cells. Recognition of an epitope can trigger a defensive response against the cell or pathogen displaying it.
+
+The ability to distinguish epitopes from non-epitopic sequences is paramount in immunology and a cornerstone of modern vaccine development and cancer immunotherapy. Epitopes represent the precise molecular interface between a host's immune system and threats like viruses or cancerous cells. Accurate identification of these key targets accelerates the design of effective vaccines and therapeutic antibodies. Unlike traditional chemotherapy, which indiscriminately affects rapidly dividing cells (including healthy ones), epitope-targeted therapies offer a more precise attack, minimizing damage to healthy tissue and potentially improving patient outcomes and reducing side effects.
+
+This project aims to develop and rigorously evaluate machine learning models capable of classifying peptides as epitopes or non-epitopes based solely on their amino acid sequences and derived physicochemical properties. Automating and enhancing epitope classification can expedite the discovery of promising candidates for immunotherapies and vaccines, ultimately contributing to more effective and less burdensome treatments for patients.
 
 # Data
 
 ### Dataset
 
-The dataset utilized for this analysis is sourced from [The Immune Epitope Database (IEDB)](https://www.iedb.org/), a publicly available database of manually extracted data from published scientific research on antibody and T-cell epitopes. It was created to aggregate and centralize data on how the immune system recognizes specific molecular features, known as epitopes, on antigens.
+The primary dataset for this analysis originates from the [Immune Epitope Database (IEDB)](https://www.iedb.org/), a comprehensive public repository. The IEDB curates experimental data on T-cell and antibody epitopes, detailing how the immune system recognizes specific molecular structures (epitopes) on antigens.
 
-The database can be queried for known epitopes, returning a list of assays — tests or experiments — that have been performed on the antigen and their results. These tests can include whether or not a particular epitope binds to the MHC complex or is capable of triggering a cytokine release to kill living cells.
+For this project, the IEDB was queried to extract information on known epitopes. This included experimental assay results, which specify conditions such as whether an epitope binds to a Major Histocompatibility Complex (MHC) molecule or elicits an immune response.
 
-The scope of my analysis will be limited to epitopes sourced from human cancer T-cells that were tested and found to produce an autoimmune response. While the database has a wide range of information about each antigen, I will only be utilizing the epitopes' amino acid sequence and the MHC allele it was tested against.
+The scope of this study is specifically focused on epitopes derived from human cancer T-cells that have been experimentally validated to trigger an immune response. From the wealth of information available for each antigen in the IEDB, this analysis primarily utilizes the epitope's amino acid sequence and the corresponding MHC allele against which it was tested. These features are considered most critical for predicting an epitope's immunogenic potential.
 
-Along with these features, each epitope entry also contains a link to the antigen's full amino acid sequence. These full sequences come from the [UniProt](https://www.uniprot.org/) database, which contains a collection of protein sequences and their associated information. These full sequences will be used to generate negative samples for the model.
+Furthermore, many epitope entries in the IEDB provide links to their parent antigen's full amino acid sequence, typically hosted on the UniProt database. These complete protein sequences are crucial for this project as they serve as the source for generating negative samples—peptides not currently identified as epitopes. A balanced dataset containing both positive (epitopes) and negative (non-epitopes) examples is essential for training robust classification models and evaluating their performance.
 
 ::: {.callout-note title="Libraries and packages" collapse="false"}
 ```{python q-collapse}
