@@ -22,23 +22,21 @@ nocite: |
 
 # Introduction
 
-Epitopes, short amino acid sequences (typically 8-11 residues) like "ADVEFCLSL," are critical recognition sites for the immune system. Embedded within larger protein antigens, these peptide "flags" are scanned by immune cells. Recognition of an epitope can trigger a defensive response against the cell or pathogen displaying it.
+At the heart of immune defense are tiny molecular "flags" called epitopes. These short sequences of amino acids, like "ADVEFCLSL", sit on larger proteins and tell immune cells whether something is a friend or a foe. When an immune cell recognizes an epitope on a virus or a cancer cell, it can launch a protective attack.
 
-The ability to distinguish epitopes from non-epitopic sequences is paramount in immunology and a cornerstone of modern vaccine development and cancer immunotherapy. Epitopes represent the precise molecular interface between a host's immune system and threats like viruses or cancerous cells. Accurate identification of these key targets accelerates the design of effective vaccines and therapeutic antibodies. Unlike traditional chemotherapy, which indiscriminately affects rapidly dividing cells (including healthy ones), epitope-targeted therapies offer a more precise attack, minimizing damage to healthy tissue and potentially improving patient outcomes and reducing side effects.
+Being able to reliably identify these epitopes in creating new vaccines and cancer treatments is crucial. Think of epitopes as the precise handshake between the immune system and a threat. Finding the right ones means smarter therapies can be designed. Unlike older treatments like chemotherapy that can harm healthy cells, therapies targeting specific epitopes can attack diseases with pinpoint accuracy. This promises better results for patients, with fewer debilitating side effects.
 
-This project aims to develop and rigorously evaluate machine learning models capable of classifying peptides as epitopes or non-epitopes based solely on their amino acid sequences and derived physicochemical properties. Automating and enhancing epitope classification can expedite the discovery of promising candidates for immunotherapies and vaccines, ultimately contributing to more effective and less burdensome treatments for patients.
+This project is all about teaching computers to do this vital identification work. Machine learning models are being built and tested that can look at an amino acid sequence and its properties and decide if it's an epitope or not. By making this process faster and more accurate, the discovery of new vaccine and immunotherapy candidates can be sped up, ultimately leading to more effective and kinder treatments.
 
 # Data
 
 ### Dataset
 
-The primary dataset for this analysis originates from the [Immune Epitope Database (IEDB)](https://www.iedb.org/), a comprehensive public repository. The IEDB curates experimental data on T-cell and antibody epitopes, detailing how the immune system recognizes specific molecular structures (epitopes) on antigens.
+To train these models, the main source is the [Immune Epitope Database](https://www.iedb.org/)(IEDB), the largest public library of knowledge about how the immune system sees and reacts to epitopes on different molecules. It tells which sequences are known to be recognized by T-cells or antibodies.
 
-For this project, the IEDB was queried to extract information on known epitopes. This included experimental assay results, which specify conditions such as whether an epitope binds to a Major Histocompatibility Complex (MHC) molecule or elicits an immune response.
+For this project, the focus has been put on epitopes found on human cancer cells that have been proven in experiments to activate T-cell immune defenses. For each epitope, its unique amino acid sequence and the specific immune system molecule (MHC allele) it interacts with will be used.
 
-The scope of this study is specifically focused on epitopes derived from human cancer T-cells that have been experimentally validated to trigger an immune response. From the wealth of information available for each antigen in the IEDB, this analysis primarily utilizes the epitope's amino acid sequence and the corresponding MHC allele against which it was tested. These features are considered most critical for predicting an epitope's immunogenic potential.
-
-Furthermore, many epitope entries in the IEDB provide links to their parent antigen's full amino acid sequence, typically hosted on the UniProt database. These complete protein sequences are crucial for this project as they serve as the source for generating negative samples—peptides not currently identified as epitopes. A balanced dataset containing both positive (epitopes) and negative (non-epitopes) examples is essential for training robust classification models and evaluating their performance.
+Importantly, to train a good model, it doesn't just need to learn what an epitope is; it also needs to learn what isn't. Many epitope records in the IEDB link to the full protein they come from. These full proteins are used to carefully select sequences that are not currently known epitopes. This provides a set of "yes" (epitope) and "no" (non-epitope) examples.
 
 ::: {.callout-note title="Libraries and packages" collapse="false"}
 ```{python q-collapse}
@@ -59,6 +57,8 @@ from Bio import SeqIO
 :::
 
 ### Preprocessing
+
+Retrieving the data from IEDB was as simple as doing a search and clicking export. Using the requests python library, the full antigen sequence was downloaded and appended to the epitope dataset. Next, simple formatting was done to standardize the column names. Finally, the epitope dataset was merged with the assays dataset and filtered to include the following columns:
 
 ```{python}
 #| warning: false
@@ -108,8 +108,6 @@ epitopes = epitopes.merge(mhc, on='epitope_name', how='left')
 
 epitopes.head()
 ```
-
-Retriving the data from IEDB was as simple as doing a search and clicking export. Two files were exported, one containing 28,681 unique epitopes and another with their corresponding assays and respective results. Roughly 10% of the epitopes in the dataset came with a corresponding [UniProt](https://www.uniprot.org/) link. For our purposes this will be enough. Using the requests python library, the full antigen sequence was downloaded and appended to the epitope dataset. Next, simple formatting was done to standardize the column names. Finally, the epitope dataset was merged with the assays dataset on the epitope_name column and filtered to include the following columns:
 
 ### Negative Sample Generation
 
