@@ -109,6 +109,41 @@ epitopes = epitopes.merge(mhc, on='epitope_name', how='left')
 epitopes.head()
 ```
 
+### MHC Allele Distribution
+
+It's important to understand the distribution of MHC alleles associated with the epitopes in our dataset, as MHC molecules are responsible for presenting these peptides to T-cells. A skewed distribution could influence downstream analysis and potentially bias model performance towards more represented alleles.
+
+```{python mhc_allele_distribution}
+#| label: fig-mhc-dist
+#| fig-cap: "Top 20 Most Frequent MHC Alleles in Epitope Dataset"
+
+# Assuming 'epitopes' DataFrame with 'mhcrestriction_name' column is available
+# from the previous preprocessing cell.
+
+# Count MHC allele frequencies, dropping any NaNs first
+mhc_counts = epitopes['mhcrestriction_name'].dropna().value_counts()
+
+# Select top N for visualization
+N = 20 # Show the top 20 alleles
+top_mhc_counts = mhc_counts.head(N)
+
+# Plotting
+plt.figure(figsize=(12, 8))
+sns.barplot(x=top_mhc_counts.values, y=top_mhc_counts.index, palette='viridis')
+plt.title(f'Top {N} Most Frequent MHC Alleles in Epitope Dataset')
+plt.xlabel('Frequency (Number of Epitopes)')
+plt.ylabel('MHC Allele')
+plt.tight_layout()
+plt.show()
+
+# Optionally, print some stats for context
+# print(f"Total unique alleles found: {len(mhc_counts)}")
+# print("Top 5 allele counts:\n", top_mhc_counts.head())
+
+```
+
+The plot reveals a significant skew in the MHC allele distribution within the initial epitope dataset. The allele **HLA-A\*02:01** is vastly overrepresented compared to all others. While other alleles like HLA-A\*24:02 and HLA-A\*03:01 are present, their frequencies are considerably lower. This pronounced skew towards HLA-A\*02:01, while common in immunological datasets due to research focus and population frequencies, is critical to acknowledge. It implies that subsequent analyses and models might be heavily influenced by, or perform best on, peptides presented by this specific allele.
+
 ### Negative Sample Generation
 
 ```{python negative_sample_generation}
@@ -288,6 +323,9 @@ epitopes.head()
 ### Statistical Comparison
 
 ```{python}
+#| label: fig-stat-compare
+#| fig-cap: "Density Plot Comparison of Numeric Features between Epitopes and Negatives"
+
 # Compare numeric features between epitopes and negatives datasets
 numeric_features = ['peptide_avg_hydro', 'molecular_weight', 'aromaticity', 
                     'isoelectric_point', 'instability', 'charge_at_pH7', 'Score_BA']
@@ -331,6 +369,8 @@ plt.show()
 A boxplot comparison of the numerical variables reveals hardly significant differences between the epitope and non-epitope peptides. The clear outlier being the predicted binding affinity score.
 
 ```{python}
+#| label: fig-ba-hist
+#| fig-cap: "Normalized Histogram of Binding Affinity Scores"
 
 # plot Score_BA for epitopes and negatives overlaid on the same plot
 plt.figure(figsize=(10, 6))
@@ -361,6 +401,9 @@ While the predicted binding affinity score is a strong predictor of epitope clas
 One way to explore these patterns is to examine the frequency of short amino acid motifs, such as tripeptides (sequences of three amino acids). By comparing the most frequent tripeptides in known epitopes versus non-epitope sequences, we might identify motifs that are enriched in one class or the other.
 
 ```{python tripeptide_frequency_analysis}
+#| label: fig-tripeptide
+#| fig-cap: "Top 15 Most Frequent Tripeptides in Epitope vs. Non-Epitope Sequences"
+
 from collections import Counter
 import matplotlib.pyplot as plt
 import pandas as pd # Ensure pandas is imported if not already from a previous cell
@@ -450,6 +493,9 @@ Interpreting the tripeptide frequency plots:
 Another powerful way to visualize conserved patterns in a set of sequences is by generating sequence logos. A sequence logo provides a graphical representation of an amino acid (or nucleotide) multiple sequence alignment. Each position in the logo consists of a stack of symbols, where the height of each symbol indicates its frequency at that position, and the total height of the stack reflects the information content or conservation at that position.
 
 ```{python sequence_logo_generation}
+#| label: fig-seqlogo
+#| fig-cap: "Sequence Logos for Epitope vs. Non-Epitope Sequences"
+
 import logomaker
 import matplotlib.pyplot as plt
 import pandas as pd
@@ -523,9 +569,9 @@ Interpreting the sequence logos:
 
 # Can we predict?
 
-### Model Selection
+### Model Selection: A Baseline with State-of-the-Art Binding Prediction
 
-To establish a baseline for performance, a random forest classifier will be fit to the following features:
+To establish a robust baseline, we first develop a Random Forest classifier. This model incorporates a crucial feature: predicted binding affinity scores (`Score_BA`) derived from `netMHCpan`, a state-of-the-art algorithm for MHC binding prediction. By including this, our baseline leverages existing sophisticated domain knowledge. The full feature set includes:
 
 -   Average Hydrophobicity
 -   Molecular Weight
@@ -533,7 +579,6 @@ To establish a baseline for performance, a random forest classifier will be fit 
 -   Isoelectric Point
 -   Instability
 -   Charge at pH7
--   Predicted Binding Affinity
 
 Performace will be evaluated based on accuracy, precision, and recall.
 
@@ -542,6 +587,9 @@ Performace will be evaluated based on accuracy, precision, and recall.
 Prior to training, labels are assigned to the epitopes and non-epitopes as 1 or 0 respectively. The two samples are then concatenated, scaled, and shuffled. Finally, the data is split into training and testing sets with an 80/20 ratio.
 
 ```{python}
+#| label: fig-cm-rf
+#| fig-cap: "Confusion Matrix for Random Forest with Binding Affinity"
+
 # Add label column to epitopes dataframe (positive class = 1)
 epitopes['label'] = 1
 
@@ -559,7 +607,7 @@ X = combined_data.drop(columns=['peptide', 'label'])
 y = combined_data['label']
 
 # Identify numerical columns to scale (exclude one-hot encoded amino acid columns)
-numerical_cols = ['peptide_avg_hydro', 'molecular_weight', 'aromaticity', 'isoelectric_point', 'instability','Score_BA', 'charge_at_pH7']
+numerical_cols = ['peptide_avg_hydro', 'molecular_weight', 'aromaticity', 'isoelectric_point', 'instability']
 
 # Split the data into training and testing sets (80% train, 20% test)
 from sklearn.model_selection import train_test_split
@@ -588,6 +636,9 @@ print(f"Negative samples in testing: {sum(y_test == 0)}")
 The random forest classifier is fit to the training data and evaluated on the testing data.
 
 ```{python}
+#| label: fig-cm-rf-ba
+#| fig-cap: "Confusion Matrix for Random Forest with Binding Affinity"
+
 # Initialize the Random Forest Classifier
 rf_model = RandomForestClassifier(
     n_estimators=100,  # Number of trees
@@ -622,10 +673,11 @@ print("\nRandom Forest Model Classification Report:")
 print(classification_report(y_test, y_pred))
 ```
 
-The results show strong performance from the random forest classifier, with an overall accuracy of 91% and recall of 75% for the positive class.
+The results show strong performance from the random forest classifier, with an overall accuracy of 91% and recall of 75% for the positive class. This strong performance is substantially aided by its reliance on the powerful `Score_BA` predictor from `netMHCpan`.
 
 ```{python}
 #| label: Fig-1
+#| fig-cap: "Feature Importance for Random Forest with Binding Affinity"
 
 # Feature importance
 feature_importance = pd.DataFrame({
@@ -645,13 +697,14 @@ plt.tight_layout()
 plt.show()
 ```
 
-Although the random forest classifier in @Fig-1 is performing well, the feature importance plot reveals a concentration of importance on the predicted binding affinity score. This is not surprising.
+### Quantifying the Impact of Binding Affinity Prediction
 
-### One small problem
-
-To better illustrate how the model's performance changes, the predicted binding affinity column is dropped, and the model is retrained and evaluated.
+To underscore the significant contribution of the `netMHCpan`-derived binding affinity, we next evaluate the Random Forest model *without* the `Score_BA` feature. This helps quantify the performance drop when relying solely on other physiochemical properties without this advanced binding prediction.
 
 ```{python}
+#| label: fig-cm-rf-noba
+#| fig-cap: "Confusion Matrix for Random Forest without Binding Affinity"
+
 # drop the Score_BA column
 X_train = X_train.drop(columns=['Score_BA'])
 X_test = X_test.drop(columns=['Score_BA'])
@@ -686,17 +739,17 @@ plt.title('Confusion Matrix - Random Forest')
 plt.show()
 
 # Evaluate the model
-print("Random Forest Model Evaluation:")
 print("\nClassification Report:")
 print(classification_report(y_test, y_pred))
 ```
 
 The accuracy only drops from 91% to 79%. However, this is misleading when considering the class imbalance of the data. The ratio of negative samples to positive is roughly 4:1, respectively. So, predicting the majority class — non-epitope — almost everytime would result in the majority of the testing data being correctly predicted and labeled.
 
-A better performance metric to compare between models would be the model's recall rate on the positive class. How many of the epitopes in the testing data were correctly predicted and labeled? The same model, when predicted binding affinity was included as a predictor, produced a 74% recall rate while the current model has a much lower 18% recall rate.
+A better performance metric to compare between models would be the model's recall rate on the positive class. How many of the epitopes in the testing data were correctly predicted and labeled? The same model, when predicted binding affinity was included as a predictor, produced a 74% recall rate while the current model has a much lower 18% recall rate. This dramatic drop in recall for epitopes clearly demonstrates the Random Forest model's heavy dependence on the `netMHCpan` binding affinity scores for identifying true positives.
 
 ```{python}
 #| label: Fig-2
+#| fig-cap: "Feature Importance for Random Forest without Binding Affinity"
 
 # Feature importance
 feature_importance = pd.DataFrame({
@@ -716,11 +769,9 @@ plt.tight_layout()
 plt.show()
 ```
 
-Interestingly, the order of the feature importance changed. Hydrophobicity is no longer the most important feature after predicted binding affinity, swapped for molecular weight.
+### A Different Approach: Learning Directly from Sequence with CNNs
 
-### A different approach
-
-The performance of the random forest classifier drops off dramatically when netMHCpan's predicted binding affinity is not included as a predictor. A different approach to peptide classification is to use a convolutional neural network (CNN). CNN's have several advantages. In contrast to traditional machine learning models, a CNN does not require specific feature selection or engineering. This eliminates the need for domain expertise in selecting features and allows the model to potentially discover novel, important patterns that weren't explicitly engineered.
+Given the Random Forest model's significant reliance on pre-computed binding affinity from `netMHCpan` (a powerful, but distinct, predictive step), we explore an alternative strategy: a Convolutional Neural Network (CNN). The key value of the CNN in this context is its ability to learn predictive patterns *directly from the raw amino acid sequences themselves*. Unlike the RF model which uses engineered features and external predictions like `Score_BA`, the CNN can potentially uncover complex sequence motifs, positional dependencies, and other subtle features relevant to epitope classification that may not be fully captured by binding affinity predictions alone. This approach allows the model to discover novel, sequence-intrinsic features without explicit feature engineering or reliance on separate binding prediction tools, offering a complementary perspective on what defines an epitope.
 
 To start, the data will be filtered to only include the amino acid sequence and respective label.
 ```{python data_prep}
@@ -855,6 +906,9 @@ model = create_cnn_model(input_shape)
 Before training the model, class weights are calculated to handle the data imbalance, effectively telling the model to "pay more attention" to samples from the minority class.
 
 ```{python class-weights_and_training}
+#| label: fig-cm-cnn
+#| fig-cap: "Confusion Matrix for CNN Model"
+
 from sklearn.utils.class_weight import compute_class_weight
 
 # Calculate class weights
@@ -925,6 +979,9 @@ To better understand what the CNN model learned, we can generate saliency maps. 
 The following plots examine a single sample sequence, `AASCFTASV`, which the model misclassified. The true label is Non-epitope (Class 0), but the model predicted it as an Epitope (Class 1) with high confidence. The first map shows which features drove the incorrect "Epitope" prediction, and the second map shows which features would have been important for the correct "Non-epitope" classification.
 
 ```{python cnn_saliency_map}
+#| label: fig-saliency-single
+#| fig-cap: "Example Saliency Maps for a Misclassified Sample (AASCFTASV)"
+
 # Ensure the model is loaded or available from previous cells
 # If not, load it:
 model = tf.keras.models.load_model('best_cnn_model_len9.keras')
@@ -932,7 +989,7 @@ model = tf.keras.models.load_model('best_cnn_model_len9.keras')
 # Ensure X_test, y_test, and index_to_char are available from the 'sequence_encoding' cell
 
 # Select a sample from the test set
-sample_index = 12 # You can change this to inspect different samples
+sample_index = 2 # You can change this to inspect different samples
 sample_input = X_test[sample_index:sample_index+1] # Keep batch dimension
 sample_label = y_test[sample_index]
 true_class_index = int(sample_label) # Ensure it's an integer for indexing
@@ -1020,6 +1077,9 @@ This suggests these positions are critical decision points for the model for thi
 To get a more general understanding of feature importance across the dataset, we can compute average saliency maps for different classes of samples. Below, we calculate and plot the average saliency map for true epitopes and true non-epitopes in the test set. The saliency is calculated with respect to the **true class output** for each sample. This helps to reveal general patterns the model has learned for distinguishing the two classes.
 
 ```{python aggregated_saliency_maps}
+#| label: fig-saliency-agg
+#| fig-cap: "Average Saliency Maps for True Epitopes and Non-Epitopes"
+
 # Ensure model, X_test, y_test, sequence_length, and num_chars are available
 # model = tf.keras.models.load_model('best_cnn_model_len9.keras') # If not already loaded
 
@@ -1116,8 +1176,12 @@ Interpreting the aggregated saliency maps:
 
 *   **General Pattern:** The model appears to have learned that the C-terminal residue is a primary determinant, with other positions like position 1 (especially for non-epitopes) playing secondary, but still significant, roles.
 
-# Clustering
-
 # Conclusion
+
+This project aimed to develop and evaluate computational models for classifying cancer T-cell epitopes, a necessary task for advancing personalized cancer treatment. By utilizing data from the Immune Epitope Database (IEDB) and employing feature engineering and machine learning techniques, we explored factors differentiating epitopes from non-epitope peptides derived from the same source proteins.
+
+A Random Forest model incorporating predicted binding affinity scores from `netMHCpan` achieved high overall performance and reasonable recall for identifying true epitopes. However, removing this binding affinity feature caused a dramatic drop in the model's ability to identify epitopes, indicating that standard physicochemical features alone, while descriptive, were insufficient for robust classification in this context.
+
+Significantly, a Convolutional Neural Network (CNN) trained on one-hot encoded peptide sequences, without relying on external binding predictors or engineered features, demonstrated superior performance compared to the feature-based Random Forest without binding affinity. The CNN achieved balanced performance with better recall for the epitope class. This demonstrates the potential of deep learning models to capture patterns directly from sequence data.
 
 # References
