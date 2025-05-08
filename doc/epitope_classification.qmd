@@ -47,12 +47,34 @@ import matplotlib.pyplot as plt
 import seaborn as sns
 import numpy as np
 import Bio
-from sklearn.ensemble import RandomForestClassifier
-from sklearn.metrics import classification_report, accuracy_score, confusion_matrix, roc_auc_score, roc_curve
-from Bio.SeqUtils.ProtParam import ProteinAnalysis
-import requests
-from io import StringIO
 from Bio import SeqIO
+from Bio.SeqUtils.ProtParam import ProteinAnalysis
+from io import StringIO
+import logomaker
+import requests
+from scipy import stats
+from sklearn.ensemble import RandomForestClassifier
+from sklearn.metrics import (
+    accuracy_score, auc, average_precision_score, classification_report,
+    confusion_matrix, precision_recall_curve, roc_auc_score, roc_curve
+)
+from sklearn.model_selection import train_test_split
+from sklearn.preprocessing import StandardScaler
+from sklearn.utils.class_weight import compute_class_weight
+import tensorflow as tf
+from tensorflow.keras import metrics
+from tensorflow.keras.callbacks import EarlyStopping, ModelCheckpoint, ReduceLROnPlateau
+from tensorflow.keras.layers import (
+    Conv1D, MaxPooling1D, Flatten, Dense, Dropout, Input, BatchNormalization
+)
+from tensorflow.keras.models import Model
+from tensorflow.keras.optimizers import Adam
+from tensorflow.keras.regularizers import l2
+from sklearn.metrics import (
+    classification_report, confusion_matrix, roc_curve, auc,
+    precision_recall_curve, average_precision_score, accuracy_score
+)
+import matplotlib.pyplot as plt
 ```
 :::
 
@@ -356,7 +378,6 @@ for i, feature in enumerate(numeric_features):
     ax.legend()
     
     # Add p-value from t-test
-    from scipy import stats
     t_stat, p_value = stats.ttest_ind(
         epitopes[feature].dropna(), 
         negatives[feature].dropna(),
@@ -405,10 +426,6 @@ One way to explore these patterns is to examine the frequency of short amino aci
 ```{python tripeptide_frequency_analysis}
 #| label: fig-tripeptide
 #| fig-cap: "Top 15 Most Frequent Tripeptides in Epitope vs. Non-Epitope Sequences"
-
-from collections import Counter
-import matplotlib.pyplot as plt
-import pandas as pd # Ensure pandas is imported if not already from a previous cell
 
 # Create temporary copies of epitopes and negatives, then add 'label' column for this analysis
 # Assumes 'epitopes' and 'negatives' DataFrames (without 'label' yet) are available from prior cells
@@ -498,11 +515,6 @@ Another powerful way to visualize conserved patterns in a set of sequences is by
 ```{python sequence_logo_generation}
 #| label: fig-seqlogo
 #| fig-cap: "Sequence Logos for Epitope vs. Non-Epitope Sequences"
-
-import logomaker
-import matplotlib.pyplot as plt
-import pandas as pd
-import numpy as np
 
 # Assuming 'combined_data_for_tripeptides' DataFrame with 'sequence' and 'label' columns is available
 # from the previous tripeptide analysis cell.
@@ -612,8 +624,6 @@ y = combined_data['label']
 numerical_cols = ['peptide_avg_hydro', 'molecular_weight', 'aromaticity', 'isoelectric_point', 'instability']
 
 # Split the data into training and testing sets (80% train, 20% test)
-from sklearn.model_selection import train_test_split
-from sklearn.preprocessing import StandardScaler
 
 X_train, X_test, y_train, y_test = train_test_split(
     X, y, test_size=0.2, random_state=42, stratify=y
@@ -778,24 +788,6 @@ Given the Random Forest model's significant reliance on pre-computed binding aff
 To start, the data will be filtered to only include the amino acid sequence and respective label.
 
 ```{python data_prep}
-import numpy as np
-import pandas as pd # Assuming epitopes and negatives are pandas DataFrames
-from sklearn.model_selection import train_test_split
-import tensorflow as tf
-from tensorflow.keras.models import Model
-from tensorflow.keras.layers import (
-    Conv1D, MaxPooling1D, Flatten, Dense, Dropout, Input, BatchNormalization
-)
-from tensorflow.keras.callbacks import EarlyStopping, ModelCheckpoint, ReduceLROnPlateau
-from tensorflow.keras.regularizers import l2
-from tensorflow.keras.optimizers import Adam
-from tensorflow.keras import metrics
-from sklearn.metrics import (
-    classification_report, confusion_matrix, roc_curve, auc,
-    precision_recall_curve, average_precision_score, accuracy_score
-)
-import matplotlib.pyplot as plt
-
 # Filter and combine
 epitopes_filtered = epitopes[['peptide', 'label']].copy()
 epitopes_filtered.rename(columns={'peptide': 'sequence'}, inplace=True)
