@@ -191,7 +191,7 @@ Libraries and packages
 </div>
 <div id="callout-1" class="callout-1-contents callout-collapse collapse show">
 <div class="callout-body-container callout-body">
-<div id="98a8e446" class="cell" data-execution_count="1">
+<div id="426ace2c" class="cell" data-execution_count="1">
 <details class="code-fold">
 <summary>Code</summary>
 <div class="sourceCode cell-code" id="cb1"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Importing libraries</span></span>
@@ -238,7 +238,7 @@ Libraries and packages
 <section id="preprocessing" class="level3">
 <h3 class="anchored" data-anchor-id="preprocessing">Preprocessing</h3>
 <p>Retrieving the data from IEDB was as simple as doing a search and clicking export. Using the requests python library, the full antigen sequence was downloaded and appended to the epitope dataset. Next, simple formatting was done to standardize the column names. Finally, the epitope dataset was merged with the assays dataset and filtered to include the following columns:</p>
-<div id="8cfc39a4" class="cell" data-execution_count="2">
+<div id="36ff6045" class="cell" data-execution_count="2">
 <details class="code-fold">
 <summary>Code</summary>
 <div class="sourceCode cell-code" id="cb2"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a>epitopes <span class="op">=</span> pd.read_csv(<span class="vs">r'/Users/tariq/Documents/capstone/data/epitope_table_export_1740279588.csv'</span>)</span>
@@ -389,7 +389,7 @@ Figure&nbsp;1: Top 20 Most Frequent MHC Alleles in Epitope Dataset
 </section>
 <section id="negative-sample-generation" class="level3">
 <h3 class="anchored" data-anchor-id="negative-sample-generation">Negative Sample Generation</h3>
-<div id="619e21f3" class="cell" data-execution_count="4">
+<div id="83731997" class="cell" data-execution_count="4">
 <details class="code-fold">
 <summary>Code</summary>
 <div class="sourceCode cell-code" id="cb4"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> generate_negatives(row):</span>
@@ -438,7 +438,7 @@ Figure&nbsp;1: Top 20 Most Frequent MHC Alleles in Epitope Dataset
 </section>
 <section id="feature-engineering" class="level3">
 <h3 class="anchored" data-anchor-id="feature-engineering">Feature Engineering</h3>
-<div id="10b51a5f" class="cell" data-execution_count="5">
+<div id="91337735" class="cell" data-execution_count="5">
 <details class="code-fold">
 <summary>Code</summary>
 <div class="sourceCode cell-code" id="cb5"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Kyte-Doolittle hydrophobicity scale</span></span>
@@ -535,7 +535,7 @@ Figure&nbsp;1: Top 20 Most Frequent MHC Alleles in Epitope Dataset
 <p>The protein analysis tool from the BioPython package allows for some quick feature engineering on most given peptides. For this analysis, the relevant features would be hydrophobicity, molecular weight, aromaticity, isoelectric point, instability, and the charge at pH7. Publications on epitope classification hold binding affinity — the ability for a peptide to bind to the body’s MHC complex — to be a strong preditctor. The BioPython package does not come with any functionality for binding affinity prediction but IEDB provides a tool called <strong>netMHCpan</strong>, which is the leading binding affinity prediction algorithm.</p>
 <p>The IEDB website offers a GUI for using netMHCpan to predict binding affinities. However, it is only possible to run predictions on 100 peptides at a time and this analysis is examining many more than that. NetMHCpan can be downloaded and installed as a command line tool allowing more flexibility using python. Given an amino acid sequence and an MHC allele specification, netMHCpan returns a binding affinity score. This score ranges from 0 to 1, where higher values indicate a stronger likelihood of binding.</p>
 <p>Subsequent analysis filters for 9-mer peptides, a common length for MHC Class I epitopes, for which binding prediction tools like netMHCpan are well-suited. After feature engineering, we have:</p>
-<div id="96e4d36d" class="cell" data-execution_count="6">
+<div id="49d4aba4" class="cell" data-execution_count="6">
 <details class="code-fold">
 <summary>Code</summary>
 <div class="sourceCode cell-code" id="cb6"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Generated using the standalone netMHCpan tool with relevant MHC alleles for each peptide</span></span>
@@ -1201,7 +1201,7 @@ Figure&nbsp;10: Feature Importance for Random Forest without Binding Affinity
 <h3 class="anchored" data-anchor-id="a-different-approach-learning-directly-from-sequence-with-cnns">A Different Approach: Learning Directly from Sequence with CNNs</h3>
 <p>Given the Random Forest model’s significant reliance on pre-computed binding affinity from <code>netMHCpan</code>, we explore an alternative strategy: a Convolutional Neural Network (CNN). The key value of the CNN in this context is its ability to learn predictive patterns directly from the raw amino acid sequences themselves. Unlike the RF model which uses engineered features and external predictions like <code>Score_BA</code>, the CNN can potentially uncover complex sequence motifs, positional tendencies, and other relevant features that may not be fully captured by binding affinity predictions alone. This approach allows the model to discover new features without feature engineering or reliance on separate binding prediction tools.</p>
 <p>To start, the data will be filtered to only include the amino acid sequence and respective label.</p>
-<div id="48fe06bf" class="cell" data-execution_count="16">
+<div id="f8b66808" class="cell" data-execution_count="16">
 <details class="code-fold">
 <summary>Code</summary>
 <div class="sourceCode cell-code" id="cb19"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb19-1"><a href="#cb19-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Filter and combine</span></span>
@@ -1261,7 +1261,7 @@ Figure&nbsp;10: Feature Importance for Random Forest without Binding Affinity
 </div>
 </div>
 <p>To train a neural network, the sequence must be represented in a numerical format. Assigning each amino acid a unique integer value up to 20, the sequences are converted to a list of integers. Then, the resulting integer sequences are one-hot encoded into a 3-dimensional arrary of shape (25628, 9, 20). 25,628 peptides, 9 amino acids in each peptide, 20 unique amino acids. The data is split into training, validation, and testing sets with a 70/15/15 ratio.</p>
-<div id="7cbeffab" class="cell" data-execution_count="17">
+<div id="36b0936e" class="cell" data-execution_count="17">
 <details class="code-fold">
 <summary>Code</summary>
 <div class="sourceCode cell-code" id="cb20"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb20-1"><a href="#cb20-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Extract sequences</span></span>
@@ -1324,7 +1324,7 @@ Testing set: (3845, 9, 20)
 </div>
 </div>
 <p>This CNN model processes one-hot encoded sequences using three 1D convolutional blocks (64, 128, 256 filters with BatchNormalization, MaxPooling, L2 regularization). Two subsequent dense blocks (256, 128 units with BatchNormalization, Dropout, L2 regularization, ReLU) follow. A final softmax layer outputs class probabilities. The model is compiled with Adam, sparse_categorical_crossentropy loss, and accuracy.</p>
-<div id="edf9118e" class="cell" data-execution_count="18">
+<div id="644ab7f4" class="cell" data-execution_count="18">
 <details class="code-fold">
 <summary>Code</summary>
 <div class="sourceCode cell-code" id="cb22"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb22-1"><a href="#cb22-1" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> create_cnn_model(input_shape, num_classes<span class="op">=</span><span class="dv">2</span>):</span>
@@ -1431,12 +1431,12 @@ Testing set: (3845, 9, 20)
 CNN Classification Report:
               precision    recall  f1-score   support
 
-           0       0.89      0.89      0.89      3051
-           1       0.57      0.58      0.57       794
+           0       0.89      0.88      0.89      3051
+           1       0.57      0.60      0.59       794
 
     accuracy                           0.82      3845
-   macro avg       0.73      0.73      0.73      3845
-weighted avg       0.82      0.82      0.82      3845
+   macro avg       0.73      0.74      0.74      3845
+weighted avg       0.83      0.82      0.83      3845
 </code></pre>
 </div>
 <div class="cell-output cell-output-display">
@@ -1526,7 +1526,7 @@ Figure&nbsp;11: Confusion Matrix for CNN Model
 <div class="cell-output cell-output-stdout">
 <pre><code>Sample Sequence: DLSPDGPRS
 True Label: Non-epitope (Class 0)
-Predicted Label: Non-epitope (Class 0) with probability 0.9859</code></pre>
+Predicted Label: Non-epitope (Class 0) with probability 0.9926</code></pre>
 </div>
 <div class="cell-output cell-output-display">
 <div id="fig-saliency-single" class="quarto-float quarto-figure quarto-figure-center anchored">
@@ -1543,10 +1543,11 @@ Figure&nbsp;12: Example Saliency Map for a Correctly Classified Sample (DLSPDGPR
 </div>
 <p>For this specific correctly classified sample (<code>DLSPDGPRS</code>):</p>
 <ul>
-<li>The model’s correct <strong>Non-epitope</strong> prediction was most strongly influenced by the <strong><code>G</code> at position 6</strong> and the <strong><code>P</code> at position 7</strong>.</li>
-<li>The <code>L</code> at position 2 and the <code>P</code> at position 4 also showed moderate importance.</li>
+<li>The model’s correct <strong>Non-epitope</strong> prediction was overwhelmingly influenced by the <strong><code>S</code> at position 9</strong>.</li>
+<li>The <code>L</code> at position 2 showed the next highest importance, though significantly less than the final Serine.</li>
+<li>Other positions, including the <code>G</code> at 6 and <code>P</code> at 7, had minimal influence on this particular prediction according to the map.</li>
 </ul>
-<p>This suggests these positions, particularly the G and P towards the C-terminus, provided strong signals for the model to classify the sequence as a non-epitope.</p>
+<p>This suggests the C-terminal Serine provided a very strong signal for the model to classify this sequence as a non-epitope.</p>
 </section>
 <section id="what-about-the-whole-dataset" class="level3">
 <h3 class="anchored" data-anchor-id="what-about-the-whole-dataset">What about the whole dataset?</h3>
@@ -3203,123 +3204,124 @@ window.document.addEventListener("DOMContentLoaded", function (event) {
 <span id="cb28-1062"><a href="#cb28-1062" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb28-1063"><a href="#cb28-1063" aria-hidden="true" tabindex="-1"></a>For this specific correctly classified sample (<span class="in">`DLSPDGPRS`</span>):</span>
 <span id="cb28-1064"><a href="#cb28-1064" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb28-1065"><a href="#cb28-1065" aria-hidden="true" tabindex="-1"></a><span class="ss">*   </span>The model's correct **Non-epitope** prediction was most strongly influenced by the **`G` at position 6** and the **`P` at position 7**.</span>
-<span id="cb28-1066"><a href="#cb28-1066" aria-hidden="true" tabindex="-1"></a><span class="ss">*   </span>The <span class="in">`L`</span> at position 2 and the <span class="in">`P`</span> at position 4 also showed moderate importance.</span>
-<span id="cb28-1067"><a href="#cb28-1067" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb28-1068"><a href="#cb28-1068" aria-hidden="true" tabindex="-1"></a>This suggests these positions, particularly the G and P towards the C-terminus, provided strong signals for the model to classify the sequence as a non-epitope.</span>
-<span id="cb28-1069"><a href="#cb28-1069" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb28-1070"><a href="#cb28-1070" aria-hidden="true" tabindex="-1"></a><span class="fu">### What about the whole dataset?</span></span>
-<span id="cb28-1071"><a href="#cb28-1071" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb28-1072"><a href="#cb28-1072" aria-hidden="true" tabindex="-1"></a>To get a more general understanding of feature importance across the dataset, we can compute average saliency maps for different classes of samples. Below, we calculate and plot the average saliency map for true epitopes and true non-epitopes in the test set. The saliency is calculated with respect to the true class output for each sample. This helps to reveal general patterns the model has learned.</span>
-<span id="cb28-1073"><a href="#cb28-1073" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb28-1074"><a href="#cb28-1074" aria-hidden="true" tabindex="-1"></a><span class="in">```{python aggregated_saliency_maps}</span></span>
-<span id="cb28-1075"><a href="#cb28-1075" aria-hidden="true" tabindex="-1"></a><span class="in">#| label: fig-saliency-agg</span></span>
-<span id="cb28-1076"><a href="#cb28-1076" aria-hidden="true" tabindex="-1"></a><span class="in">#| fig-cap: "Average Saliency Maps for True Epitopes and Non-Epitopes"</span></span>
-<span id="cb28-1077"><a href="#cb28-1077" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb28-1078"><a href="#cb28-1078" aria-hidden="true" tabindex="-1"></a><span class="in"># Ensure model, X_test, y_test, sequence_length, and num_chars are available</span></span>
-<span id="cb28-1079"><a href="#cb28-1079" aria-hidden="true" tabindex="-1"></a><span class="in"># model = tf.keras.models.load_model('best_cnn_model_len9.keras') # If not already loaded</span></span>
-<span id="cb28-1080"><a href="#cb28-1080" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb28-1081"><a href="#cb28-1081" aria-hidden="true" tabindex="-1"></a><span class="in">num_samples_to_process = len(X_test) # Or a smaller number for quicker testing, e.g., 100</span></span>
-<span id="cb28-1082"><a href="#cb28-1082" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb28-1083"><a href="#cb28-1083" aria-hidden="true" tabindex="-1"></a><span class="in"># Accumulators for saliency maps and counts</span></span>
-<span id="cb28-1084"><a href="#cb28-1084" aria-hidden="true" tabindex="-1"></a><span class="in">saliency_accumulator_epitopes = np.zeros(sequence_length)</span></span>
-<span id="cb28-1085"><a href="#cb28-1085" aria-hidden="true" tabindex="-1"></a><span class="in">count_epitopes = 0</span></span>
-<span id="cb28-1086"><a href="#cb28-1086" aria-hidden="true" tabindex="-1"></a><span class="in">saliency_accumulator_non_epitopes = np.zeros(sequence_length)</span></span>
-<span id="cb28-1087"><a href="#cb28-1087" aria-hidden="true" tabindex="-1"></a><span class="in">count_non_epitopes = 0</span></span>
-<span id="cb28-1088"><a href="#cb28-1088" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb28-1089"><a href="#cb28-1089" aria-hidden="true" tabindex="-1"></a><span class="in">for i in range(num_samples_to_process):</span></span>
-<span id="cb28-1090"><a href="#cb28-1090" aria-hidden="true" tabindex="-1"></a><span class="in">    sample_input = X_test[i:i+1] # Keep batch dimension</span></span>
-<span id="cb28-1091"><a href="#cb28-1091" aria-hidden="true" tabindex="-1"></a><span class="in">    true_label = y_test[i]</span></span>
-<span id="cb28-1092"><a href="#cb28-1092" aria-hidden="true" tabindex="-1"></a><span class="in">    true_class_idx = int(true_label)</span></span>
-<span id="cb28-1093"><a href="#cb28-1093" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb28-1094"><a href="#cb28-1094" aria-hidden="true" tabindex="-1"></a><span class="in">    sample_input_tf = tf.convert_to_tensor(sample_input, dtype=tf.float32)</span></span>
-<span id="cb28-1095"><a href="#cb28-1095" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb28-1096"><a href="#cb28-1096" aria-hidden="true" tabindex="-1"></a><span class="in">    with tf.GradientTape() as tape:</span></span>
-<span id="cb28-1097"><a href="#cb28-1097" aria-hidden="true" tabindex="-1"></a><span class="in">        tape.watch(sample_input_tf)</span></span>
-<span id="cb28-1098"><a href="#cb28-1098" aria-hidden="true" tabindex="-1"></a><span class="in">        predictions_tensor = model(sample_input_tf) # Get model output for current sample</span></span>
-<span id="cb28-1099"><a href="#cb28-1099" aria-hidden="true" tabindex="-1"></a><span class="in">        </span></span>
-<span id="cb28-1100"><a href="#cb28-1100" aria-hidden="true" tabindex="-1"></a><span class="in">        # Using true class for saliency</span></span>
-<span id="cb28-1101"><a href="#cb28-1101" aria-hidden="true" tabindex="-1"></a><span class="in">        output_neuron_to_explain = predictions_tensor[:, true_class_idx]</span></span>
-<span id="cb28-1102"><a href="#cb28-1102" aria-hidden="true" tabindex="-1"></a><span class="in">    </span></span>
-<span id="cb28-1103"><a href="#cb28-1103" aria-hidden="true" tabindex="-1"></a><span class="in">    saliency_grads = tape.gradient(output_neuron_to_explain, sample_input_tf)</span></span>
-<span id="cb28-1104"><a href="#cb28-1104" aria-hidden="true" tabindex="-1"></a><span class="in">    </span></span>
-<span id="cb28-1105"><a href="#cb28-1105" aria-hidden="true" tabindex="-1"></a><span class="in">    if saliency_grads is not None:</span></span>
-<span id="cb28-1106"><a href="#cb28-1106" aria-hidden="true" tabindex="-1"></a><span class="in">        # Using np.max as per your previous preference</span></span>
-<span id="cb28-1107"><a href="#cb28-1107" aria-hidden="true" tabindex="-1"></a><span class="in">        saliency_map_per_position = np.sum(np.abs(saliency_grads[0].numpy()), axis=1)</span></span>
-<span id="cb28-1108"><a href="#cb28-1108" aria-hidden="true" tabindex="-1"></a><span class="in">        #saliency_map_per_position = np.max(np.abs(saliency_grads[0].numpy()), axis=1)</span></span>
-<span id="cb28-1109"><a href="#cb28-1109" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb28-1110"><a href="#cb28-1110" aria-hidden="true" tabindex="-1"></a><span class="in">        if true_label == 1: # Epitope</span></span>
-<span id="cb28-1111"><a href="#cb28-1111" aria-hidden="true" tabindex="-1"></a><span class="in">            saliency_accumulator_epitopes += saliency_map_per_position</span></span>
-<span id="cb28-1112"><a href="#cb28-1112" aria-hidden="true" tabindex="-1"></a><span class="in">            count_epitopes += 1</span></span>
-<span id="cb28-1113"><a href="#cb28-1113" aria-hidden="true" tabindex="-1"></a><span class="in">        else: # Non-epitope</span></span>
-<span id="cb28-1114"><a href="#cb28-1114" aria-hidden="true" tabindex="-1"></a><span class="in">            saliency_accumulator_non_epitopes += saliency_map_per_position</span></span>
-<span id="cb28-1115"><a href="#cb28-1115" aria-hidden="true" tabindex="-1"></a><span class="in">            count_non_epitopes += 1</span></span>
-<span id="cb28-1116"><a href="#cb28-1116" aria-hidden="true" tabindex="-1"></a><span class="in">    else:</span></span>
-<span id="cb28-1117"><a href="#cb28-1117" aria-hidden="true" tabindex="-1"></a><span class="in">        print(f"Warning: Gradients were None for sample {i}. Skipping.")</span></span>
-<span id="cb28-1118"><a href="#cb28-1118" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb28-1119"><a href="#cb28-1119" aria-hidden="true" tabindex="-1"></a><span class="in">    if (i + 1) % 100 == 0:</span></span>
-<span id="cb28-1120"><a href="#cb28-1120" aria-hidden="true" tabindex="-1"></a><span class="in">        #print(f"Processed {i+1}/{num_samples_to_process} samples...")</span></span>
-<span id="cb28-1121"><a href="#cb28-1121" aria-hidden="true" tabindex="-1"></a><span class="in">        pass</span></span>
-<span id="cb28-1122"><a href="#cb28-1122" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb28-1123"><a href="#cb28-1123" aria-hidden="true" tabindex="-1"></a><span class="in">#print("Aggregation complete.")</span></span>
-<span id="cb28-1124"><a href="#cb28-1124" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb28-1125"><a href="#cb28-1125" aria-hidden="true" tabindex="-1"></a><span class="in"># Calculate average saliency maps</span></span>
-<span id="cb28-1126"><a href="#cb28-1126" aria-hidden="true" tabindex="-1"></a><span class="in">if count_epitopes &gt; 0:</span></span>
-<span id="cb28-1127"><a href="#cb28-1127" aria-hidden="true" tabindex="-1"></a><span class="in">    avg_saliency_epitopes = saliency_accumulator_epitopes / count_epitopes</span></span>
-<span id="cb28-1128"><a href="#cb28-1128" aria-hidden="true" tabindex="-1"></a><span class="in">    avg_saliency_epitopes_normalized = (avg_saliency_epitopes - np.min(avg_saliency_epitopes)) / (np.max(avg_saliency_epitopes) - np.min(avg_saliency_epitopes) + 1e-8)</span></span>
-<span id="cb28-1129"><a href="#cb28-1129" aria-hidden="true" tabindex="-1"></a><span class="in">else:</span></span>
-<span id="cb28-1130"><a href="#cb28-1130" aria-hidden="true" tabindex="-1"></a><span class="in">    avg_saliency_epitopes_normalized = None</span></span>
-<span id="cb28-1131"><a href="#cb28-1131" aria-hidden="true" tabindex="-1"></a><span class="in">    print("No epitope samples processed or found to calculate average saliency.")</span></span>
-<span id="cb28-1132"><a href="#cb28-1132" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb28-1133"><a href="#cb28-1133" aria-hidden="true" tabindex="-1"></a><span class="in">if count_non_epitopes &gt; 0:</span></span>
-<span id="cb28-1134"><a href="#cb28-1134" aria-hidden="true" tabindex="-1"></a><span class="in">    avg_saliency_non_epitopes = saliency_accumulator_non_epitopes / count_non_epitopes</span></span>
-<span id="cb28-1135"><a href="#cb28-1135" aria-hidden="true" tabindex="-1"></a><span class="in">    avg_saliency_non_epitopes_normalized = (avg_saliency_non_epitopes - np.min(avg_saliency_non_epitopes)) / (np.max(avg_saliency_non_epitopes) - np.min(avg_saliency_non_epitopes) + 1e-8)</span></span>
-<span id="cb28-1136"><a href="#cb28-1136" aria-hidden="true" tabindex="-1"></a><span class="in">else:</span></span>
-<span id="cb28-1137"><a href="#cb28-1137" aria-hidden="true" tabindex="-1"></a><span class="in">    avg_saliency_non_epitopes_normalized = None</span></span>
-<span id="cb28-1138"><a href="#cb28-1138" aria-hidden="true" tabindex="-1"></a><span class="in">    print("No non-epitope samples processed or found to calculate average saliency.")</span></span>
-<span id="cb28-1139"><a href="#cb28-1139" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb28-1140"><a href="#cb28-1140" aria-hidden="true" tabindex="-1"></a><span class="in"># Plotting the average saliency maps</span></span>
-<span id="cb28-1141"><a href="#cb28-1141" aria-hidden="true" tabindex="-1"></a><span class="in">fig, axs = plt.subplots(2, 1, figsize=(12, 8), sharex=True)</span></span>
-<span id="cb28-1142"><a href="#cb28-1142" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb28-1143"><a href="#cb28-1143" aria-hidden="true" tabindex="-1"></a><span class="in">if avg_saliency_epitopes_normalized is not None:</span></span>
-<span id="cb28-1144"><a href="#cb28-1144" aria-hidden="true" tabindex="-1"></a><span class="in">    axs[0].bar(range(sequence_length), avg_saliency_epitopes_normalized, color='lightcoral')</span></span>
-<span id="cb28-1145"><a href="#cb28-1145" aria-hidden="true" tabindex="-1"></a><span class="in">    axs[0].set_ylabel("Normalized Saliency")</span></span>
-<span id="cb28-1146"><a href="#cb28-1146" aria-hidden="true" tabindex="-1"></a><span class="in">    axs[0].set_title("Average Saliency Map for True Epitopes")</span></span>
-<span id="cb28-1147"><a href="#cb28-1147" aria-hidden="true" tabindex="-1"></a><span class="in">    axs[0].set_xticks(range(sequence_length))</span></span>
-<span id="cb28-1148"><a href="#cb28-1148" aria-hidden="true" tabindex="-1"></a><span class="in">else:</span></span>
-<span id="cb28-1149"><a href="#cb28-1149" aria-hidden="true" tabindex="-1"></a><span class="in">    axs[0].text(0.5, 0.5, 'No data for epitopes', horizontalalignment='center', verticalalignment='center', transform=axs[0].transAxes)</span></span>
-<span id="cb28-1150"><a href="#cb28-1150" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb28-1151"><a href="#cb28-1151" aria-hidden="true" tabindex="-1"></a><span class="in">if avg_saliency_non_epitopes_normalized is not None:</span></span>
-<span id="cb28-1152"><a href="#cb28-1152" aria-hidden="true" tabindex="-1"></a><span class="in">    axs[1].bar(range(sequence_length), avg_saliency_non_epitopes_normalized, color='skyblue')</span></span>
-<span id="cb28-1153"><a href="#cb28-1153" aria-hidden="true" tabindex="-1"></a><span class="in">    axs[1].set_xlabel("Amino Acid Position")</span></span>
-<span id="cb28-1154"><a href="#cb28-1154" aria-hidden="true" tabindex="-1"></a><span class="in">    axs[1].set_ylabel("Normalized Saliency")</span></span>
-<span id="cb28-1155"><a href="#cb28-1155" aria-hidden="true" tabindex="-1"></a><span class="in">    axs[1].set_title("Average Saliency Map for True Non-Epitopes")</span></span>
-<span id="cb28-1156"><a href="#cb28-1156" aria-hidden="true" tabindex="-1"></a><span class="in">    axs[1].set_xticks(range(sequence_length))</span></span>
-<span id="cb28-1157"><a href="#cb28-1157" aria-hidden="true" tabindex="-1"></a><span class="in">else:</span></span>
-<span id="cb28-1158"><a href="#cb28-1158" aria-hidden="true" tabindex="-1"></a><span class="in">    axs[1].text(0.5, 0.5, 'No data for non-epitopes', horizontalalignment='center', verticalalignment='center', transform=axs[1].transAxes)</span></span>
-<span id="cb28-1159"><a href="#cb28-1159" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb28-1160"><a href="#cb28-1160" aria-hidden="true" tabindex="-1"></a><span class="in">plt.tight_layout()</span></span>
-<span id="cb28-1161"><a href="#cb28-1161" aria-hidden="true" tabindex="-1"></a><span class="in">plt.show()</span></span>
-<span id="cb28-1162"><a href="#cb28-1162" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb28-1163"><a href="#cb28-1163" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
-<span id="cb28-1164"><a href="#cb28-1164" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb28-1165"><a href="#cb28-1165" aria-hidden="true" tabindex="-1"></a>Interpreting the aggregated saliency maps:</span>
-<span id="cb28-1166"><a href="#cb28-1166" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb28-1167"><a href="#cb28-1167" aria-hidden="true" tabindex="-1"></a><span class="ss">*   </span>**Dominance of position 8:** For both true epitopes and true non-epitopes, the amino acid at position 8 shows by far the highest average saliency. This indicates the model heavily relies on the identity of this final residue to make its classification.</span>
-<span id="cb28-1168"><a href="#cb28-1168" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb28-1169"><a href="#cb28-1169" aria-hidden="true" tabindex="-1"></a><span class="ss">*   </span>**Importance of position 1 for non-epitopes:** For true non-epitopes, the amino acid at position 1 also shows notably high average saliency, suggesting its importance in identifying a sequence as not an epitope.</span>
-<span id="cb28-1170"><a href="#cb28-1170" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb28-1171"><a href="#cb28-1171" aria-hidden="true" tabindex="-1"></a><span class="ss">*   </span>**General pattern:** The model appears to have learned that the C-terminal residue is a primary determinant, with other positions like position 1 playing secondary, but still significant, roles.</span>
-<span id="cb28-1172"><a href="#cb28-1172" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb28-1173"><a href="#cb28-1173" aria-hidden="true" tabindex="-1"></a><span class="fu"># Conclusion</span></span>
-<span id="cb28-1174"><a href="#cb28-1174" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb28-1175"><a href="#cb28-1175" aria-hidden="true" tabindex="-1"></a>This project aimed to develop and evaluate computational models for classifying cancer T-cell epitopes, a necessary task for advancing personalized cancer treatment. By utilizing data from the Immune Epitope Database (IEDB) and employing feature engineering and machine learning techniques, we explored factors differentiating epitopes from non-epitope peptides derived from the same source proteins.</span>
-<span id="cb28-1176"><a href="#cb28-1176" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb28-1177"><a href="#cb28-1177" aria-hidden="true" tabindex="-1"></a>A Random Forest model incorporating predicted binding affinity scores from <span class="in">`netMHCpan`</span> achieved high overall performance and reasonable recall for identifying true epitopes. However, removing this binding affinity feature caused a dramatic drop in the model's ability to identify epitopes, indicating that standard physicochemical features alone, while descriptive, were insufficient for robust classification in this context.</span>
-<span id="cb28-1178"><a href="#cb28-1178" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb28-1179"><a href="#cb28-1179" aria-hidden="true" tabindex="-1"></a>Significantly, a Convolutional Neural Network (CNN) trained on one-hot encoded peptide sequences, without relying on external binding predictors or engineered features, demonstrated superior performance compared to the feature-based Random Forest without binding affinity. The CNN achieved balanced performance with better recall for the epitope class. This demonstrates the potential of deep learning models to capture patterns directly from sequence data.</span>
-<span id="cb28-1180"><a href="#cb28-1180" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb28-1181"><a href="#cb28-1181" aria-hidden="true" tabindex="-1"></a><span class="fu"># References</span></span>
+<span id="cb28-1065"><a href="#cb28-1065" aria-hidden="true" tabindex="-1"></a><span class="ss">*   </span>The model's correct **Non-epitope** prediction was overwhelmingly influenced by the **`S` at position 9**.</span>
+<span id="cb28-1066"><a href="#cb28-1066" aria-hidden="true" tabindex="-1"></a><span class="ss">*   </span>The <span class="in">`L`</span> at position 2 showed the next highest importance, though significantly less than the final Serine.</span>
+<span id="cb28-1067"><a href="#cb28-1067" aria-hidden="true" tabindex="-1"></a><span class="ss">*   </span>Other positions, including the <span class="in">`G`</span> at 6 and <span class="in">`P`</span> at 7, had minimal influence on this particular prediction according to the map.</span>
+<span id="cb28-1068"><a href="#cb28-1068" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb28-1069"><a href="#cb28-1069" aria-hidden="true" tabindex="-1"></a>This suggests the C-terminal Serine provided a very strong signal for the model to classify this sequence as a non-epitope.</span>
+<span id="cb28-1070"><a href="#cb28-1070" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb28-1071"><a href="#cb28-1071" aria-hidden="true" tabindex="-1"></a><span class="fu">### What about the whole dataset?</span></span>
+<span id="cb28-1072"><a href="#cb28-1072" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb28-1073"><a href="#cb28-1073" aria-hidden="true" tabindex="-1"></a>To get a more general understanding of feature importance across the dataset, we can compute average saliency maps for different classes of samples. Below, we calculate and plot the average saliency map for true epitopes and true non-epitopes in the test set. The saliency is calculated with respect to the true class output for each sample. This helps to reveal general patterns the model has learned.</span>
+<span id="cb28-1074"><a href="#cb28-1074" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb28-1075"><a href="#cb28-1075" aria-hidden="true" tabindex="-1"></a><span class="in">```{python aggregated_saliency_maps}</span></span>
+<span id="cb28-1076"><a href="#cb28-1076" aria-hidden="true" tabindex="-1"></a><span class="in">#| label: fig-saliency-agg</span></span>
+<span id="cb28-1077"><a href="#cb28-1077" aria-hidden="true" tabindex="-1"></a><span class="in">#| fig-cap: "Average Saliency Maps for True Epitopes and Non-Epitopes"</span></span>
+<span id="cb28-1078"><a href="#cb28-1078" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb28-1079"><a href="#cb28-1079" aria-hidden="true" tabindex="-1"></a><span class="in"># Ensure model, X_test, y_test, sequence_length, and num_chars are available</span></span>
+<span id="cb28-1080"><a href="#cb28-1080" aria-hidden="true" tabindex="-1"></a><span class="in"># model = tf.keras.models.load_model('best_cnn_model_len9.keras') # If not already loaded</span></span>
+<span id="cb28-1081"><a href="#cb28-1081" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb28-1082"><a href="#cb28-1082" aria-hidden="true" tabindex="-1"></a><span class="in">num_samples_to_process = len(X_test) # Or a smaller number for quicker testing, e.g., 100</span></span>
+<span id="cb28-1083"><a href="#cb28-1083" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb28-1084"><a href="#cb28-1084" aria-hidden="true" tabindex="-1"></a><span class="in"># Accumulators for saliency maps and counts</span></span>
+<span id="cb28-1085"><a href="#cb28-1085" aria-hidden="true" tabindex="-1"></a><span class="in">saliency_accumulator_epitopes = np.zeros(sequence_length)</span></span>
+<span id="cb28-1086"><a href="#cb28-1086" aria-hidden="true" tabindex="-1"></a><span class="in">count_epitopes = 0</span></span>
+<span id="cb28-1087"><a href="#cb28-1087" aria-hidden="true" tabindex="-1"></a><span class="in">saliency_accumulator_non_epitopes = np.zeros(sequence_length)</span></span>
+<span id="cb28-1088"><a href="#cb28-1088" aria-hidden="true" tabindex="-1"></a><span class="in">count_non_epitopes = 0</span></span>
+<span id="cb28-1089"><a href="#cb28-1089" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb28-1090"><a href="#cb28-1090" aria-hidden="true" tabindex="-1"></a><span class="in">for i in range(num_samples_to_process):</span></span>
+<span id="cb28-1091"><a href="#cb28-1091" aria-hidden="true" tabindex="-1"></a><span class="in">    sample_input = X_test[i:i+1] # Keep batch dimension</span></span>
+<span id="cb28-1092"><a href="#cb28-1092" aria-hidden="true" tabindex="-1"></a><span class="in">    true_label = y_test[i]</span></span>
+<span id="cb28-1093"><a href="#cb28-1093" aria-hidden="true" tabindex="-1"></a><span class="in">    true_class_idx = int(true_label)</span></span>
+<span id="cb28-1094"><a href="#cb28-1094" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb28-1095"><a href="#cb28-1095" aria-hidden="true" tabindex="-1"></a><span class="in">    sample_input_tf = tf.convert_to_tensor(sample_input, dtype=tf.float32)</span></span>
+<span id="cb28-1096"><a href="#cb28-1096" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb28-1097"><a href="#cb28-1097" aria-hidden="true" tabindex="-1"></a><span class="in">    with tf.GradientTape() as tape:</span></span>
+<span id="cb28-1098"><a href="#cb28-1098" aria-hidden="true" tabindex="-1"></a><span class="in">        tape.watch(sample_input_tf)</span></span>
+<span id="cb28-1099"><a href="#cb28-1099" aria-hidden="true" tabindex="-1"></a><span class="in">        predictions_tensor = model(sample_input_tf) # Get model output for current sample</span></span>
+<span id="cb28-1100"><a href="#cb28-1100" aria-hidden="true" tabindex="-1"></a><span class="in">        </span></span>
+<span id="cb28-1101"><a href="#cb28-1101" aria-hidden="true" tabindex="-1"></a><span class="in">        # Using true class for saliency</span></span>
+<span id="cb28-1102"><a href="#cb28-1102" aria-hidden="true" tabindex="-1"></a><span class="in">        output_neuron_to_explain = predictions_tensor[:, true_class_idx]</span></span>
+<span id="cb28-1103"><a href="#cb28-1103" aria-hidden="true" tabindex="-1"></a><span class="in">    </span></span>
+<span id="cb28-1104"><a href="#cb28-1104" aria-hidden="true" tabindex="-1"></a><span class="in">    saliency_grads = tape.gradient(output_neuron_to_explain, sample_input_tf)</span></span>
+<span id="cb28-1105"><a href="#cb28-1105" aria-hidden="true" tabindex="-1"></a><span class="in">    </span></span>
+<span id="cb28-1106"><a href="#cb28-1106" aria-hidden="true" tabindex="-1"></a><span class="in">    if saliency_grads is not None:</span></span>
+<span id="cb28-1107"><a href="#cb28-1107" aria-hidden="true" tabindex="-1"></a><span class="in">        # Using np.max as per your previous preference</span></span>
+<span id="cb28-1108"><a href="#cb28-1108" aria-hidden="true" tabindex="-1"></a><span class="in">        saliency_map_per_position = np.sum(np.abs(saliency_grads[0].numpy()), axis=1)</span></span>
+<span id="cb28-1109"><a href="#cb28-1109" aria-hidden="true" tabindex="-1"></a><span class="in">        #saliency_map_per_position = np.max(np.abs(saliency_grads[0].numpy()), axis=1)</span></span>
+<span id="cb28-1110"><a href="#cb28-1110" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb28-1111"><a href="#cb28-1111" aria-hidden="true" tabindex="-1"></a><span class="in">        if true_label == 1: # Epitope</span></span>
+<span id="cb28-1112"><a href="#cb28-1112" aria-hidden="true" tabindex="-1"></a><span class="in">            saliency_accumulator_epitopes += saliency_map_per_position</span></span>
+<span id="cb28-1113"><a href="#cb28-1113" aria-hidden="true" tabindex="-1"></a><span class="in">            count_epitopes += 1</span></span>
+<span id="cb28-1114"><a href="#cb28-1114" aria-hidden="true" tabindex="-1"></a><span class="in">        else: # Non-epitope</span></span>
+<span id="cb28-1115"><a href="#cb28-1115" aria-hidden="true" tabindex="-1"></a><span class="in">            saliency_accumulator_non_epitopes += saliency_map_per_position</span></span>
+<span id="cb28-1116"><a href="#cb28-1116" aria-hidden="true" tabindex="-1"></a><span class="in">            count_non_epitopes += 1</span></span>
+<span id="cb28-1117"><a href="#cb28-1117" aria-hidden="true" tabindex="-1"></a><span class="in">    else:</span></span>
+<span id="cb28-1118"><a href="#cb28-1118" aria-hidden="true" tabindex="-1"></a><span class="in">        print(f"Warning: Gradients were None for sample {i}. Skipping.")</span></span>
+<span id="cb28-1119"><a href="#cb28-1119" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb28-1120"><a href="#cb28-1120" aria-hidden="true" tabindex="-1"></a><span class="in">    if (i + 1) % 100 == 0:</span></span>
+<span id="cb28-1121"><a href="#cb28-1121" aria-hidden="true" tabindex="-1"></a><span class="in">        #print(f"Processed {i+1}/{num_samples_to_process} samples...")</span></span>
+<span id="cb28-1122"><a href="#cb28-1122" aria-hidden="true" tabindex="-1"></a><span class="in">        pass</span></span>
+<span id="cb28-1123"><a href="#cb28-1123" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb28-1124"><a href="#cb28-1124" aria-hidden="true" tabindex="-1"></a><span class="in">#print("Aggregation complete.")</span></span>
+<span id="cb28-1125"><a href="#cb28-1125" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb28-1126"><a href="#cb28-1126" aria-hidden="true" tabindex="-1"></a><span class="in"># Calculate average saliency maps</span></span>
+<span id="cb28-1127"><a href="#cb28-1127" aria-hidden="true" tabindex="-1"></a><span class="in">if count_epitopes &gt; 0:</span></span>
+<span id="cb28-1128"><a href="#cb28-1128" aria-hidden="true" tabindex="-1"></a><span class="in">    avg_saliency_epitopes = saliency_accumulator_epitopes / count_epitopes</span></span>
+<span id="cb28-1129"><a href="#cb28-1129" aria-hidden="true" tabindex="-1"></a><span class="in">    avg_saliency_epitopes_normalized = (avg_saliency_epitopes - np.min(avg_saliency_epitopes)) / (np.max(avg_saliency_epitopes) - np.min(avg_saliency_epitopes) + 1e-8)</span></span>
+<span id="cb28-1130"><a href="#cb28-1130" aria-hidden="true" tabindex="-1"></a><span class="in">else:</span></span>
+<span id="cb28-1131"><a href="#cb28-1131" aria-hidden="true" tabindex="-1"></a><span class="in">    avg_saliency_epitopes_normalized = None</span></span>
+<span id="cb28-1132"><a href="#cb28-1132" aria-hidden="true" tabindex="-1"></a><span class="in">    print("No epitope samples processed or found to calculate average saliency.")</span></span>
+<span id="cb28-1133"><a href="#cb28-1133" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb28-1134"><a href="#cb28-1134" aria-hidden="true" tabindex="-1"></a><span class="in">if count_non_epitopes &gt; 0:</span></span>
+<span id="cb28-1135"><a href="#cb28-1135" aria-hidden="true" tabindex="-1"></a><span class="in">    avg_saliency_non_epitopes = saliency_accumulator_non_epitopes / count_non_epitopes</span></span>
+<span id="cb28-1136"><a href="#cb28-1136" aria-hidden="true" tabindex="-1"></a><span class="in">    avg_saliency_non_epitopes_normalized = (avg_saliency_non_epitopes - np.min(avg_saliency_non_epitopes)) / (np.max(avg_saliency_non_epitopes) - np.min(avg_saliency_non_epitopes) + 1e-8)</span></span>
+<span id="cb28-1137"><a href="#cb28-1137" aria-hidden="true" tabindex="-1"></a><span class="in">else:</span></span>
+<span id="cb28-1138"><a href="#cb28-1138" aria-hidden="true" tabindex="-1"></a><span class="in">    avg_saliency_non_epitopes_normalized = None</span></span>
+<span id="cb28-1139"><a href="#cb28-1139" aria-hidden="true" tabindex="-1"></a><span class="in">    print("No non-epitope samples processed or found to calculate average saliency.")</span></span>
+<span id="cb28-1140"><a href="#cb28-1140" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb28-1141"><a href="#cb28-1141" aria-hidden="true" tabindex="-1"></a><span class="in"># Plotting the average saliency maps</span></span>
+<span id="cb28-1142"><a href="#cb28-1142" aria-hidden="true" tabindex="-1"></a><span class="in">fig, axs = plt.subplots(2, 1, figsize=(12, 8), sharex=True)</span></span>
+<span id="cb28-1143"><a href="#cb28-1143" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb28-1144"><a href="#cb28-1144" aria-hidden="true" tabindex="-1"></a><span class="in">if avg_saliency_epitopes_normalized is not None:</span></span>
+<span id="cb28-1145"><a href="#cb28-1145" aria-hidden="true" tabindex="-1"></a><span class="in">    axs[0].bar(range(sequence_length), avg_saliency_epitopes_normalized, color='lightcoral')</span></span>
+<span id="cb28-1146"><a href="#cb28-1146" aria-hidden="true" tabindex="-1"></a><span class="in">    axs[0].set_ylabel("Normalized Saliency")</span></span>
+<span id="cb28-1147"><a href="#cb28-1147" aria-hidden="true" tabindex="-1"></a><span class="in">    axs[0].set_title("Average Saliency Map for True Epitopes")</span></span>
+<span id="cb28-1148"><a href="#cb28-1148" aria-hidden="true" tabindex="-1"></a><span class="in">    axs[0].set_xticks(range(sequence_length))</span></span>
+<span id="cb28-1149"><a href="#cb28-1149" aria-hidden="true" tabindex="-1"></a><span class="in">else:</span></span>
+<span id="cb28-1150"><a href="#cb28-1150" aria-hidden="true" tabindex="-1"></a><span class="in">    axs[0].text(0.5, 0.5, 'No data for epitopes', horizontalalignment='center', verticalalignment='center', transform=axs[0].transAxes)</span></span>
+<span id="cb28-1151"><a href="#cb28-1151" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb28-1152"><a href="#cb28-1152" aria-hidden="true" tabindex="-1"></a><span class="in">if avg_saliency_non_epitopes_normalized is not None:</span></span>
+<span id="cb28-1153"><a href="#cb28-1153" aria-hidden="true" tabindex="-1"></a><span class="in">    axs[1].bar(range(sequence_length), avg_saliency_non_epitopes_normalized, color='skyblue')</span></span>
+<span id="cb28-1154"><a href="#cb28-1154" aria-hidden="true" tabindex="-1"></a><span class="in">    axs[1].set_xlabel("Amino Acid Position")</span></span>
+<span id="cb28-1155"><a href="#cb28-1155" aria-hidden="true" tabindex="-1"></a><span class="in">    axs[1].set_ylabel("Normalized Saliency")</span></span>
+<span id="cb28-1156"><a href="#cb28-1156" aria-hidden="true" tabindex="-1"></a><span class="in">    axs[1].set_title("Average Saliency Map for True Non-Epitopes")</span></span>
+<span id="cb28-1157"><a href="#cb28-1157" aria-hidden="true" tabindex="-1"></a><span class="in">    axs[1].set_xticks(range(sequence_length))</span></span>
+<span id="cb28-1158"><a href="#cb28-1158" aria-hidden="true" tabindex="-1"></a><span class="in">else:</span></span>
+<span id="cb28-1159"><a href="#cb28-1159" aria-hidden="true" tabindex="-1"></a><span class="in">    axs[1].text(0.5, 0.5, 'No data for non-epitopes', horizontalalignment='center', verticalalignment='center', transform=axs[1].transAxes)</span></span>
+<span id="cb28-1160"><a href="#cb28-1160" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb28-1161"><a href="#cb28-1161" aria-hidden="true" tabindex="-1"></a><span class="in">plt.tight_layout()</span></span>
+<span id="cb28-1162"><a href="#cb28-1162" aria-hidden="true" tabindex="-1"></a><span class="in">plt.show()</span></span>
+<span id="cb28-1163"><a href="#cb28-1163" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb28-1164"><a href="#cb28-1164" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb28-1165"><a href="#cb28-1165" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb28-1166"><a href="#cb28-1166" aria-hidden="true" tabindex="-1"></a>Interpreting the aggregated saliency maps:</span>
+<span id="cb28-1167"><a href="#cb28-1167" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb28-1168"><a href="#cb28-1168" aria-hidden="true" tabindex="-1"></a><span class="ss">*   </span>**Dominance of position 8:** For both true epitopes and true non-epitopes, the amino acid at position 8 shows by far the highest average saliency. This indicates the model heavily relies on the identity of this final residue to make its classification.</span>
+<span id="cb28-1169"><a href="#cb28-1169" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb28-1170"><a href="#cb28-1170" aria-hidden="true" tabindex="-1"></a><span class="ss">*   </span>**Importance of position 1 for non-epitopes:** For true non-epitopes, the amino acid at position 1 also shows notably high average saliency, suggesting its importance in identifying a sequence as not an epitope.</span>
+<span id="cb28-1171"><a href="#cb28-1171" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb28-1172"><a href="#cb28-1172" aria-hidden="true" tabindex="-1"></a><span class="ss">*   </span>**General pattern:** The model appears to have learned that the C-terminal residue is a primary determinant, with other positions like position 1 playing secondary, but still significant, roles.</span>
+<span id="cb28-1173"><a href="#cb28-1173" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb28-1174"><a href="#cb28-1174" aria-hidden="true" tabindex="-1"></a><span class="fu"># Conclusion</span></span>
+<span id="cb28-1175"><a href="#cb28-1175" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb28-1176"><a href="#cb28-1176" aria-hidden="true" tabindex="-1"></a>This project aimed to develop and evaluate computational models for classifying cancer T-cell epitopes, a necessary task for advancing personalized cancer treatment. By utilizing data from the Immune Epitope Database (IEDB) and employing feature engineering and machine learning techniques, we explored factors differentiating epitopes from non-epitope peptides derived from the same source proteins.</span>
+<span id="cb28-1177"><a href="#cb28-1177" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb28-1178"><a href="#cb28-1178" aria-hidden="true" tabindex="-1"></a>A Random Forest model incorporating predicted binding affinity scores from <span class="in">`netMHCpan`</span> achieved high overall performance and reasonable recall for identifying true epitopes. However, removing this binding affinity feature caused a dramatic drop in the model's ability to identify epitopes, indicating that standard physicochemical features alone, while descriptive, were insufficient for robust classification in this context.</span>
+<span id="cb28-1179"><a href="#cb28-1179" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb28-1180"><a href="#cb28-1180" aria-hidden="true" tabindex="-1"></a>Significantly, a Convolutional Neural Network (CNN) trained on one-hot encoded peptide sequences, without relying on external binding predictors or engineered features, demonstrated superior performance compared to the feature-based Random Forest without binding affinity. The CNN achieved balanced performance with better recall for the epitope class. This demonstrates the potential of deep learning models to capture patterns directly from sequence data.</span>
+<span id="cb28-1181"><a href="#cb28-1181" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb28-1182"><a href="#cb28-1182" aria-hidden="true" tabindex="-1"></a><span class="fu"># References</span></span>
 </code><button title="Copy to Clipboard" class="code-copy-button" data-in-quarto-modal=""><i class="bi"></i></button></pre></div>
 </div></div></div></div></div>
 </div> <!-- /content -->

@@ -1040,12 +1040,7 @@ plt.show()
 
 ```
 
-For this specific correctly classified sample (`DLSPDGPRS`):
-
-*   The model's correct **Non-epitope** prediction was most strongly influenced by the **`G` at position 6** and the **`P` at position 7**.
-*   The `L` at position 2 and the `P` at position 4 also showed moderate importance.
-
-This suggests these positions, particularly the G and P towards the C-terminus, provided strong signals for the model to classify the sequence as a non-epitope.
+We see for this sample, the model relies heavily on the position 9, which is a Serine. This is likely due to the hydrophobic nature of Serine, which is a known feature of non-epitopes.
 
 ### What about the whole dataset?
 
