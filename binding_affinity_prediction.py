@@ -184,6 +184,12 @@ def main():
             peptide = row[args.peptide_col]
             allele = row[args.allele_col]
             
+            # Replace 'HLA class 1' with a default common allele
+            if isinstance(allele, str) and allele.strip() == "HLA class 1":
+                allele = "HLA-A*02:01"
+                if args.verbose:
+                    print(f"  Replacing 'HLA class 1' with {allele} for peptide {peptide}")
+
             # Skip if peptide is missing or too short
             if pd.isna(peptide) or peptide == '' or len(peptide) < 8:
                 print(f"Skipping row {i+1}/{total} with missing or too short peptide: '{peptide}'")

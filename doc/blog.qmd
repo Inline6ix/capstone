@@ -109,6 +109,38 @@ epitopes = epitopes.merge(mhc, on='epitope_name', how='left')
 epitopes.head()
 ```
 
+### MHC Allele Distribution
+
+It's important to understand the distribution of MHC alleles associated with the epitopes in our dataset, as MHC molecules are responsible for presenting these peptides to T-cells. A skewed distribution could influence downstream analysis and potentially bias model performance towards more represented alleles.
+
+```{python mhc_allele_distribution}
+# Assuming 'epitopes' DataFrame with 'mhcrestriction_name' column is available
+# from the previous preprocessing cell.
+
+# Count MHC allele frequencies, dropping any NaNs first
+mhc_counts = epitopes['mhcrestriction_name'].dropna().value_counts()
+
+# Select top N for visualization
+N = 20 # Show the top 20 alleles
+top_mhc_counts = mhc_counts.head(N)
+
+# Plotting
+plt.figure(figsize=(12, 8))
+sns.barplot(x=top_mhc_counts.values, y=top_mhc_counts.index, palette='viridis')
+plt.title(f'Top {N} Most Frequent MHC Alleles in Epitope Dataset')
+plt.xlabel('Frequency (Number of Epitopes)')
+plt.ylabel('MHC Allele')
+plt.tight_layout()
+plt.show()
+
+# Optionally, print some stats for context
+# print(f"Total unique alleles found: {len(mhc_counts)}")
+# print("Top 5 allele counts:\n", top_mhc_counts.head())
+
+```
+
+The plot reveals a significant skew in the MHC allele distribution within the initial epitope dataset. The allele **HLA-A\*02:01** is vastly overrepresented compared to all others. While other alleles like HLA-A\*24:02 and HLA-A\*03:01 are present, their frequencies are considerably lower. This pronounced skew towards HLA-A\*02:01, while common in immunological datasets due to research focus and population frequencies, is critical to acknowledge. It implies that subsequent analyses and models might be heavily influenced by, or perform best on, peptides presented by this specific allele.
+
 ### Negative Sample Generation
 
 ```{python negative_sample_generation}
@@ -256,7 +288,7 @@ negatives['charge_at_pH7'] = negatives['peptide'].apply(calculate_charge_at_pH7)
 negatives.drop('negatives', axis=1, inplace=True)
 ```
 
-The protein analysis tool from the BioPython package allows for some quick feature engineering on most given peptides. For this analysis, the relevant features would be hydrophobicity, molecular weight, aromaticity, isoelectric point, instability, and the charge at pH7. Publications on epitope classification hold binding affinity — the ability for a peptide to bind to the body's MHC complex — to be a strong preditctor. The BioPython package does not come with any functionality for binding affinity prediction but IEDB provides a tool called netMHCpan, which is the leading binding affinity prediction algorithm.
+The protein analysis tool from the BioPython package allows for some quick feature engineering on most given peptides. For this analysis, the relevant features would be hydrophobicity, molecular weight, aromaticity, isoelectric point, instability, and the charge at pH7. Publications on epitope classification hold binding affinity — the ability for a peptide to bind to the body's MHC complex — to be a strong preditctor. The BioPython package does not come with any functionality for binding affinity prediction but IEDB provides a tool called **netMHCpan**, which is the leading binding affinity prediction algorithm.
 
 The IEDB website offers a GUI for using netMHCpan to predict binding affinities. However, it is only possible to run predictions on 100 peptides at a time and this analysis is examining many more than that. NetMHCpan can be downloaded and installed as a command line tool allowing more flexibility using python. Given an amino acid sequence and an MHC allele specification, netMHCpan returns a binding affinity score. This score ranges from 0 to 1, where higher values indicate a stronger likelihood of binding.
 
@@ -283,9 +315,9 @@ negatives = pd.merge(negatives, negatives_BA_pred[['peptide', 'Score_BA']], on='
 epitopes.head()
 ```
 
-# What Distinguishes an epitope from any other peptide in an antigen?
+# What Distinguishes an epitope from any other peptide?
 
-### Boxplots
+### Statistical Comparison
 
 ```{python}
 # Compare numeric features between epitopes and negatives datasets
@@ -293,29 +325,27 @@ numeric_features = ['peptide_avg_hydro', 'molecular_weight', 'aromaticity',
                     'isoelectric_point', 'instability', 'charge_at_pH7', 'Score_BA']
 
 # Create a figure with subplots for each numeric feature
-fig, axes = plt.subplots(len(numeric_features), 1, figsize=(12, 4*len(numeric_features)))
+fig, axes = plt.subplots(len(numeric_features), 1, figsize=(12, 5*len(numeric_features)))
 #fig.tight_layout(pad=5.0)
 
-# Plot boxplots for each feature
+# Plot density plots for each feature
 for i, feature in enumerate(numeric_features):
     ax = axes[i]
     
-    # Create a temporary dataframe for plotting
-    plot_data = pd.DataFrame({
-        'Epitopes': epitopes[feature],
-        'Negatives': negatives[feature]
-    })
+    # Create density plot for Epitopes
+    sns.kdeplot(epitopes[feature].dropna(), ax=ax, label='Epitopes', fill=True)
     
-    # Create boxplot
-    sns.boxplot(data=plot_data, ax=ax)
+    # Create density plot for Negatives
+    sns.kdeplot(negatives[feature].dropna(), ax=ax, label='Negatives', fill=True)
     
     # Add feature statistics
     epitope_mean = epitopes[feature].mean()
     negative_mean = negatives[feature].mean()
     
-    ax.set_title(f'{feature} Distribution Comparison')
+    ax.set_title(f'{feature} Density Plot Comparison')
     ax.text(0.02, 0.95, f'Epitopes mean: {epitope_mean:.4f}', transform=ax.transAxes)
     ax.text(0.02, 0.90, f'Negatives mean: {negative_mean:.4f}', transform=ax.transAxes)
+    ax.legend()
     
     # Add p-value from t-test
     from scipy import stats
@@ -356,19 +386,185 @@ plt.show()
 
 Upon further inspection of the difference in predicted binding affinity score, we see the non-epitope peptides exhibit a right-skewed distribution with a mean of 0.07, and the epitopes show a broad, moderate-variance spread with a much higher mean of 0.56.
 
-# Modeling
+### Sequence Motifs
 
-### Model Selection
+While the predicted binding affinity score is a strong predictor of epitope classification, it is not the only feature that distinguishes an epitope from a non-epitope. To further understand the differences between the two classes, we can look for patterns in the amino acid sequences. 
 
-To establish a baseline for performance, a random forest classifier will be fit to the following features:
+One way to explore these patterns is to examine the frequency of short amino acid motifs, such as tripeptides (sequences of three amino acids). By comparing the most frequent tripeptides in known epitopes versus non-epitope sequences, we might identify motifs that are enriched in one class or the other.
 
--   peptide_avg_hydro
--   molecular_weight
--   aromaticity
--   isoelectric_point
--   instability
--   charge_at_pH7
--   Score_BA
+```{python tripeptide_frequency_analysis}
+from collections import Counter
+import matplotlib.pyplot as plt
+import pandas as pd # Ensure pandas is imported if not already from a previous cell
+
+# Create temporary copies of epitopes and negatives, then add 'label' column for this analysis
+# Assumes 'epitopes' and 'negatives' DataFrames (without 'label' yet) are available from prior cells
+temp_epitopes_for_motifs = epitopes.copy()
+temp_negatives_for_motifs = negatives.copy()
+
+temp_epitopes_for_motifs['label'] = 1
+temp_negatives_for_motifs['label'] = 0
+
+# Now proceed with the lines you uncommented, using these temporary DataFrames
+epitopes_filtered = temp_epitopes_for_motifs[['peptide', 'label']].copy()
+epitopes_filtered.rename(columns={'peptide': 'sequence'}, inplace=True)
+negatives_filtered = temp_negatives_for_motifs[['peptide', 'label']].copy()
+negatives_filtered.rename(columns={'peptide': 'sequence'}, inplace=True)
+
+# Use a specific name for this combined_data to avoid conflict
+combined_data_for_tripeptides = pd.concat([epitopes_filtered, negatives_filtered], ignore_index=True)
+
+def get_tripeptides(sequence):
+    """Extracts all overlapping tripeptides from a sequence."""
+    return [sequence[i:i+3] for i in range(len(sequence) - 2)]
+
+# Separate epitope and non-epitope sequences
+epitope_sequences = combined_data_for_tripeptides[combined_data_for_tripeptides['label'] == 1]['sequence'].tolist()
+non_epitope_sequences = combined_data_for_tripeptides[combined_data_for_tripeptides['label'] == 0]['sequence'].tolist()
+
+# Get all tripeptides for epitopes
+all_epitope_tripeptides = []
+for seq in epitope_sequences:
+    all_epitope_tripeptides.extend(get_tripeptides(seq))
+
+# Get all tripeptides for non-epitopes
+all_non_epitope_tripeptides = []
+for seq in non_epitope_sequences:
+    all_non_epitope_tripeptides.extend(get_tripeptides(seq))
+
+# Count frequencies
+epitope_tripeptide_counts = Counter(all_epitope_tripeptides)
+non_epitope_tripeptide_counts = Counter(all_non_epitope_tripeptides)
+
+# Get top N most common tripeptides
+N = 15
+top_epitope_tripeptides = epitope_tripeptide_counts.most_common(N)
+top_non_epitope_tripeptides = non_epitope_tripeptide_counts.most_common(N)
+
+# Plotting
+fig, axes = plt.subplots(2, 1, figsize=(12, 10))
+
+# Epitope tripeptides
+if top_epitope_tripeptides:
+    peptides, counts = zip(*top_epitope_tripeptides)
+    axes[0].bar(peptides, counts, color='skyblue')
+    axes[0].set_title(f'Top {N} Most Frequent Tripeptides in Epitopes')
+    axes[0].set_ylabel('Frequency')
+    axes[0].tick_params(axis='x', rotation=45)
+else:
+    axes[0].text(0.5, 0.5, 'No tripeptides found for epitopes', horizontalalignment='center', verticalalignment='center', transform=axes[0].transAxes)
+
+
+# Non-epitope tripeptides
+if top_non_epitope_tripeptides:
+    peptides, counts = zip(*top_non_epitope_tripeptides)
+    axes[1].bar(peptides, counts, color='lightcoral')
+    axes[1].set_title(f'Top {N} Most Frequent Tripeptides in Non-Epitopes')
+    axes[1].set_ylabel('Frequency')
+    axes[1].set_xlabel('Tripeptide')
+    axes[1].tick_params(axis='x', rotation=45)
+else:
+    axes[1].text(0.5, 0.5, 'No tripeptides found for non-epitopes', horizontalalignment='center', verticalalignment='center', transform=axes[1].transAxes)
+
+plt.tight_layout()
+plt.show()
+
+```
+
+These plots show the most common tripeptide sequences found within the epitope and non-epitope datasets. Comparing these can help identify if certain short amino acid patterns are more prevalent in one group over the other, potentially hinting at structural or functional differences recognized by the immune system or affecting MHC binding.
+
+Interpreting the tripeptide frequency plots:
+
+*   **Epitopes:** The tripeptide `LLL` (three Leucines) is strikingly dominant, with Leucine-rich motifs (e.g., `SLL`, `LSL`) being highly prevalent.
+*   **Non-Epitopes:** `SSS` (three Serines) is the most frequent. While `LLL` is also common, this group shows more diversity with prominent Serine, Proline (`PPP`), and Glycine-based motifs (e.g., `GGS`).
+*   **Key Takeaway:** The most frequent tripeptides differ significantly between epitopes and non-epitopes. Epitopes favor Leucine-heavy motifs, while non-epitopes have a broader range with `SSS` leading. This suggests that these short sequence patterns contribute to distinguishing the two classes, likely influencing factors such as MHC binding.
+
+Another powerful way to visualize conserved patterns in a set of sequences is by generating sequence logos. A sequence logo provides a graphical representation of an amino acid (or nucleotide) multiple sequence alignment. Each position in the logo consists of a stack of symbols, where the height of each symbol indicates its frequency at that position, and the total height of the stack reflects the information content or conservation at that position.
+
+```{python sequence_logo_generation}
+import logomaker
+import matplotlib.pyplot as plt
+import pandas as pd
+import numpy as np
+
+# Assuming 'combined_data_for_tripeptides' DataFrame with 'sequence' and 'label' columns is available
+# from the previous tripeptide analysis cell.
+
+# Standard 20 amino acids
+amino_acids = sorted(list("ACDEFGHIKLMNPQRSTVWY"))
+sequence_length = 9 # Assuming all sequences are 9-mers
+
+epitope_sequences_for_logo = combined_data_for_tripeptides[combined_data_for_tripeptides['label'] == 1]['sequence'].tolist()
+non_epitope_sequences_for_logo = combined_data_for_tripeptides[combined_data_for_tripeptides['label'] == 0]['sequence'].tolist()
+
+def create_ppm_from_sequences(sequences, amino_acids_list, seq_len):
+    if not sequences:
+        return pd.DataFrame(0.0, index=amino_acids_list, columns=range(seq_len))
+    
+    pfm = pd.DataFrame(0, index=amino_acids_list, columns=range(seq_len))
+    for seq in sequences:
+        if len(seq) == seq_len: # Ensure sequence has expected length
+            for i, char in enumerate(seq):
+                if char in amino_acids_list: # Ensure character is a standard amino acid
+                    pfm.loc[char, i] += 1
+    
+    # Convert PFM to PPM (Position Probability Matrix)
+    ppm = pfm.div(len(sequences), axis='columns')
+    return ppm
+
+# Create PPM for epitopes
+ppm_epitopes = create_ppm_from_sequences(epitope_sequences_for_logo, amino_acids, sequence_length)
+
+# Create PPM for non-epitopes
+ppm_non_epitopes = create_ppm_from_sequences(non_epitope_sequences_for_logo, amino_acids, sequence_length)
+
+# Generate and display sequence logos
+fig, axes = plt.subplots(2, 1, figsize=(12, 6))
+
+# Epitope Logo
+if not ppm_epitopes.empty and ppm_epitopes.sum().sum() > 0:
+    # Transpose the PPM DataFrame for logomaker
+    logomaker.Logo(ppm_epitopes.T, ax=axes[0], font_name='Arial Rounded MT Bold')
+    axes[0].set_title('Sequence Logo for Epitopes')
+    axes[0].set_ylabel('Bits') # Typically, height is in bits of information
+else:
+    axes[0].text(0.5, 0.5, 'No data or empty PPM for epitope logo', horizontalalignment='center', verticalalignment='center', transform=axes[0].transAxes)
+
+# Non-Epitope Logo
+if not ppm_non_epitopes.empty and ppm_non_epitopes.sum().sum() > 0:
+    # Transpose the PPM DataFrame for logomaker
+    logomaker.Logo(ppm_non_epitopes.T, ax=axes[1], font_name='Arial Rounded MT Bold')
+    axes[1].set_title('Sequence Logo for Non-Epitopes')
+    axes[1].set_xlabel('Position')
+    axes[1].set_ylabel('Bits')
+else:
+    axes[1].text(0.5, 0.5, 'No data or empty PPM for non-epitope logo', horizontalalignment='center', verticalalignment='center', transform=axes[1].transAxes)
+
+plt.tight_layout()
+plt.show()
+
+```
+
+These sequence logos visually represent the amino acid preferences at each of the 9 positions for epitopes (top) and non-epitopes (bottom). Larger letters indicate a higher frequency of that amino acid at that specific position. The overall height of the stack of letters at a position indicates the degree of conservation at that position.
+
+Interpreting the sequence logos:
+
+*   **Epitope Logo (Top):** While showing variability, there's a noticeable preference for Leucine (`L`, black) at the C-terminal position (position 8) and also a tendency for `L` at position 1. Other positions show a mix of amino acids with generally lower conservation, though residues like Serine (`S`, green), Lysine (`K`, blue), and Valine (`V`, black) appear at various spots.
+*   **Non-Epitope Logo (Bottom):** This logo generally shows even more diversity (lower, more uniform stacks) across all positions. While Leucine (`L`) and Serine (`S`) are common, no single amino acid strongly dominates at most positions. The C-terminal preference for `L` seen in epitopes is less pronounced here.
+*   **Key Comparison:** Epitopes exhibit a clearer, albeit modest, preference for Leucine at the C-terminus (position 8). Non-epitopes display greater sequence variation across all positions. This aligns with the aggregated saliency maps that highlighted position 8 as important, particularly for epitopes, and suggests that while both classes are diverse, epitopes might have slightly stronger anchor preferences recognizable in a logo format.
+
+# Can we predict?
+
+### Model Selection: A Baseline with State-of-the-Art Binding Prediction
+
+To establish a robust baseline, we first develop a Random Forest classifier. This model incorporates a crucial feature: predicted binding affinity scores (`Score_BA`) derived from `netMHCpan`, a state-of-the-art algorithm for MHC binding prediction. By including this, our baseline leverages existing sophisticated domain knowledge. The full feature set includes:
+
+-   Average Hydrophobicity
+-   Molecular Weight
+-   Aromaticity
+-   Isoelectric Point
+-   Instability
+-   Charge at pH7
 
 Performace will be evaluated based on accuracy, precision, and recall.
 
@@ -394,7 +590,7 @@ X = combined_data.drop(columns=['peptide', 'label'])
 y = combined_data['label']
 
 # Identify numerical columns to scale (exclude one-hot encoded amino acid columns)
-numerical_cols = ['peptide_avg_hydro', 'molecular_weight', 'aromaticity', 'isoelectric_point', 'instability','Score_BA', 'charge_at_pH7']
+numerical_cols = ['peptide_avg_hydro', 'molecular_weight', 'aromaticity', 'isoelectric_point', 'instability']
 
 # Split the data into training and testing sets (80% train, 20% test)
 from sklearn.model_selection import train_test_split
@@ -457,7 +653,7 @@ print("\nRandom Forest Model Classification Report:")
 print(classification_report(y_test, y_pred))
 ```
 
-The results show strong performance from the random forest classifier, with an overall accuracy of 91% and recall of 75% for the positive class.
+The results show strong performance from the random forest classifier, with an overall accuracy of 91% and recall of 75% for the positive class. This strong performance is substantially aided by its reliance on the powerful `Score_BA` predictor from `netMHCpan`.
 
 ```{python}
 #| label: Fig-1
@@ -480,11 +676,11 @@ plt.tight_layout()
 plt.show()
 ```
 
-Although the random forest classifier in @Fig-1 is performing well, the feature importance plot reveals a concentration of importance on the predicted binding affinity score obtained from netMHCpan. This is not surprising.
+Although the random forest classifier in @Fig-1 is performing well, the feature importance plot reveals a concentration of importance on the predicted binding affinity score. This is not surprising.
 
-### Training without netMHCpan
+### Quantifying the Impact of Binding Affinity Prediction
 
-To better illustrate how the model's performance changes, the predicted binding affinity column is dropped, and the model is retrained and evaluated.
+To underscore the significant contribution of the `netMHCpan`-derived binding affinity, we next evaluate the Random Forest model *without* the `Score_BA` feature. This helps quantify the performance drop when relying solely on other physiochemical properties without this advanced binding prediction.
 
 ```{python}
 # drop the Score_BA column
@@ -521,14 +717,13 @@ plt.title('Confusion Matrix - Random Forest')
 plt.show()
 
 # Evaluate the model
-print("Random Forest Model Evaluation:")
 print("\nClassification Report:")
 print(classification_report(y_test, y_pred))
 ```
 
 The accuracy only drops from 91% to 79%. However, this is misleading when considering the class imbalance of the data. The ratio of negative samples to positive is roughly 4:1, respectively. So, predicting the majority class — non-epitope — almost everytime would result in the majority of the testing data being correctly predicted and labeled.
 
-A better performance metric to compare between models would be the model's recall rate on the positive class. How many of the epitopes in the testing data were correctly predicted and labeled? The same model, when predicted binding affinity was included as a predictor, produced a 74% recall rate while the current model has a much lower 18% recall rate.
+A better performance metric to compare between models would be the model's recall rate on the positive class. How many of the epitopes in the testing data were correctly predicted and labeled? The same model, when predicted binding affinity was included as a predictor, produced a 74% recall rate while the current model has a much lower 18% recall rate. This dramatic drop in recall for epitopes clearly demonstrates the Random Forest model's heavy dependence on the `netMHCpan` binding affinity scores for identifying true positives.
 
 ```{python}
 #| label: Fig-2
@@ -553,9 +748,9 @@ plt.show()
 
 Interestingly, the order of the feature importance changed. Hydrophobicity is no longer the most important feature after predicted binding affinity, swapped for molecular weight.
 
-### Basic Convolutional Neural Network
+### A Different Approach: Learning Directly from Sequence with CNNs
 
-The performance of the random forest classifier drops off dramatically when netMHCpan's predicted binding affinity is not included as a predictor. A different approach to peptide classification is to use a convolutional neural network (CNN). CNN's have several advantages. In contrast to traditional machine learning models, a CNN does not require specific feature selection or engineering. This eliminates the need for domain expertise in selecting features and allows the model to potentially discover novel, important patterns that weren't explicitly engineered.
+Given the Random Forest model's significant reliance on pre-computed binding affinity from `netMHCpan` (a powerful, but distinct, predictive step), we explore an alternative strategy: a Convolutional Neural Network (CNN). The key value of the CNN in this context is its ability to learn predictive patterns *directly from the raw amino acid sequences themselves*. Unlike the RF model which uses engineered features and external predictions like `Score_BA`, the CNN can potentially uncover complex sequence motifs, positional dependencies, and other subtle features relevant to epitope classification that may not be fully captured by binding affinity predictions alone. This approach allows the model to discover novel, sequence-intrinsic features without explicit feature engineering or reliance on separate binding prediction tools, offering a complementary perspective on what defines an epitope.
 
 To start, the data will be filtered to only include the amino acid sequence and respective label.
 ```{python data_prep}
@@ -700,7 +895,7 @@ class_weight_dict = dict(enumerate(class_weights))
 early_stopping = EarlyStopping(monitor='val_loss', patience=10, restore_best_weights=True, verbose=0)
 reduce_lr = ReduceLROnPlateau(monitor='val_loss', factor=0.2, patience=5, min_lr=1e-6, verbose=0)
 model_checkpoint = ModelCheckpoint('best_cnn_model_len9.keras', monitor='val_accuracy', save_best_only=True, verbose=0)
-
+'''
 # Train the model
 history = model.fit(
     X_train, y_train,
@@ -711,8 +906,8 @@ history = model.fit(
     class_weight=class_weight_dict,
     verbose=0
 )
-
-#model = tf.keras.models.load_model('best_cnn_model_len9.keras')
+'''
+model = tf.keras.models.load_model('best_cnn_model_len9.keras')
 
 # Evaluate on test data
 test_loss, test_accuracy = model.evaluate(X_test, y_test, verbose=0)
@@ -753,7 +948,203 @@ The Convolutional Neural Network produced a reasonable overall accuracy of 82%, 
 
 The Convolutional Neural Network significantly outperforms the Random Forest classifier while relying only on the sequence data, and no additional features. The RF struggles with identifying the actual epitopes, shown by the low recall for Class 1, whereas the CNN, while still challenged with precision for Class 1, provides a better balance and significantly higher recall for the positive class, making it the more effective model in this comparison.
 
-# Clustering
+### CNN Saliency Maps
+
+To better understand what the CNN model learned, we can generate saliency maps. A saliency map highlights which input features (amino acids at specific positions) were most influential in the model's decision for a given input sample. This is done by calculating the gradient of the model's output with respect to the input features.
+
+The following plots examine a single sample sequence, `AASCFTASV`, which the model misclassified. The true label is Non-epitope (Class 0), but the model predicted it as an Epitope (Class 1) with high confidence. The first map shows which features drove the incorrect "Epitope" prediction, and the second map shows which features would have been important for the correct "Non-epitope" classification.
+
+```{python cnn_saliency_map}
+# Ensure the model is loaded or available from previous cells
+# If not, load it:
+model = tf.keras.models.load_model('best_cnn_model_len9.keras')
+
+# Ensure X_test, y_test, and index_to_char are available from the 'sequence_encoding' cell
+
+# Select a sample from the test set
+sample_index = 12 # You can change this to inspect different samples
+sample_input = X_test[sample_index:sample_index+1] # Keep batch dimension
+sample_label = y_test[sample_index]
+true_class_index = int(sample_label) # Ensure it's an integer for indexing
+
+# Convert the one-hot encoded sample back to a sequence for display
+sample_sequence_onehot = X_test[sample_index]
+sample_amino_acid_indices = np.argmax(sample_sequence_onehot, axis=1)
+sample_sequence_str = "".join([index_to_char[idx] for idx in sample_amino_acid_indices])
+
+print(f"Sample Sequence: {sample_sequence_str}")
+print(f"True Label: {'Epitope' if sample_label == 1 else 'Non-epitope'} (Class {sample_label})")
+
+# Make a prediction to confirm
+sample_pred_proba = model.predict(sample_input, verbose=0)
+predicted_class = np.argmax(sample_pred_proba[0])
+print(f"Predicted Label: {'Epitope' if predicted_class == 1 else 'Non-epitope'} (Class {predicted_class}) with probability {sample_pred_proba[0][predicted_class]:.4f}")
+
+# Convert sample_input to tf.Tensor for gradient taping
+sample_input_tf = tf.convert_to_tensor(sample_input, dtype=tf.float32)
+
+with tf.GradientTape() as tape:
+    tape.watch(sample_input_tf)
+    predictions_tensor = model(sample_input_tf) # Get model output for current sample
+    predicted_class_idx = tf.argmax(predictions_tensor, axis=1).numpy()[0] # Determine predicted class index
+    
+    # Using predicted class for saliency as per latest changes
+    output_neuron_to_explain = predictions_tensor[:, predicted_class_idx]
+
+
+# Get the gradients of the output neuron with respect to the input
+saliency_grads = tape.gradient(output_neuron_to_explain, sample_input_tf)
+
+
+# saliency will have shape (1, 9, 20)
+# We take the absolute values and then sum across the one-hot encoding dimension
+# or take the max across the one-hot encoding for each position
+saliency_map_per_position = np.sum(np.abs(saliency_grads[0]), axis=1)
+#saliency_map_per_position = np.max(np.abs(saliency_grads[0]), axis=1)
+
+# Normalize the saliency map for visualization
+saliency_map_normalized = (saliency_map_per_position - np.min(saliency_map_per_position)) / (np.max(saliency_map_per_position) - np.min(saliency_map_per_position) + 1e-8)
+
+
+# Plotting the saliency map
+plt.figure(figsize=(10, 4))
+plt.bar(range(len(sample_sequence_str)), saliency_map_normalized, color='skyblue')
+plt.xticks(range(len(sample_sequence_str)), list(sample_sequence_str))
+plt.xlabel("Amino Acid Position")
+plt.ylabel("Normalized Saliency")
+plt.title(f"Saliency Map for Sequence: {sample_sequence_str} (Predicted: {'Epitope' if predicted_class == 1 else 'Non-epitope'})")
+plt.tight_layout()
+plt.show()
+
+# You can also try visualizing the gradients for the actual true class if different
+if predicted_class != true_class_index:
+    with tf.GradientTape() as tape_true:
+        tape_true.watch(sample_input_tf)
+        predictions_true = model(sample_input_tf)
+        output_neuron_true_class = predictions_true[:, true_class_index]
+    saliency_true = tape_true.gradient(output_neuron_true_class, sample_input_tf)
+    saliency_map_per_position_true = np.sum(np.abs(saliency_true[0]), axis=1)
+    saliency_map_normalized_true = (saliency_map_per_position_true - np.min(saliency_map_per_position_true)) / (np.max(saliency_map_per_position_true) - np.min(saliency_map_per_position_true) + 1e-8)
+
+    plt.figure(figsize=(10, 4))
+    plt.bar(range(len(sample_sequence_str)), saliency_map_normalized_true, color='salmon')
+    plt.xticks(range(len(sample_sequence_str)), list(sample_sequence_str))
+    plt.xlabel("Amino Acid Position")
+    plt.ylabel("Normalized Saliency (for True Class)")
+    plt.title(f"Saliency Map for Sequence: {sample_sequence_str} (Influence on True Class: {'Epitope' if true_class_index == 1 else 'Non-epitope'})")
+    plt.tight_layout()
+    plt.show()
+
+```
+
+For this specific misclassified sample (`AASCFTASV`):
+
+*   The model's incorrect "Epitope" prediction was strongly influenced by the `C` at position 3, `A` at position 6, and `V` at position 8.
+
+*   Interestingly, for the correct "Non-epitope" classification, the `C` at position 3 and `V` at position 8 also show high importance.
+
+This suggests these positions are critical decision points for the model for this sequence, potentially with conflicting signals leading to the misclassification.
+
+### Aggregated Saliency Maps
+
+To get a more general understanding of feature importance across the dataset, we can compute average saliency maps for different classes of samples. Below, we calculate and plot the average saliency map for true epitopes and true non-epitopes in the test set. The saliency is calculated with respect to the **true class output** for each sample. This helps to reveal general patterns the model has learned for distinguishing the two classes.
+
+```{python aggregated_saliency_maps}
+# Ensure model, X_test, y_test, sequence_length, and num_chars are available
+# model = tf.keras.models.load_model('best_cnn_model_len9.keras') # If not already loaded
+
+num_samples_to_process = 500 # Or a smaller number for quicker testing, e.g., 100
+
+# Accumulators for saliency maps and counts
+saliency_accumulator_epitopes = np.zeros(sequence_length)
+count_epitopes = 0
+saliency_accumulator_non_epitopes = np.zeros(sequence_length)
+count_non_epitopes = 0
+
+print(f"Processing {num_samples_to_process} samples to generate aggregated saliency maps...")
+
+for i in range(num_samples_to_process):
+    sample_input = X_test[i:i+1] # Keep batch dimension
+    true_label = y_test[i]
+    true_class_idx = int(true_label)
+
+    sample_input_tf = tf.convert_to_tensor(sample_input, dtype=tf.float32)
+
+    with tf.GradientTape() as tape:
+        tape.watch(sample_input_tf)
+        predictions_tensor = model(sample_input_tf) # Get model output for current sample
+        
+        # Using true class for saliency
+        output_neuron_to_explain = predictions_tensor[:, true_class_idx]
+    
+    saliency_grads = tape.gradient(output_neuron_to_explain, sample_input_tf)
+    
+    if saliency_grads is not None:
+        # Using np.max as per your previous preference
+        saliency_map_per_position = np.sum(np.abs(saliency_grads[0].numpy()), axis=1)
+        #saliency_map_per_position = np.max(np.abs(saliency_grads[0].numpy()), axis=1)
+
+        if true_label == 1: # Epitope
+            saliency_accumulator_epitopes += saliency_map_per_position
+            count_epitopes += 1
+        else: # Non-epitope
+            saliency_accumulator_non_epitopes += saliency_map_per_position
+            count_non_epitopes += 1
+    else:
+        print(f"Warning: Gradients were None for sample {i}. Skipping.")
+
+    if (i + 1) % 100 == 0:
+        print(f"Processed {i+1}/{num_samples_to_process} samples...")
+
+print("Aggregation complete.")
+
+# Calculate average saliency maps
+if count_epitopes > 0:
+    avg_saliency_epitopes = saliency_accumulator_epitopes / count_epitopes
+    avg_saliency_epitopes_normalized = (avg_saliency_epitopes - np.min(avg_saliency_epitopes)) / (np.max(avg_saliency_epitopes) - np.min(avg_saliency_epitopes) + 1e-8)
+else:
+    avg_saliency_epitopes_normalized = None
+    print("No epitope samples processed or found to calculate average saliency.")
+
+if count_non_epitopes > 0:
+    avg_saliency_non_epitopes = saliency_accumulator_non_epitopes / count_non_epitopes
+    avg_saliency_non_epitopes_normalized = (avg_saliency_non_epitopes - np.min(avg_saliency_non_epitopes)) / (np.max(avg_saliency_non_epitopes) - np.min(avg_saliency_non_epitopes) + 1e-8)
+else:
+    avg_saliency_non_epitopes_normalized = None
+    print("No non-epitope samples processed or found to calculate average saliency.")
+
+# Plotting the average saliency maps
+fig, axs = plt.subplots(2, 1, figsize=(12, 8), sharex=True)
+
+if avg_saliency_epitopes_normalized is not None:
+    axs[0].bar(range(sequence_length), avg_saliency_epitopes_normalized, color='lightcoral')
+    axs[0].set_ylabel("Normalized Saliency")
+    axs[0].set_title("Average Saliency Map for True Epitopes")
+    axs[0].set_xticks(range(sequence_length))
+else:
+    axs[0].text(0.5, 0.5, 'No data for epitopes', horizontalalignment='center', verticalalignment='center', transform=axs[0].transAxes)
+
+if avg_saliency_non_epitopes_normalized is not None:
+    axs[1].bar(range(sequence_length), avg_saliency_non_epitopes_normalized, color='skyblue')
+    axs[1].set_xlabel("Amino Acid Position")
+    axs[1].set_ylabel("Normalized Saliency")
+    axs[1].set_title("Average Saliency Map for True Non-Epitopes")
+    axs[1].set_xticks(range(sequence_length))
+else:
+    axs[1].text(0.5, 0.5, 'No data for non-epitopes', horizontalalignment='center', verticalalignment='center', transform=axs[1].transAxes)
+
+plt.tight_layout()
+plt.show()
+
+```
+
+Interpreting the aggregated saliency maps:
+
+*   **Dominance of the C-terminus (Position 8):** For both true epitopes and true non-epitopes, the amino acid at position 8 (the C-terminal end) shows by far the highest average saliency. This indicates the model heavily relies on the identity of this final residue to make its classification.
+
+*   **Importance of Position 1 for Non-Epitopes:** For true non-epitopes, the amino acid at position 1 (the second residue) also shows notably high average saliency, suggesting its importance in identifying a sequence as *not* an epitope.
+
+*   **General Pattern:** The model appears to have learned that the C-terminal residue is a primary determinant, with other positions like position 1 (especially for non-epitopes) playing secondary, but still significant, roles.
 
 # Conclusion
 
