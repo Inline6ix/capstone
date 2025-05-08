@@ -971,11 +971,11 @@ The Convolutional Neural Network significantly outperforms the Random Forest cla
 
 To better understand what the CNN model learned, we can generate saliency maps. A saliency map highlights which input features (amino acids at specific positions) were most influential in the model's decision for a given input sample. This is done by calculating the gradient of the model's output with respect to the input features.
 
-The following plots examine a single sample sequence, `AASCFTASV`, which the model misclassified. The true label is Non-epitope, but the model predicted it as an Epitope with high confidence. The first map shows which features drove the incorrect prediction, and the second map shows which features would have been important for the correct classification.
+The following plots examine a single sample sequence, `DLSPDGPRS`, which the model correctly classified. The true label is Non-epitope, and the model predicted it as a Non-epitope with high confidence. The map shows which features drove this correct prediction.
 
 ```{python cnn_saliency_map}
 #| label: fig-saliency-single
-#| fig-cap: "Example Saliency Maps for a Misclassified Sample (AASCFTASV)"
+#| fig-cap: "Example Saliency Map for a Correctly Classified Sample (DLSPDGPRS)"
 
 # Ensure the model is loaded or available from previous cells
 # If not, load it:
@@ -1034,38 +1034,18 @@ plt.bar(range(len(sample_sequence_str)), saliency_map_normalized, color='skyblue
 plt.xticks(range(len(sample_sequence_str)), list(sample_sequence_str))
 plt.xlabel("Amino Acid Position")
 plt.ylabel("Normalized Saliency")
-plt.title(f"Saliency Map for Sequence: {sample_sequence_str} (Predicted: {'Epitope' if predicted_class == 1 else 'Non-epitope'})")
+plt.title(f"Saliency Map for Sequence: {sample_sequence_str} (Predicted: {'Epitope' if predicted_class == 1 else 'Non-epitope'}) (True: {'Epitope' if sample_label == 1 else 'Non-epitope'})")
 plt.tight_layout()
 plt.show()
 
-# You can also try visualizing the gradients for the actual true class if different
-if predicted_class != true_class_index:
-    with tf.GradientTape() as tape_true:
-        tape_true.watch(sample_input_tf)
-        predictions_true = model(sample_input_tf)
-        output_neuron_true_class = predictions_true[:, true_class_index]
-    saliency_true = tape_true.gradient(output_neuron_true_class, sample_input_tf)
-    saliency_map_per_position_true = np.sum(np.abs(saliency_true[0]), axis=1)
-    saliency_map_normalized_true = (saliency_map_per_position_true - np.min(saliency_map_per_position_true)) / (np.max(saliency_map_per_position_true) - np.min(saliency_map_per_position_true) + 1e-8)
-
-    plt.figure(figsize=(10, 4))
-    plt.bar(range(len(sample_sequence_str)), saliency_map_normalized_true, color='salmon')
-    plt.xticks(range(len(sample_sequence_str)), list(sample_sequence_str))
-    plt.xlabel("Amino Acid Position")
-    plt.ylabel("Normalized Saliency (for True Class)")
-    plt.title(f"Saliency Map for Sequence: {sample_sequence_str} (Influence on True Class: {'Epitope' if true_class_index == 1 else 'Non-epitope'})")
-    plt.tight_layout()
-    plt.show()
-
 ```
 
-For this specific misclassified sample (`AASCFTASV`):
+For this specific correctly classified sample (`DLSPDGPRS`):
 
-*   The model's incorrect Epitope prediction was strongly influenced by the `C` at position 3, `A` at position 6, and `V` at position 8.
+*   The model's correct **Non-epitope** prediction was most strongly influenced by the **`G` at position 6** and the **`P` at position 7**.
+*   The `L` at position 2 and the `P` at position 4 also showed moderate importance.
 
-*   Interestingly, for the correct Non-epitope classification, the `C` at position 3 and `V` at position 8 also show high importance.
-
-This suggests these positions are decision points for the model for this sequence with conflicting signals leading to the misclassification.
+This suggests these positions, particularly the G and P towards the C-terminus, provided strong signals for the model to classify the sequence as a non-epitope.
 
 ### What about the whole dataset?
 
