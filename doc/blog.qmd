@@ -22,9 +22,9 @@ nocite: |
 
 # Introduction
 
-At the heart of immune defense are tiny molecular "flags" called epitopes. These short sequences of amino acids, like "ADVEFCLSL", sit on larger proteins and tell immune cells whether something is a friend or a foe. When an immune cell recognizes an epitope on a virus or a cancer cell, it can launch a protective attack.
+At the heart of immune defense are tiny molecular "flags" called epitopes. These short sequences of amino acids, like "ADVEFCLSL", sit on larger proteins and tell immune cells whether something is a threat. When an immune cell recognizes an epitope on a virus or a cancer cell, it can launch a protective attack.
 
-Being able to reliably identify these epitopes in creating new vaccines and cancer treatments is crucial. Think of epitopes as the precise handshake between the immune system and a threat. Finding the right ones means smarter therapies can be designed. Unlike older treatments like chemotherapy that can harm healthy cells, therapies targeting specific epitopes can attack diseases with pinpoint accuracy. This promises better results for patients, with fewer debilitating side effects.
+Being able to reliably identify these epitopes in creating new vaccines and cancer treatments is crucial. Think of epitopes as the precise handshake between the immune system and a threat. Finding the right ones means smarter therapies can be designed. Unlike older treatments like chemotherapy that harm healthy cells, therapies targeting specific epitopes can attack diseases with more accuracy. This promises better results for patients, with fewer debilitating side effects.
 
 This project is all about teaching computers to do this vital identification work. Machine learning models are being built and tested that can look at an amino acid sequence and its properties and decide if it's an epitope or not. By making this process faster and more accurate, the discovery of new vaccine and immunotherapy candidates can be sped up, ultimately leading to more effective and kinder treatments.
 
@@ -36,7 +36,7 @@ To train these models, the main source is the [Immune Epitope Database](https://
 
 For this project, the focus has been put on epitopes found on human cancer cells that have been proven in experiments to activate T-cell immune defenses. For each epitope, its unique amino acid sequence and the specific immune system molecule (MHC allele) it interacts with will be used.
 
-Importantly, to train a good model, it doesn't just need to learn what an epitope is; it also needs to learn what isn't. Many epitope records in the IEDB link to the full protein they come from. These full proteins are used to carefully select sequences that are not currently known epitopes. This provides a set of "yes" (epitope) and "no" (non-epitope) examples.
+Importantly, to train a good model, it doesn't just need to learn what an epitope is; it also needs to learn what it isn't. Many epitope records in the IEDB link to the full protein they come from. These full proteins are used to carefully select sequences that are not currently known epitopes. This provides a set of "yes" (epitope) and "no" (non-epitope) examples.
 
 ::: {.callout-note title="Libraries and packages" collapse="false"}
 ```{python q-collapse}
@@ -256,11 +256,11 @@ negatives['charge_at_pH7'] = negatives['peptide'].apply(calculate_charge_at_pH7)
 negatives.drop('negatives', axis=1, inplace=True)
 ```
 
-The protein analysis tool from the BioPython package allows for some quick feature engineering on most given peptides. For this analysis, the relevant features would be hydrophobicity, molecular weight, aromaticity, isoelectric point, instability, and the charge at pH7. Publications on epitope classification hold binding affinity — the ability for a peptide to bind to the body's MHC complex — to be a strong preditctor. The BioPython package does not come with any functionality for binding affinity prediction but IEDB database provides a tool called netMHCpan, which is the leading binding affinity prediction algorithm.
+The protein analysis tool from the BioPython package allows for some quick feature engineering on most given peptides. For this analysis, the relevant features would be hydrophobicity, molecular weight, aromaticity, isoelectric point, instability, and the charge at pH7. Publications on epitope classification hold binding affinity — the ability for a peptide to bind to the body's MHC complex — to be a strong preditctor. The BioPython package does not come with any functionality for binding affinity prediction but IEDB provides a tool called netMHCpan, which is the leading binding affinity prediction algorithm.
 
-The IEDB website offers a GUI for using netMHCpan to predict binding affinities. However, it is only possible to run predictions on 100 peptides at a time and this analysis is examining many more than that. NetMHCpan can be downloaded and installed as a command line tool allowing more flexibility using python. Given an amino acid sequence and a MHC allele specification, netMHCpan returns a binding affinity score. NetMHCpan predicts the binding affinity between a peptide and an MHC allele, returning a score. This score ranges from 0 to 1, where higher values indicate a stronger predicted likelihood of binding.
+The IEDB website offers a GUI for using netMHCpan to predict binding affinities. However, it is only possible to run predictions on 100 peptides at a time and this analysis is examining many more than that. NetMHCpan can be downloaded and installed as a command line tool allowing more flexibility using python. Given an amino acid sequence and an MHC allele specification, netMHCpan returns a binding affinity score. This score ranges from 0 to 1, where higher values indicate a stronger likelihood of binding.
 
-Subsequent analysis focuses on 9-mer peptides, a common length for MHC Class I epitopes, for which binding prediction tools like netMHCpan are well-suited.
+Subsequent analysis filters for 9-mer peptides, a common length for MHC Class I epitopes, for which binding prediction tools like netMHCpan are well-suited. After feature engineering, we have:
 
 ```{python}
 epitopes = pd.read_csv("/Users/tariq/Documents/capstone/data/ninemer_epitopes.csv")
@@ -283,7 +283,7 @@ negatives = pd.merge(negatives, negatives_BA_pred[['peptide', 'Score_BA']], on='
 epitopes.head()
 ```
 
-# Exploratory Analysis
+# What Distinguishes an epitope from any other peptide in an antigen?
 
 ### Boxplots
 
@@ -455,17 +455,12 @@ plt.show()
 # Evaluate the model
 print("\nRandom Forest Model Classification Report:")
 print(classification_report(y_test, y_pred))
-
-# Calculate ROC AUC
-roc_auc = roc_auc_score(y_test, y_pred_proba)
-print(f"\nROC AUC Score: {roc_auc:.4f}")
 ```
 
 The results show strong performance from the random forest classifier, with an overall accuracy of 91% and recall of 75% for the positive class.
 
 ```{python}
 #| label: Fig-1
-
 
 # Feature importance
 feature_importance = pd.DataFrame({
