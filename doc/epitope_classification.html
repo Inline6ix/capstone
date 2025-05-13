@@ -191,7 +191,7 @@ Libraries and packages
 </div>
 <div id="callout-1" class="callout-1-contents callout-collapse collapse show">
 <div class="callout-body-container callout-body">
-<div id="4afc85ce" class="cell" data-execution_count="1">
+<div id="5fa89b62" class="cell" data-execution_count="1">
 <details class="code-fold">
 <summary>Code</summary>
 <div class="sourceCode cell-code" id="cb1"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Importing libraries</span></span>
@@ -238,7 +238,7 @@ Libraries and packages
 <section id="preprocessing" class="level3">
 <h3 class="anchored" data-anchor-id="preprocessing">Preprocessing</h3>
 <p>Retrieving the data from IEDB was as simple as doing a search and clicking export. Using the requests python library, the full antigen sequence was downloaded and appended to the epitope dataset. Next, simple formatting was done to standardize the column names. Finally, the epitope dataset was merged with the assays dataset and filtered to include the following columns:</p>
-<div id="414ad65f" class="cell" data-execution_count="2">
+<div id="064e671f" class="cell" data-execution_count="2">
 <details class="code-fold">
 <summary>Code</summary>
 <div class="sourceCode cell-code" id="cb2"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a>epitopes <span class="op">=</span> pd.read_csv(<span class="vs">r'/Users/tariq/Documents/capstone/data/epitope_table_export_1740279588.csv'</span>)</span>
@@ -389,7 +389,7 @@ Figure&nbsp;1: Top 20 Most Frequent MHC Alleles in Epitope Dataset
 </section>
 <section id="negative-sample-generation" class="level3">
 <h3 class="anchored" data-anchor-id="negative-sample-generation">Negative Sample Generation</h3>
-<div id="9cf2e84d" class="cell" data-execution_count="4">
+<div id="a0951170" class="cell" data-execution_count="4">
 <details class="code-fold">
 <summary>Code</summary>
 <div class="sourceCode cell-code" id="cb4"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> generate_negatives(row):</span>
@@ -438,7 +438,7 @@ Figure&nbsp;1: Top 20 Most Frequent MHC Alleles in Epitope Dataset
 </section>
 <section id="feature-engineering" class="level3">
 <h3 class="anchored" data-anchor-id="feature-engineering">Feature Engineering</h3>
-<div id="55e5b507" class="cell" data-execution_count="5">
+<div id="cd81a331" class="cell" data-execution_count="5">
 <details class="code-fold">
 <summary>Code</summary>
 <div class="sourceCode cell-code" id="cb5"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Kyte-Doolittle hydrophobicity scale</span></span>
@@ -535,7 +535,7 @@ Figure&nbsp;1: Top 20 Most Frequent MHC Alleles in Epitope Dataset
 <p>The protein analysis tool from the BioPython package allows for some quick feature engineering on most given peptides. For this analysis, the relevant features would be hydrophobicity, molecular weight, aromaticity, isoelectric point, instability, and the charge at pH7. Publications on epitope classification hold binding affinity — the ability for a peptide to bind to the body’s MHC complex — to be a strong preditctor. The BioPython package does not come with any functionality for binding affinity prediction but IEDB provides a tool called <strong>netMHCpan</strong>, which is the leading binding affinity prediction algorithm.</p>
 <p>The IEDB website offers a GUI for using netMHCpan to predict binding affinities. However, it is only possible to run predictions on 100 peptides at a time and this analysis is examining many more than that. NetMHCpan can be downloaded and installed as a command line tool allowing more flexibility using python. Given an amino acid sequence and an MHC allele specification, netMHCpan returns a binding affinity score. This score ranges from 0 to 1, where higher values indicate a stronger likelihood of binding.</p>
 <p>Subsequent analysis filters for 9-mer peptides, a common length for MHC Class I epitopes, for which binding prediction tools like netMHCpan are well-suited. After feature engineering, we have:</p>
-<div id="ce2fe377" class="cell" data-execution_count="6">
+<div id="4ab30bc4" class="cell" data-execution_count="6">
 <details class="code-fold">
 <summary>Code</summary>
 <div class="sourceCode cell-code" id="cb6"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Generated using the standalone netMHCpan tool with relevant MHC alleles for each peptide</span></span>
@@ -1201,7 +1201,7 @@ Figure&nbsp;10: Feature Importance for Random Forest without Binding Affinity
 <h3 class="anchored" data-anchor-id="a-different-approach-learning-directly-from-sequence-with-cnns">A Different Approach: Learning Directly from Sequence with CNNs</h3>
 <p>Given the Random Forest model’s significant reliance on pre-computed binding affinity from <code>netMHCpan</code>, we explore an alternative strategy: a Convolutional Neural Network (CNN). The key value of the CNN in this context is its ability to learn predictive patterns directly from the raw amino acid sequences themselves. Unlike the RF model which uses engineered features and external predictions like <code>Score_BA</code>, the CNN can potentially uncover complex sequence motifs, positional tendencies, and other relevant features that may not be fully captured by binding affinity predictions alone. This approach allows the model to discover new features without feature engineering or reliance on separate binding prediction tools.</p>
 <p>To start, the data will be filtered to only include the amino acid sequence and respective label.</p>
-<div id="efc18113" class="cell" data-execution_count="16">
+<div id="f00667aa" class="cell" data-execution_count="16">
 <details class="code-fold">
 <summary>Code</summary>
 <div class="sourceCode cell-code" id="cb19"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb19-1"><a href="#cb19-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Filter and combine</span></span>
@@ -1261,7 +1261,7 @@ Figure&nbsp;10: Feature Importance for Random Forest without Binding Affinity
 </div>
 </div>
 <p>To train a neural network, the sequence must be represented in a numerical format. Assigning each amino acid a unique integer value up to 20, the sequences are converted to a list of integers. Then, the resulting integer sequences are one-hot encoded into a 3-dimensional arrary of shape (25628, 9, 20). 25,628 peptides, 9 amino acids in each peptide, 20 unique amino acids. The data is split into training, validation, and testing sets with a 70/15/15 ratio.</p>
-<div id="be50f95c" class="cell" data-execution_count="17">
+<div id="bfb9eac9" class="cell" data-execution_count="17">
 <details class="code-fold">
 <summary>Code</summary>
 <div class="sourceCode cell-code" id="cb20"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb20-1"><a href="#cb20-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Extract sequences</span></span>
@@ -1324,7 +1324,7 @@ Testing set: (3845, 9, 20)
 </div>
 </div>
 <p>This CNN model processes one-hot encoded sequences using three 1D convolutional blocks (64, 128, 256 filters with BatchNormalization, MaxPooling, L2 regularization). Two subsequent dense blocks (256, 128 units with BatchNormalization, Dropout, L2 regularization, ReLU) follow. A final softmax layer outputs class probabilities. The model is compiled with Adam, sparse_categorical_crossentropy loss, and accuracy.</p>
-<div id="593102fb" class="cell" data-execution_count="18">
+<div id="3e58b767" class="cell" data-execution_count="18">
 <details class="code-fold">
 <summary>Code</summary>
 <div class="sourceCode cell-code" id="cb22"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb22-1"><a href="#cb22-1" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> create_cnn_model(input_shape, num_classes<span class="op">=</span><span class="dv">2</span>):</span>
@@ -1431,12 +1431,12 @@ Testing set: (3845, 9, 20)
 CNN Classification Report:
               precision    recall  f1-score   support
 
-           0       0.88      0.90      0.89      3051
-           1       0.58      0.53      0.55       794
+           0       0.90      0.88      0.89      3051
+           1       0.57      0.62      0.60       794
 
-    accuracy                           0.82      3845
-   macro avg       0.73      0.71      0.72      3845
-weighted avg       0.82      0.82      0.82      3845
+    accuracy                           0.83      3845
+   macro avg       0.74      0.75      0.74      3845
+weighted avg       0.83      0.83      0.83      3845
 </code></pre>
 </div>
 <div class="cell-output cell-output-display">
@@ -1526,7 +1526,7 @@ Figure&nbsp;11: Confusion Matrix for CNN Model
 <div class="cell-output cell-output-stdout">
 <pre><code>Sample Sequence: DLSPDGPRS
 True Label: Non-epitope (Class 0)
-Predicted Label: Non-epitope (Class 0) with probability 0.9988</code></pre>
+Predicted Label: Non-epitope (Class 0) with probability 0.9972</code></pre>
 </div>
 <div class="cell-output cell-output-display">
 <div id="fig-saliency-single" class="quarto-float quarto-figure quarto-figure-center anchored">
