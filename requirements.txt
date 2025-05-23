@@ -8,4 +8,7 @@ biopython>=1.81
 requests>=2.31.0
 plotly>=6.0.0
 jupyter>=1.0.0
-ipykernel>=6.0.0 
+ipykernel>=6.0.0
+logomaker>=0.8
+scipy>=1.11.0
+argparse 
