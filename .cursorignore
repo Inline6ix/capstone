@@ -1,1 +1,63 @@
-# Add directories or file patterns to ignore during indexing (e.g. foo/ or *.csv)
+# Large binary model files (but keep small data CSVs for AI context)
+*.h5
+*.keras
+*.hdf5
+best_*.keras
+best_*.h5
+
+# Generated documentation files
+*_files/
+*.html
+*.pdf
+README_files/
+capstone_files/
+doc/*_files/
+
+# Large binary models and pickles
+*.pkl
+*.model
+*.joblib
+
+# Jupyter notebook outputs and checkpoints
+.ipynb_checkpoints/
+*-checkpoint.ipynb
+
+# External tools and large directories
+netMHCpan-4.1/
+netMHCpan*/
+
+# Generated figures and outputs
+figures/
+plots/
+*.png
+*.jpg
+*.jpeg
+*.svg
+
+# Temporary files
+*.tmp
+*.temp
+*~
+.DS_Store
+
+# Log files
+*.log
+*.out
+
+# Virtual environments
+venv/
+env/
+.venv/
+
+# IDE specific
+.vscode/
+.idea/
+
+# Cache directories
+__pycache__/
+.cache/
+*.pyc
+
+# Only ignore very large CSV files (keep smaller ones for AI context)
+# If you have specific large CSV files, add them individually like:
+# data/very_large_dataset.csv

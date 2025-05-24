@@ -1,0 +1,61 @@
+# Default configuration for epitope classifier
+
+# Data configuration
+data:
+  train_split: 0.7
+  val_split: 0.15
+  test_split: 0.15
+  negative_sample_ratio: 4.0
+  sequence_length: 9
+  random_state: 42
+
+# Feature engineering configuration
+features:
+  use_physicochemical: true
+  use_binding_affinity: true
+  use_sequence_composition: true
+  netmhcpan_path: "~/Documents/capstone/netMHCpan-4.1/run_netMHCpan.sh"
+  default_allele: "HLA-A*02:01"
+
+# Model configuration
+model:
+  type: "cnn"  # Options: "cnn", "random_forest"
+  
+  random_forest:
+    n_estimators: 100
+    max_depth: null
+    min_samples_split: 2
+    min_samples_leaf: 1
+    random_state: 42
+  
+  cnn:
+    filters: [32, 64, 128]
+    kernel_size: 3
+    dropout: 0.4
+    learning_rate: 0.001
+    batch_size: 32
+    epochs: 50
+    early_stopping_patience: 8
+    validation_split: 0.15
+
+# Training configuration
+training:
+  use_class_weights: true
+  use_early_stopping: true
+  save_best_model: true
+  model_checkpoint_dir: "models/"
+  log_dir: "logs/"
+
+# Evaluation configuration
+evaluation:
+  metrics: ["accuracy", "precision", "recall", "f1", "roc_auc"]
+  threshold_optimization: true
+  cross_validation: false
+  cv_folds: 5
+
+# Visualization configuration
+visualization:
+  style: "whitegrid"
+  figsize: [10, 6]
+  dpi: 300
+  save_format: "png"

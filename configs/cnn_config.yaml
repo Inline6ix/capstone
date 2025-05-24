@@ -1,0 +1,48 @@
+# CNN-specific configuration for epitope classifier
+
+# Inherit from default config
+data:
+  train_split: 0.7
+  val_split: 0.15
+  test_split: 0.15
+  random_state: 42
+
+features:
+  use_physicochemical: false  # CNN works directly on sequences
+  use_binding_affinity: false
+  use_sequence_composition: false
+
+model:
+  type: "cnn"
+  
+  cnn:
+    # Architecture
+    filters: [32, 64, 128]
+    kernel_size: 3
+    dropout: 0.4
+    
+    # Training parameters
+    learning_rate: 0.001
+    batch_size: 32
+    epochs: 50
+    
+    # Regularization
+    early_stopping_patience: 8
+    validation_split: 0.15
+    
+    # Advanced options
+    use_batch_normalization: true
+    use_focal_loss: false
+    focal_loss_gamma: 2.0
+    focal_loss_alpha: 0.75
+
+training:
+  use_class_weights: true
+  use_early_stopping: true
+  save_best_model: true
+  model_checkpoint_dir: "models/cnn/"
+  log_dir: "logs/cnn/"
+
+evaluation:
+  metrics: ["accuracy", "precision", "recall", "f1", "roc_auc"]
+  threshold_optimization: true

@@ -1,0 +1,43 @@
+# Random Forest-specific configuration for epitope classifier
+
+# Inherit from default config
+data:
+  train_split: 0.7
+  val_split: 0.15
+  test_split: 0.15
+  random_state: 42
+
+features:
+  use_physicochemical: true
+  use_binding_affinity: true
+  use_sequence_composition: true
+  netmhcpan_path: "~/Documents/capstone/netMHCpan-4.1/run_netMHCpan.sh"
+  default_allele: "HLA-A*02:01"
+
+model:
+  type: "random_forest"
+  
+  random_forest:
+    n_estimators: 100
+    max_depth: null
+    min_samples_split: 2
+    min_samples_leaf: 1
+    random_state: 42
+    
+    # Advanced options
+    max_features: "sqrt"
+    bootstrap: true
+    oob_score: true
+    n_jobs: -1  # Use all available cores
+
+training:
+  use_class_weights: true
+  save_best_model: true
+  model_checkpoint_dir: "models/random_forest/"
+  log_dir: "logs/random_forest/"
+
+evaluation:
+  metrics: ["accuracy", "precision", "recall", "f1", "roc_auc"]
+  threshold_optimization: true
+  cross_validation: true
+  cv_folds: 5
