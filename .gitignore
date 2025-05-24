@@ -133,3 +133,5 @@ check_netmhcpan.py
 negatives_MHC.csv
 readme.md
 doc/example_blog.qmd
+
+.mcp.json
